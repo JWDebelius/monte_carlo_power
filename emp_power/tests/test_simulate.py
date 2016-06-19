@@ -8,6 +8,7 @@ import skbio
 
 from emp_power.utils.simulate import (ttest_1_simulate,
                                       ttest_ind_simulate,
+                                      anova_simulate,
                                       simulate_distance_matrix,
                                       convert_to_mirror,
                                       _check_param,
@@ -60,6 +61,31 @@ class PowerSimulation(TestCase):
         params, samples = ttest_ind_simulate(self.mu_lim, self.sigma_lim,
                                              self.count_lim)
         self.assertEqual(kparams, params)
+        for ks, s in zip(*(ksamples, samples)):
+            npt.assert_almost_equal(ks, s, 5)
+
+    def test_anova_simulate(self):
+        kmu = np.array([1, 0, 1])
+        ksigma = 2
+        kn = 10
+        ksamples = [np.array([5.86154237,  0.49581574,  1.21921968,
+                              4.16496223, -0.81846481, -0.18327332,
+                              1.37520645,  0.34026008, -1.38552922,
+                              0.59024698]),
+                    np.array([-0.71765789,  1.20694321, -3.32957706,
+                              -1.40035808,  2.30278202, 3.71466201,
+                              -3.02235912,  1.28969502, -1.96121577,
+                              -1.71370631]),
+                    np.array([-0.74375837,  0.15498414,  2.99287965,
+                              2.42484254,  1.11828849, 0.27337824,
+                              1.00657769,  0.78813912,  2.58610664,
+                              -0.26314326])]
+        [mu, sigma, n], samples = anova_simulate(self.mu_lim, self.sigma_lim,
+                                                 self.count_lim, 3)
+
+        npt.assert_array_equal(kmu, mu)
+        self.assertEqual(ksigma, sigma)
+        self.assertEqual(kn, n)
         for ks, s in zip(*(ksamples, samples)):
             npt.assert_almost_equal(ks, s, 5)
 

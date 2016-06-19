@@ -28,6 +28,5 @@ setup(name='monte-carlo-power',
       author_email="j.debelius@gmail.com",
       maintainer="J W Debelius",
       maintainer_email="j.debelius@gmail.com",
-      packages=['emp_power', 'emp_power.utils', 'emp_power.utils.tests',
-                'emp_power.power', 'emp_power.power.tests'],
+      packages=['emp_power', 'emp_power.tests'],
       )

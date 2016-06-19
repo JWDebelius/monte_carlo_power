@@ -67,6 +67,35 @@ def ttest_ind_simulate(mu_lim, sigma_lim, counts_lims):
     return [mu1, mu2, sigma1, sigma2, n], samples
 
 
+def anova_simulate(mu_lim, sigma_lim, count_lims, num_pops):
+    """Simulates data for a one way ANOVA"""
+
+    # Defines the distribtuion parameters
+    mus = np.random.randint(*mu_lim, size=num_pops)
+    sigma = np.random.randint(*sigma_lim)
+    n = np.random.randint(*count_lims)
+
+    # Draws samples which fit the population
+    samples = [mu + np.random.randn(n)*sigma for mu in mus]
+
+    return [mus, sigma, n], samples
+
+
+def regress_simulate(mu_lim, sigma_lim, count_lims, b_lims):
+    """Simulates data for a one way ANOVA"""
+    # Calculates the distribution for the residuals
+    sigma = np.random.randint(*sigma_lim)
+    n = np.random.randint(*count_lims)
+    # Calculates the parameters for the line
+    m = np.random.randint(*mu_lim)
+    b = np.random.randint(*b_lims)
+
+    x = np.arange(-n, n, 2)
+    y = m*x + b + np.random.randn(n)*sigma
+
+    return [sigma, n, m, b], [x, y]
+
+
 def simulate_distance_matrix(num_samples, num0=None, wdist=[0, 0.5],
                              wspread=[0, 0.5], bdist=[0, 0.5],
                              bspread=[0, 0.5]):
