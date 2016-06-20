@@ -130,7 +130,9 @@ def subsample_power(test, samples, counts, draw_mode='ind', numeric=True,
                                         num_iter=num_iter,
                                         bootstrap=bootstrap,
                                         mode=draw_mode)
-            power[id1, id2, :] = _calculate_power(ps, alpha)
+            power[id1, id2, :] = _calculate_power(ps,
+                                                  numeric=numeric,
+                                                  alpha=alpha)
 
     power = power.squeeze()
 
@@ -138,7 +140,7 @@ def subsample_power(test, samples, counts, draw_mode='ind', numeric=True,
 
 
 def _compare_distributions(test, samples, num_p, counts=5, mode="ind",
-    bootstrap=True, num_iter=100):
+                           bootstrap=True, num_iter=100):
     r"""Compares two distribution arrays iteratively
     """
 
@@ -201,7 +203,7 @@ def _calculate_power(p_values, alpha=0.05, numeric=True):
 
 
 def _check_subsample_power_inputs(test, samples, counts, draw_mode='ind',
-    ratio=None, bootstrap=True):
+                                  ratio=None, bootstrap=True):
     """Makes sure that everything is sane before power calculations
 
     Parameters
