@@ -103,6 +103,36 @@ def confidence_bound(vec, alpha=0.05, df=None, axis=None):
     return bound
 
 
+def z_power(counts, eff, alpha=0.05):
+    """Estimates power for a z distribution from an effect size
+
+    This is based on the equations in
+        Lui, X.S. (2014) *Statistical power analysis for the social and
+        behavioral sciences: basic and advanced techniques.* New York:
+        Routledge. 378 pg.
+    The equation assumes a positive magnitude to the effect size and a
+    two-tailed test.
+
+    Parameters
+    ----------
+    counts : array
+        The number of observations for each power depth
+    effect : float
+        A standard measure of the difference between the underlying populations
+     alpha : float
+        The critial value used to calculate the power
+
+    Returns
+    power : array
+        The statistical power at the depth specified by `counts`
+
+    """
+    z = scipy.stats.norm
+    power = ((z.cdf(eff * np.sqrt(counts/2) - z.ppf(1 - alpha/2)) +
+             (z.cdf(z.ppf(alpha/2) - eff * np.sqrt(counts/2)))))
+    return power
+
+
 def subsample_power(test, samples, counts, draw_mode='ind', numeric=True,
                     alpha=0.05, ratio=None, bootstrap=True, num_iter=500,
                     num_runs=10):
