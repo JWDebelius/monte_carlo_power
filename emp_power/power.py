@@ -137,6 +137,80 @@ def subsample_power(test, samples, counts, draw_mode='ind', numeric=True,
                     alpha=0.05, ratio=None, bootstrap=True, num_iter=500,
                     num_runs=10):
     """Subsamples data to iteratively calculate power
+
+    Parameters
+    ----------
+    test : function
+        The statistical test which accepts a list of arrays of values
+        (sample ids or numeric values) and returns a p value or one-dimensional
+        array of p values when `numeric == True`; or a boolean value
+        indicating the null hypothesis should be rejected, or a
+        one-dimensional array of boolean values indicating the null
+        hypothesis should be rejected when `numeric == False`.
+    samples : array_like
+        `samples` can be a list of lists or a list of arrays where each
+        sublist or row in the array corresponds to a sampled group.
+    counts : array-like
+        The depths at which to sample the data. If `bootstrap == False`, the
+        largest count depth times the group ratio cannot be greater than the
+        number of observations in each group.
+    draw_mode : {"ind", "matched"}, optional
+        "matched" samples should be used when observations in
+        samples have corresponding observations in other groups. For instance,
+        this may be useful when working with regression data where
+        :math:`x_{1}, x_{2}, ..., x_{n}` maps to
+        :math:`y_{1}, y_{2}, ..., y_{n}`. Sample vectors must be the same
+        length in "matched" mode.
+    numeric : bool, optional
+        Indicates whether `test` returns a numeric p-value or array of numeric
+        p values (`numeric=True`), or a boolean (`numeric=False`).
+    alpha : float, optional
+        The critical value used to calculate the power.
+    ratio : 1-D array, optional
+        The fraction of the sample counts which should be
+        assigned to each group. If this is a 1-D array, it must be the same
+        length as `samples`. If no value is supplied (`ratio` is None),
+        then an equal number of observations will be drawn for each sample. In
+        `matched` mode, this will be set to one. If `bootstrap == False`, then
+        the product of the `ratio` and a sampling depth specified by `counts`
+        cannot be greater than the number of observations in the respective
+        sample.
+    bootstrap : bool, optional
+        Indicates whether subsampling should be performed with replacement
+        (`bootstrap == True`) or without.
+    num_iter : positive int, optional
+        The number of p-values to generate for each point
+        on the curve.
+    num_runs : positive int, optional
+        The number of times to calculate each curve.
+
+    Returns
+    -------
+    power : array
+        The power calculated for each subsample at each count. The array has
+        `num_runs` rows, a length with the same number of elements as
+        `sample_counts` and a depth equal to the number of p values returned by
+        `test`. If `test` returns a float, the returned array will be
+        two-dimensional instead of three.
+
+    Raises
+    ------
+    ValueError
+        If the `mode` is "matched", an error will occur if the arrays in
+        `samples` are not the same length.
+    ValueError
+        There is a ValueError if there are fewer samples than the minimum
+        count.
+    ValueError
+        If the `counts_interval` is greater than the difference between the
+        sample start and the max value, the function raises a ValueError.
+    ValueError
+        There are not an equal number of groups in `samples` and in `ratios`.
+    TypeError
+        `test` does not return a float or a 1-dimensional numpy array.
+    ValueError
+        When `replace` is true, and `counts` and `ratio` will draw more
+        observations than exist in a sample.
     """
 
     # Checks the inputs
@@ -166,7 +240,7 @@ def subsample_power(test, samples, counts, draw_mode='ind', numeric=True,
 
     power = power.squeeze()
 
-    return power, counts
+    return power
 
 
 def _compare_distributions(test, samples, num_p, counts=5, mode="ind",
