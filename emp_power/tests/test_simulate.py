@@ -2,23 +2,22 @@ from unittest import TestCase, main
 
 import numpy as np
 import numpy.testing as npt
-# import pandas as pd
-# import pandas.util.testing as pdt
-import skbio
+import pandas as pd
+import pandas.util.testing as pdt
 
-from emp_power.utils.simulate import (ttest_1_simulate,
-                                      ttest_ind_simulate,
-                                      anova_simulate,
-                                      simulate_distance_matrix,
-                                      convert_to_mirror,
-                                      _check_param,
-                                      _simulate_gauss_vec,
-                                      _vec_size,
-                                      # build_groups,
-                                      # generate_vector,
-                                      # generate_diff_vector,
-                                      # simulate_table,
-                                      )
+from emp_power.simulate import (simulate_ttest_1,
+                                simulate_ttest_ind,
+                                simulate_anova,
+                                simulate_correlation,
+                                simulate_bimodal,
+                                simulate_multivariate,
+                                simulate_permanova,
+                                simulate_mantel,
+                                _convert_to_mirror,
+                                _check_param,
+                                _simulate_gauss_vec,
+                                _vec_size,
+                                )
 
 
 class PowerSimulation(TestCase):
@@ -26,12 +25,12 @@ class PowerSimulation(TestCase):
     def setUp(self):
         np.random.seed(5)
         self.length = 3
-        self.dm = np.array([[0, 1, 2],
-                            [1, 0, 3],
-                            [2, 3, 0]])
         self.mu_lim = [0, 2]
         self.sigma_lim = [1, 3]
         self.count_lim = [10, 11]
+        self.dm = np.array([[0, 1, 2],
+                            [1, 0, 3],
+                            [2, 3, 0]])
 
     def test_ttest_1_simulate(self):
         known_mu = 1
@@ -41,7 +40,7 @@ class PowerSimulation(TestCase):
                                2.36758552, 1.57470769, -0.88576241, 1.17092537,
                                0.59690669, 2.63762849])
 
-        [mu, sigma, n], [dist] = ttest_1_simulate(self.mu_lim,
+        [mu, sigma, n], [dist] = simulate_ttest_1(self.mu_lim,
                                                   self.sigma_lim,
                                                   self.count_lim)
 
@@ -58,7 +57,7 @@ class PowerSimulation(TestCase):
                     np.array([-0.71765789, 1.20694321, -3.32957706,
                               -1.40035808, 2.30278202, 3.71466201, -3.02235912,
                               1.28969502, -1.96121577, -1.71370631])]
-        params, samples = ttest_ind_simulate(self.mu_lim, self.sigma_lim,
+        params, samples = simulate_ttest_ind(self.mu_lim, self.sigma_lim,
                                              self.count_lim)
         self.assertEqual(kparams, params)
         for ks, s in zip(*(ksamples, samples)):
@@ -80,7 +79,7 @@ class PowerSimulation(TestCase):
                               2.42484254,  1.11828849, 0.27337824,
                               1.00657769,  0.78813912,  2.58610664,
                               -0.26314326])]
-        [mu, sigma, n], samples = anova_simulate(self.mu_lim, self.sigma_lim,
+        [mu, sigma, n], samples = simulate_anova(self.mu_lim, self.sigma_lim,
                                                  self.count_lim, 3)
 
         npt.assert_array_equal(kmu, mu)
@@ -89,33 +88,128 @@ class PowerSimulation(TestCase):
         for ks, s in zip(*(ksamples, samples)):
             npt.assert_almost_equal(ks, s, 5)
 
-    def test_simulate_distance_matrix(self):
-        num_samples = 4
-        num0 = 2
-        wdist = 0.2
-        wspread = 0.1
-        bdist = 0.5
-        bspread = 0.1
-        known_ids = np.array(['s.%i' % (i + 1) for i in np.arange(4)])
+    def test_simulate_correlation(self):
+        known_sigma = 2
+        known_n = 10
+        known_m = 1
+        known_b = 1
+        known_x = np.array([06.626557, -2.725262,  9.588900, -8.203579,
+                            -2.065268, -2.917239, -0.267240,  9.816419,
+                            06.165634,  2.989178])
+        known_y = np.array([06.51051, -0.34040,  9.77181, -6.64841,
+                            -1.66502, -2.38306,  0.86463, 12.92136,
+                            10.66871,  3.87037])
+        [sigma, n, m, b], [x, y] = simulate_correlation(
+            slope_lim=self.sigma_lim,
+            sigma_lim=self.sigma_lim,
+            count_lim=self.count_lim,
+            intercept_lim=self.mu_lim
+            )
+        self.assertEqual(sigma, known_sigma)
+        self.assertEqual(n, known_n)
+        self.assertEqual(m, known_m)
+        self.assertEqual(b, known_b)
 
-        dm, grouping = simulate_distance_matrix(num_samples=num_samples,
-                                                num0=num0,
-                                                wdist=wdist,
-                                                wspread=wspread,
-                                                bdist=bdist,
-                                                bspread=bspread
-                                                )
+        npt.assert_almost_equal(known_x, x, 5)
+        npt.assert_almost_equal(known_y, y, 5)
 
-        npt.assert_array_equal(known_ids, dm.ids)
-        self.assertTrue(isinstance(dm, skbio.DistanceMatrix))
-        self.assertTrue(dm.shape, (4, 4))
-        npt.assert_array_equal(known_ids, grouping.index.values)
-        npt.assert_array_equal(np.array([0, 0, 1, 1]),
-                               grouping.values)
+    def test_simulate_bimodal(self):
+        parameters = {'bench_lim': [5, 6],
+                      'diff_lim': [3, 5],
+                      'sep_lim': [3, 5]
+                      }
+        known_mus = np.array([0.44398634, 1.74146461, 0.41343831, 1.83722182])
+        known_offset = 3.9768223775896585
+        known_sigmas = np.array([2.22348773, 2.53181571])
+        known_sep = 3
+        known_counts = 10
+        known_frac = 0.5
+        known_sample1 = np.array([1.04300669,  0.42767874,  1.63678506,
+                                  2.90431516, -0.79677127,  6.49457435,
+                                  3.70710101,  5.44426065,  3.98223784,
+                                  4.15177992])
+        known_sample2 = np.array([4.53686967,  6.73042143,  8.28477920,
+                                  4.25817653,  5.22376934,  9.74338802,
+                                  6.63873189,  9.13991296,  8.79473736,
+                                  9.23779215])
+
+        [mu, sigma, counts, frac, offset, sep], [sample1, sample2] = \
+            simulate_bimodal(self.mu_lim, self.sigma_lim, self.count_lim,
+                             **parameters)
+
+        npt.assert_almost_equal(known_mus, mu, 5)
+        npt.assert_almost_equal(known_sigmas, sigma, 5)
+        npt.assert_almost_equal(known_offset, offset, 5)
+        npt.assert_almost_equal(known_sample1, sample1, 5)
+        npt.assert_almost_equal(known_sample2, sample2, 5)
+        self.assertEqual(known_sep, sep)
+        self.assertEqual(known_counts, counts)
+        self.assertEqual(known_frac, frac)
+
+    def test_multivarate(self):
+        known_ms = np.array([1, 0])
+        known_b = 2
+        known_sigma = 2
+        known_n = 10
+
+        known_x = np.array([[02.51962642,  0.39499901],
+                            [00.75776645,  0.24927519],
+                            [-0.81991015,  0.65961283],
+                            [-1.59643650,  0.59924136],
+                            [-2.35801801,  0.62402061],
+                            [02.32408712,  0.21195371],
+                            [00.20883551,  0.23522260],
+                            [-1.80581355,  0.19686900],
+                            [03.33139071,  0.28810526],
+                            [-0.98160953,  0.06191358]])
+
+        known_y = np.array([06.51250607,  4.18260899,  1.29837833, -0.32305826,
+                            -0.35144033,  4.11222624,  3.79494215, -1.06895681,
+                            05.31900089,  0.81625525])
+
+        [ms, b, s, n], [x, y] = simulate_multivariate(slope_lim=self.mu_lim,
+                                                      intercept_lim=[-3, 3],
+                                                      sigma_lim=self.sigma_lim,
+                                                      count_lim=self.count_lim,
+                                                      x_lim=[-5, 5],
+                                                      num_pops=2
+                                                      )
+
+        npt.assert_array_equal(known_ms, ms)
+        self.assertEqual(known_b, b)
+        self.assertEqual(known_sigma, s)
+        self.assertEqual(known_n, n)
+        npt.assert_almost_equal(known_x, x, 5)
+        npt.assert_almost_equal(known_y, y, 5)
+
+    def test_simulate_permanova(self):
+        known_grouping = pd.Series([0, 0, 1, 1], index=dm_ids, name='groups')
+
+        params, [dm, grouping] = simulate_permanova(num_samples=4,
+                                                    num0=2,
+                                                    wdist=0.2,
+                                                    wspread=0.1,
+                                                    bdist=0.5,
+                                                    bspread=0.1
+                                                    )
+        # print(dm.data.__class__)
+        npt.assert_almost_equal(permanova_dm, dm.data.astype(float), 5)
+        self.assertEqual(dm_ids, dm.ids)
+        pdt.assert_series_equal(known_grouping, grouping)
+
+    def test_simulate_mantel(self):
+        params, [x, y] = simulate_mantel(slope_lim=self.sigma_lim,
+                                         sigma_lim=self.sigma_lim,
+                                         count_lim=[4, 5],
+                                         intercept_lim=self.mu_lim)
+        npt.assert_almost_equal(mantel_x, x.data)
+        self.assertEqual(dm_ids, x.ids)
+        npt.assert_almost_equal(mantel_y, y.data)
+        self.assertEqual(dm_ids, x.ids)
 
     def test_convert_to_mirror(self):
         vec = np.arange(0, ((self.length) * (self.length - 1))/2) + 1
-        test_dm = convert_to_mirror(self.length, vec)
+        test_dm = _convert_to_mirror(self.length, vec)
         npt.assert_array_equal(test_dm, self.dm)
 
     def test_check_param_list(self):
@@ -144,81 +238,23 @@ class PowerSimulation(TestCase):
         test_shape = _vec_size(5)
         self.assertEqual(test_shape, 10)
 
-    # def test_build_groups(self):
-    #     known_groups = np.array([0, 0, 1, 1, 2, 2, 3, 3])
-    #     test_groups = build_groups(4, 2)
-    #     npt.assert_array_equal(known_groups, test_groups)
+permanova_dm = np.array([[0.00000000, 0.24412275, 0.74307712, 0.47479079],
+                         [0.24412275, 0.00000000, 0.51096098, 0.65824811],
+                         [0.74307712, 0.51096098, 0.00000000, 0.16691298],
+                         [0.47479079, 0.65824811, 0.16691298, 0.00000000]])
 
-    # def test_generate_vector(self):
-    #     known_params = {'offset': 0.1,
-    #                     'num_groups': 4,
-    #                     'obs_per_group': 2}
-    #     known_vec = np.array([0.121993, 0.770732, 0.106719,
-    #                           0.818611, 0.388411, 0.511744,
-    #                           0.665908, 0.418418])
-    #     test_vec, test_params = generate_vector(4, 2, 0.1)
+mantel_x = np.array([[0.00000000, 3.74072750, 1.18493732,  5.93205438],
+                     [3.74072750, 0.00000000, 4.92566482,  2.19132687],
+                     [1.18493732, 4.92566482, 0.00000000,  7.11699169],
+                     [5.93205438, 2.19132687, 7.11699169,  0.00000000]])
 
-    #     npt.assert_almost_equal(known_vec, test_vec, 5)
-    #     self.assertEqual(known_params.keys(), test_params.keys())
-    #     self.assertEqual(known_params['offset'],
-    #                      test_params['offset'])
-    #     self.assertEqual(known_params['num_groups'],
-    #                      test_params['num_groups'])
-    #     self.assertEqual(known_params['obs_per_group'],
-    #                      test_params['obs_per_group'])
+mantel_y = np.array([[0.00000000, 2.77364651, 5.03513581,  2.63533583],
+                     [2.77364651, 0.00000000, 7.80878232,  0.13831067],
+                     [5.03513581, 7.80878232, 0.00000000,  7.67047165],
+                     [2.63533583, 0.13831067, 7.67047165,  0.00000000]])
+dm_ids = ('s.1', 's.2', 's.3', 's.4')
 
-    # def test_generate_diff_vec(self):
-    #     known_vec = np.array([3.18891871, 4.04766352, 14.83709634,
-    #                           15.67954637, 11.12877624, 10.13964337,
-    #                           6.64064811, 5.55860975])
-    #     known_params = {'p-value': 0.00023550431122179829,
-    #                     'mus': np.array([5, 9, 9, 6]),
-    #                     'scale': 0.75,
-    #                     'obs_per_group': 2,
-    #                     'offset': 0.1,
-    #                     'sigma': 3,
-    #                     'num_groups': 4}
-    #     test_vec, test_params = generate_diff_vector(4, 2, mu_lim=[5, 10],
-    #                                                  sigma_lim=[2, 4])
-    #     npt.assert_almost_equal(known_vec, test_vec, 5)
-    #     self.assertEqual(sorted(known_params.keys()),
-    #                      sorted(test_params.keys()))
-    #     self.assertEqual(known_params['offset'],
-    #                      test_params['offset'])
-    #     self.assertEqual(known_params['num_groups'],
-    #                      test_params['num_groups'])
-    #     self.assertEqual(known_params['obs_per_group'],
-    #                      test_params['obs_per_group'])
-    #     self.assertEqual(known_params['scale'], test_params['scale'])
-    #     self.assertEqual(known_params['p-value'], test_params['p-value'])
-    #     self.assertEqual(known_params['sigma'], test_params['sigma'])
-    #     npt.assert_array_equal(known_params['mus'], test_params['mus'])
 
-    # def test_simulate_table(self):
-    #     known_closed = pd.DataFrame(
-    #         data=np.array([[0.000601, 0.999399],
-    #                        [0.000243, 0.999757],
-    #                        [0.000190, 0.999810],
-    #                        [0.000153, 0.999847]]),
-    #         index=['s.1', 's.2', 's.3', 's.4'],
-    #         columns=['f.1', 'f.2']
-    #         )
-    #     known_groups = pd.Series([0.0, 0.0, 1.0, 1.0],
-    #                              index=['s.1', 's.2', 's.3', 's.4'],
-    #                              name='grouping')
-    #     known_params = [{'scale': 0.75, 'mus': np.array([2, 0]),
-    #                      'p-value': np.nan, 'obs_per_group': 2,
-    #                      'offset': 0.1, 'sigma': 5, 'num_groups': 2},
-    #                     {'obs_per_group': 2, 'num_groups': 2, 'offset': 0.1}]
-    #     closed, groups, params = simulate_table(2, 2,
-    #                                             num_features=2,
-    #                                             num_sig=1)
-    #     # self.assertTrue(closed.equals(known_closed))
-    #     pdt.assert_index_equal(known_closed.index, closed.index)
-    #     pdt.assert_index_equal(known_closed.columns, closed.columns)
-    #     npt.assert_almost_equal(known_closed.values, closed.values, 5)
-    #     pdt.assert_series_equal(known_groups, groups)
-    #     self.assertEqual(len(known_params), len(params))
 
 if __name__ == '__main__':
     main()

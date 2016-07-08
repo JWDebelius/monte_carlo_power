@@ -2,10 +2,10 @@ import numpy as np
 import pandas as pd
 import scipy
 import skbio
-from skbio.stats.composition import closure
+# from skbio.stats.composition import closure
 
 
-def ttest_1_simulate(mu_lim, sigma_lim, count_lims):
+def simulate_ttest_1(mu_lim, sigma_lim, count_lim):
     """Simulates data for a one sample t test compared to 0.
 
     Parameters
@@ -29,13 +29,13 @@ def ttest_1_simulate(mu_lim, sigma_lim, count_lims):
     # Gets the distribution parameters
     mu = np.random.randint(*mu_lim)
     sigma = np.random.randint(*sigma_lim)
-    n = np.random.randint(*count_lims)
+    n = np.random.randint(*count_lim)
 
     # Draws a sample that fits the parameters
     return [mu, sigma, n], [mu + np.random.randn(n) * sigma]
 
 
-def ttest_ind_simulate(mu_lim, sigma_lim, counts_lims):
+def simulate_ttest_ind(mu_lim, sigma_lim, counts_lim):
     """Simulates data for an independent sample t test
 
     Parameters
@@ -52,13 +52,13 @@ def ttest_ind_simulate(mu_lim, sigma_lim, counts_lims):
     simulation_params : list
         The values for `[mu1, mu2, sigma1, sigma2, n]` for the sample.
     simulation_results : list
-        The simulated normal distribution
+        The simulated normal distributions
 
     """
     # Gets the distribution paramters
     mu1, mu2 = np.random.randint(*mu_lim, size=2)
     sigma1, sigma2 = np.random.randint(*sigma_lim, size=2)
-    n = np.random.randint(*counts_lims)
+    n = np.random.randint(*counts_lim)
 
     # Returns a pair of distributions
     samples = [mu1 + np.random.randn(n) * sigma1,
@@ -67,13 +67,33 @@ def ttest_ind_simulate(mu_lim, sigma_lim, counts_lims):
     return [mu1, mu2, sigma1, sigma2, n], samples
 
 
-def anova_simulate(mu_lim, sigma_lim, count_lims, num_pops):
-    """Simulates data for a one way ANOVA"""
+def simulate_anova(mu_lim, sigma_lim, count_lim, num_pops):
+    """Simulates data for a one way ANOVA
+
+    Parameters
+    ----------
+    mu_lim : list
+        The limits for selecting a mean
+    sigma_lim : list
+        The limits for selecting a standard deivation
+    counts_lim : list
+        the number of observations which should be drawn for the sample
+    num_pops: list
+        The number of populations to use in the ANOVA simulation
+
+    Returns
+    -------
+    simulation_params : list
+        The list of parameters for the simulations in the forms of
+        [list of means per group, sigma, sample size].
+    simulation_results : list
+        The simulated normal distributions
+    """
 
     # Defines the distribtuion parameters
     mus = np.random.randint(*mu_lim, size=num_pops)
     sigma = np.random.randint(*sigma_lim)
-    n = np.random.randint(*count_lims)
+    n = np.random.randint(*count_lim)
 
     # Draws samples which fit the population
     samples = [mu + np.random.randn(n)*sigma for mu in mus]
@@ -81,24 +101,61 @@ def anova_simulate(mu_lim, sigma_lim, count_lims, num_pops):
     return [mus, sigma, n], samples
 
 
-def regress_simulate(mu_lim, sigma_lim, count_lims, b_lims):
-    """Simulates data for a one way ANOVA"""
-    # Calculates the distribution for the residuals
-    sigma = np.random.randint(*sigma_lim)
-    n = np.random.randint(*count_lims)
-    # Calculates the parameters for the line
-    m = np.random.randint(*mu_lim)
-    b = np.random.randint(*b_lims)
+def simulate_bimodal(mu_lim, sigma_lim, count_lim, bench_lim, diff_lim,
+    sep_lim):
+    """Simululates simple bimodal data based on a normal distribution
 
-    x = np.arange(-n, n, 2)
-    y = m*x + b + np.random.randn(n)*sigma
+    Two bimodal distributions will be simulated using the same means and
+    variances, offset by a constant value.
 
-    return [sigma, n, m, b], [x, y]
+    Parameters
+    ----------
+    mu_lim : list
+        The limits for selecting a slope
+    sigma_lim : list
+        The limits for selecting a variance
+    counts_lim : list
+        the number of observations which should be drawn for the sample
+    bench_lim: list
+        the number of observations to be placed in the second distribution
+    diff_lim: list
+        the offset between the two distributions
+    sep_lim : list
+        the seperation between the two bimodal distributions
+    offset_lim : list
+        the limits for the offset between the two bimodal distributions
+
+    Returns
+    -------
+    simulation_params : list
+        The values for `[mus, sigmas, number of samples, fraction of offset,
+                         seperation between distributions, seperation between
+                         means]`
+        for the sample.
+    simulation_results : list
+        the simulated bimodal distributions
+    """
+
+    # Gets the distribution parameters
+    mu = np.random.uniform(*mu_lim, size=4)
+    offset = np.random.uniform(*diff_lim)
+    sigma = np.random.uniform(*sigma_lim, size=2)
+    sep = np.random.randint(*sep_lim)
+    n = np.random.randint(*count_lim)
+    m = np.random.randint(*bench_lim)
+
+    #     Draws a sample that fits the parameters
+    sample1 = np.hstack((np.random.normal(mu[0], sigma[0], n - m),
+                         np.random.normal(mu[1] + sep, sigma[1], m)))
+    sample2 = np.hstack((np.random.normal(mu[2], sigma[0], n - m),
+                         np.random.normal(mu[3] + sep, sigma[1], m))) + offset
+
+    return [mu, sigma, n, m/n, offset, sep], [sample1, sample2]
 
 
-def simulate_distance_matrix(num_samples, num0=None, wdist=[0, 0.5],
-                             wspread=[0, 0.5], bdist=[0, 0.5],
-                             bspread=[0, 0.5]):
+def simulate_permanova(num_samples, num0=None, wdist=[0, 0.5],
+    wspread=[0, 0.5], bdist=[0, 0.5],
+    bspread=[0, 0.5]):
     """Makes a distance matrix with specified mean distance and spread
 
     Paramaters
@@ -117,6 +174,8 @@ def simulate_distance_matrix(num_samples, num0=None, wdist=[0, 0.5],
         A value or range for the distance spread for the within (`wspread`) or
         between (`bspread`) sample distances. If a list is supplied, a value
         will be drawn between the first to values.
+    current : float between [0, 1] inclusive
+        A constant value to add to the distance matrices
 
     Returns
     -------
@@ -140,7 +199,7 @@ def simulate_distance_matrix(num_samples, num0=None, wdist=[0, 0.5],
 
     # Gets the group sizes
     if num0 is None:
-        num0 = np.binomial(1, 0.5, (num_samples)).sum()
+        num0 = np.random.binomial(1, 0.5, (num_samples)).sum()
     num1 = num_samples - num0
 
     # Simulates the withi n and between sample distance
@@ -153,14 +212,17 @@ def simulate_distance_matrix(num_samples, num0=None, wdist=[0, 0.5],
     wspread1 = _check_param(wspread, 'wspread')
     bspread_ = _check_param(bspread, 'bspread')
 
+    dist = [wdist0, wdist1, bdist_]
+    spread = [wspread0, wspread1, bspread]
+
     # Simulates the distances
     vec0 = _simulate_gauss_vec(wdist0, wspread0, _vec_size(num0))
     vec1 = _simulate_gauss_vec(wdist1, wspread1, _vec_size(num1))
     vecb = _simulate_gauss_vec(bdist_, bspread_, (num0, num1))
 
     # Reshapes the within distance vectors
-    dm0 = convert_to_mirror(num0, vec0)
-    dm1 = convert_to_mirror(num1, vec1)
+    dm0 = _convert_to_mirror(num0, vec0)
+    dm1 = _convert_to_mirror(num1, vec1)
 
     # Creates the distance array
     dm = np.zeros((num_samples, num_samples)) * np.nan
@@ -170,7 +232,7 @@ def simulate_distance_matrix(num_samples, num0=None, wdist=[0, 0.5],
     dm[num0:num_samples, 0:num0] = vecb.transpose()
 
     # Simulates the mapping data
-    groups = np.hstack((np.zeros(num0), np.ones(num1)))
+    groups = np.hstack((np.zeros(num0), np.ones(num1))).astype(int)
 
     # Simulates the sample ids
     ids = np.array(['s.%i' % (i + 1) for i in np.arange(num_samples)])
@@ -179,10 +241,94 @@ def simulate_distance_matrix(num_samples, num0=None, wdist=[0, 0.5],
     dm = skbio.DistanceMatrix(dm, ids=ids)
     grouping = pd.Series(groups, index=ids, name='groups')
 
-    return dm, grouping
+    return [dist, spread], [dm, grouping]
 
 
-def convert_to_mirror(length, vec):
+def simulate_correlation(slope_lim, intercept_lim, sigma_lim, count_lim):
+    """Simulates data for a simple correlation
+
+    Parameters
+    ----------
+    mu_lim : list
+        The limits for selecting a slope
+    sigma_lim : list
+        The limits for selecting a variance
+    counts_lim : list
+        the number of observations which should be drawn for the sample
+    b_lim : list
+        the limits on values for the intercept
+
+    Returns
+    -------
+    simulation_params : list
+        The values for `[sigma, number of samples, slope and intercept]`
+        for the sample.
+    simulation_results : list
+        Vectors of coordinates for the x and y values
+    """
+
+    # Calculates the distribution for the residuals
+    sigma = np.random.randint(*sigma_lim)
+    n = np.random.randint(*count_lim)
+    # Calculates the parameters for the line
+    m = np.random.randint(*slope_lim)
+    b = np.random.randint(*intercept_lim)
+
+    x = np.random.uniform(-n, n, n)
+    y = m * x + b + np.random.randn(n) * sigma
+
+    return [sigma, n, m, b], [x, y]
+
+
+def simulate_multivariate(slope_lim, intercept_lim, sigma_lim, count_lim,
+    x_lim, num_pops):
+    """Simulates a multivariate regression
+    """
+
+    # Simulates regression parameters
+    ms = np.random.randint(*slope_lim, size=num_pops)
+    s = np.random.randint(*sigma_lim)
+    b = np.random.randint(*intercept_lim)
+    n = np.random.randint(*count_lim)
+
+    slopes = np.atleast_2d(ms) * np.ones((n, 1))
+
+    # Simulates the limits for the x values
+    ranges = [sorted(np.random.uniform(*x_lim, size=2))
+              for i in np.arange(num_pops)]
+
+    x = np.array([np.random.uniform(*ranges[i], size=n)
+                  for i in np.arange(num_pops)]).transpose()
+
+    # Simulates the response
+    slopes = np.ones((n, 1)) * np.atleast_2d(ms)
+    y = np.sum(slopes * x, 1) + np.random.randn(n) * s + b
+
+    return [ms, b, s, n], [x, y]
+
+
+def simulate_mantel(slope_lim, intercept_lim, sigma_lim, count_lim,
+    distance=None):
+    """Simulates two correlated matrices"""
+
+    # Handles the distance
+    if distance is None:
+        distance = scipy.spatial.distance.euclidean
+
+    [sigma, n, m, b], [x_vec, y_vec] = simulate_correlation(slope_lim,
+                                                            intercept_lim,
+                                                            sigma_lim,
+                                                            count_lim)
+
+    # Simulates the distance matrices
+    names = ['s.%i' % (i + 1) for i in range(n)]
+    x = skbio.DistanceMatrix.from_iterable(x_vec, distance, keys=names)
+    y = skbio.DistanceMatrix.from_iterable(y_vec, distance, keys=names)
+
+    return [sigma, n, m, b], [x, y]
+
+
+def _convert_to_mirror(length, vec):
     """Converts a condensed 1D array to a mirror 2D array
 
     Inputs
@@ -206,7 +352,7 @@ def convert_to_mirror(length, vec):
     pos_count = 0
 
     # Populates the distance matrix
-    for idx in np.arange(length-1):
+    for idx in range(length-1):
         # Gets the position for the two dimensional matrix
         pos2 = np.arange(idx+1, length)
         # Gets the postion for hte one dimensional matrix
@@ -231,10 +377,6 @@ def _check_param(param, param_name):
 
 def _simulate_gauss_vec(mean, std, size):
     """Makes a modified gaussian vector bounded between 0 and 1"""
-    if isinstance(size, tuple):
-        size = tuple([int(s) for s in size])
-    else:
-        size = int(size)
     vec = np.random.normal(loc=mean, scale=std, size=size)
     vec[vec < 0] = np.absolute(vec[vec < 0])
     vec[vec > 1] = 1
@@ -243,183 +385,4 @@ def _simulate_gauss_vec(mean, std, size):
 
 def _vec_size(length):
     """Defines a group size for a distance matrix"""
-    return ((length) * (length - 1))/2
-
-
-def build_groups(num_groups=2, obs_per_group=100):
-    """Builds a group vector
-
-    Parameters
-    ----------
-    num_groups : int
-        The number of groups to test
-    obs_per_group : int
-        The number of observations per group
-
-    Returns
-    -------
-    groups : ndarray
-
-
-    """
-    groups = np.hstack([np.ones(obs_per_group) * i
-                        for i in np.arange(num_groups)])
-    return groups
-
-
-def generate_vector(num_groups=2, obs_per_group=100, offset=0.1):
-    """Generates a vector with no signficiatn differences
-
-    Parameters
-    ----------
-    num_groups : int
-        The number of groups
-    obs_per_group : int
-        The number of samples per group
-    offset : float
-        An amount to substract to create sparse data.
-
-    Returns
-    -------
-    counts : ndarray of floats
-        The number of unscaled counts per sample
-    params : dict
-        A dictionary of the parameters used to simulte the data
-    """
-    counts = np.random.rand(num_groups * obs_per_group) - offset
-    counts[counts < 0] = 0
-    params = {'offset': offset,
-              'num_groups': num_groups,
-              'obs_per_group': obs_per_group}
-
-    return counts, params
-
-
-def generate_diff_vector(num_groups=2, obs_per_group=100, mu_lim=[0, 5],
-                         sigma_lim=[1, 6], scale=0.75, offset=0.1):
-    """Generates a vector with signficant differences
-
-    Parameters
-    ----------
-    num_groups : int
-        The number of groups
-    obs_per_group : int
-        The number of samples per group
-    mu_lim : list
-        The lower and upper limit for the mean. Multiple means will be
-        calculated.
-    sigma_lim : list
-        The lower and upper limits for the standard deviation. A population
-        standard deviation will be used.
-    scale : float
-        How large the normal distribution should be compared to the random
-        noise
-    offset : float
-        An amount to substract to create sparse data.
-
-    Returns
-    -------
-    counts : ndarray of floats
-        The number of unscaled counts per sample
-    params : dict
-        A dictionary of the parameters used to simulte the data
-    """
-
-    p = 1
-    while p > 0.001:
-        means = np.random.randint(*mu_lim, size=num_groups)
-        sigma = np.random.randint(*sigma_lim)
-
-        counts = []
-        for mean in means:
-            c = (np.random.randn(obs_per_group) * sigma + mean) + \
-                (np.random.rand(obs_per_group) - offset) / scale
-            c[c < 0] = 0
-            counts.append(c)
-
-        p = scipy.stats.f_oneway(*counts)[1]
-
-    params = {'mus': means,
-              'sigma': sigma,
-              'num_groups': num_groups,
-              'obs_per_group': obs_per_group,
-              'scale': scale,
-              'offset': offset,
-              'p-value': p,
-              }
-
-    return np.hstack(counts), params
-
-
-def simulate_table(num_groups=2, obs_per_group=100, num_features=100,
-    num_sig=5, depth=10000, mu_lim=[0, 5], sigma_lim=[1, 6],
-    scale=0.75, offset=0.1):
-    """Simulates a compositional table and groups for ANCOM
-
-    Parameters
-    ----------
-    num_groups : int
-        The number of groups
-    obs_per_group : int
-        The number of samples per group
-    num_features : int
-        The number of features which should be included in the table
-    num_sig : int
-        The number of features which should be significant
-    depth : int
-        An average number of pseudo sequences used in each sample
-    mu_lim : list
-        The lower and upper limit for the mean. Multiple means will be
-        calculated.
-    sigma_lim : list
-        The lower and upper limits for the standard deviation. A population
-        standard deviation will be used.
-    scale : float
-        How large the normal distribution should be compared to the random
-        noise
-    offset : float
-        An amount to substract to create sparse data.
-
-    Returns
-    -------
-    closed : DataFrame
-        The scaled, offset sample by feature table
-    groups : Series
-        Identifiers for the samples providing the groups
-    params : list
-        The parameters used to simulate the feature distribution.
-    """
-
-    # Simulates the significantly different vectors
-    simulations = []
-    for idx in np.arange(num_sig):
-        simulations.append(
-            generate_diff_vector(num_groups=num_groups,
-                                 obs_per_group=obs_per_group,
-                                 mu_lim=mu_lim,
-                                 sigma_lim=sigma_lim,
-                                 scale=scale,
-                                 offset=offset)
-        )
-    for idx in np.arange(num_sig, num_features):
-        simulations.append(
-            generate_vector(num_groups=num_groups,
-                            obs_per_group=obs_per_group,
-                            offset=offset
-                            )
-        )
-    groups = build_groups(num_groups=num_groups, obs_per_group=obs_per_group)
-    features = np.array(['f.%i' % (i + 1) for i in np.arange(num_features)])
-    samples = np.array(['s.%i' % (i + 1) for i in
-                       np.arange(num_groups * obs_per_group)])
-
-    table, params = zip(*simulations)
-
-    closed = pd.DataFrame(
-        data=closure(np.round(np.vstack(table).transpose() * depth, 0) + 1),
-        columns=features,
-        index=samples
-    )
-    groups = pd.Series(groups, index=samples, name='grouping')
-
-    return closed, groups, params
+    return int(((length) * (length - 1))/2)
