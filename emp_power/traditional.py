@@ -16,7 +16,8 @@ def cohen_ttest_ind(sample1, sample2):
     x1, s1, n1 = sample1.mean(), sample1.std(), len(sample1)
     x2, s2, n2 = sample2.mean(), sample2.std(), len(sample2)
 
-    spool = np.sqrt(((n1-1) * np.square(s1) + (n2 - 1) * np.square(s2)) / (n1 + n2 - 2))
+    spool = np.sqrt(((n1-1) * np.square(s1) + (n2 - 1) * np.square(s2)) /
+                    (n1 + n2 - 2))
     return np.absolute(x1 - x2) / spool
 
 
