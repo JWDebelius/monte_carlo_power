@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 import scipy
 import skbio
-# from skbio.stats.composition import closure
 
 
 def simulate_ttest_1(mu_lim, sigma_lim, count_lim):
@@ -103,7 +102,7 @@ def simulate_anova(mu_lim, sigma_lim, count_lim, num_pops):
 
 def simulate_bimodal(mu_lim, sigma_lim, count_lim, bench_lim, diff_lim,
     sep_lim):
-    """Simululates simple bimodal data based on a normal distribution
+    """Simulates simple bimodal data based on a normal distribution
 
     Two bimodal distributions will be simulated using the same means and
     variances, offset by a constant value.
@@ -249,14 +248,14 @@ def simulate_correlation(slope_lim, intercept_lim, sigma_lim, count_lim):
 
     Parameters
     ----------
-    mu_lim : list
+    slope_lim : list
         The limits for selecting a slope
+    intercept_lim : list
+        the limits on values for the intercept
     sigma_lim : list
         The limits for selecting a variance
     counts_lim : list
         the number of observations which should be drawn for the sample
-    b_lim : list
-        the limits on values for the intercept
 
     Returns
     -------
@@ -283,6 +282,31 @@ def simulate_correlation(slope_lim, intercept_lim, sigma_lim, count_lim):
 def simulate_multivariate(slope_lim, intercept_lim, sigma_lim, count_lim,
     x_lim, num_pops):
     """Simulates a multivariate regression
+
+    Parameters
+    ----------
+    slope_lim : list
+        The limits for selecting a slope
+    intercept_lim : list
+        the limits on values for the intercept
+    sigma_lim : list
+        The limits for selecting a variance
+    counts_lim : list
+        the number of observations which should be drawn for the sample
+    x_lim : list
+        sets limits on the range for predictors
+    num_pops: int
+        the number of populations which should be returned
+
+    Returns
+    -------
+    params : list
+        The simulaton parameters used for the data
+    [xs, y] : np.arrays
+        The simulated predictor and response variates. The predictor is of size
+        `counts` x `num_pops` and the response is a one-dimensional array of
+        size `counts`.
+
     """
 
     # Simulates regression parameters
@@ -309,7 +333,31 @@ def simulate_multivariate(slope_lim, intercept_lim, sigma_lim, count_lim,
 
 def simulate_mantel(slope_lim, intercept_lim, sigma_lim, count_lim,
     distance=None):
-    """Simulates two correlated matrices"""
+    """Simulates two correlated matrices
+
+    Parameters
+    ----------
+    slope_lim : list
+        The limits for selecting a slope
+    intercept_lim : list
+        the limits on values for the intercept
+    sigma_lim : list
+        The limits for selecting a variance
+    counts_lim : list
+        the number of observations which should be drawn for the sample
+    distance : function, optional
+        defines the distance between the two samples. If no metric is provided,
+        euclidean distance will be used.
+
+    Returns
+    -------
+    simulation_params : list
+        The values for `[sigma, number of samples, slope and intercept]`
+        for the sample.
+    simulation_results : list
+        Vectors of coordinates for the x and y values
+
+    """
 
     # Handles the distance
     if distance is None:
@@ -330,19 +378,6 @@ def simulate_mantel(slope_lim, intercept_lim, sigma_lim, count_lim,
 
 def _convert_to_mirror(length, vec):
     """Converts a condensed 1D array to a mirror 2D array
-
-    Inputs
-    ------
-    length : int
-        The length of the distance matrix
-    vec : array
-        A one-dimensional condensed array of the values to populate the
-        distance matrix
-
-    Returns
-    -------
-    dm : array
-        A two dimensional symetrical matrix of length x length.
     """
 
     vec = np.hstack(vec)
