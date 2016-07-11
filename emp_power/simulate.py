@@ -13,7 +13,7 @@ def simulate_ttest_1(mu_lim, sigma_lim, count_lim):
         The limits for selecting a mean
     sigma_lim : list
         The limits for selecting a standard deivation
-    counts_lim : list
+    count_lim : list
         the number of observations which should be drawn for the sample
 
     Returns
@@ -34,7 +34,7 @@ def simulate_ttest_1(mu_lim, sigma_lim, count_lim):
     return [mu, sigma, n], [mu + np.random.randn(n) * sigma]
 
 
-def simulate_ttest_ind(mu_lim, sigma_lim, counts_lim):
+def simulate_ttest_ind(mu_lim, sigma_lim, count_lim):
     """Simulates data for an independent sample t test
 
     Parameters
@@ -43,7 +43,7 @@ def simulate_ttest_ind(mu_lim, sigma_lim, counts_lim):
         The limits for selecting a mean
     sigma_lim : list
         The limits for selecting a standard deivation
-    counts_lim : list
+    count_lim : list
         the number of observations which should be drawn for the sample
 
     Returns
@@ -57,7 +57,7 @@ def simulate_ttest_ind(mu_lim, sigma_lim, counts_lim):
     # Gets the distribution paramters
     mu1, mu2 = np.random.randint(*mu_lim, size=2)
     sigma1, sigma2 = np.random.randint(*sigma_lim, size=2)
-    n = np.random.randint(*counts_lim)
+    n = np.random.randint(*count_lim)
 
     # Returns a pair of distributions
     samples = [mu1 + np.random.randn(n) * sigma1,
@@ -75,7 +75,7 @@ def simulate_anova(mu_lim, sigma_lim, count_lim, num_pops):
         The limits for selecting a mean
     sigma_lim : list
         The limits for selecting a standard deivation
-    counts_lim : list
+    count_lim : list
         the number of observations which should be drawn for the sample
     num_pops: list
         The number of populations to use in the ANOVA simulation
@@ -113,7 +113,7 @@ def simulate_bimodal(mu_lim, sigma_lim, count_lim, bench_lim, diff_lim,
         The limits for selecting a slope
     sigma_lim : list
         The limits for selecting a variance
-    counts_lim : list
+    count_lim : list
         the number of observations which should be drawn for the sample
     bench_lim: list
         the number of observations to be placed in the second distribution
@@ -254,7 +254,7 @@ def simulate_correlation(slope_lim, intercept_lim, sigma_lim, count_lim):
         the limits on values for the intercept
     sigma_lim : list
         The limits for selecting a variance
-    counts_lim : list
+    count_lim : list
         the number of observations which should be drawn for the sample
 
     Returns
@@ -291,7 +291,7 @@ def simulate_multivariate(slope_lim, intercept_lim, sigma_lim, count_lim,
         the limits on values for the intercept
     sigma_lim : list
         The limits for selecting a variance
-    counts_lim : list
+    count_lim : list
         the number of observations which should be drawn for the sample
     x_lim : list
         sets limits on the range for predictors
@@ -304,8 +304,8 @@ def simulate_multivariate(slope_lim, intercept_lim, sigma_lim, count_lim,
         The simulaton parameters used for the data
     [xs, y] : np.arrays
         The simulated predictor and response variates. The predictor is of size
-        `counts` x `num_pops` and the response is a one-dimensional array of
-        size `counts`.
+        `count` x `num_pops` and the response is a one-dimensional array of
+        size `count`.
 
     """
 
@@ -343,7 +343,7 @@ def simulate_mantel(slope_lim, intercept_lim, sigma_lim, count_lim,
         the limits on values for the intercept
     sigma_lim : list
         The limits for selecting a variance
-    counts_lim : list
+    count_lim : list
         the number of observations which should be drawn for the sample
     distance : function, optional
         defines the distance between the two samples. If no metric is provided,
