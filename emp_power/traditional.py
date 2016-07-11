@@ -109,7 +109,24 @@ def calc_ttest_ind(sample1, sample2, counts, alpha=0.05):
 
 
 def calc_anova(*samples, **kwargs):
-    """Calculates statistical power for a one way ANOVA"""
+    """Calculates statistical power for a one way ANOVA
+
+    Parameters
+    ----------
+    samples : ndarrays
+        Arrays of observations to be tested.
+    counts : array
+        the number of observations per sample to be used to test the power
+    alpha : float
+        The critical value for power calculations
+
+    Returns
+    -------
+    power : array
+        This describes the probability of seeing a signifigant difference
+        between the samples for the specified number of observations
+        (count) and critical value based on an ANOVA.
+    """
 
     # Checks the keywords
     kwds = {'counts': None,
@@ -124,14 +141,17 @@ def calc_anova(*samples, **kwargs):
     # Converts the samples to arrays
     samples = [np.asarray(sample) for sample in samples]
 
-    # Determines the group sizes and characteristics
     k = len(samples)
+    grand_mean = np.concatenate(samples).mean()
 
     df1 = k - 1
     df2 = k * (counts - 1)
 
     # Calculates the noncentrality paramter
-    noncentrality = cohen_f2(*samples) * counts
+    noncentrality = np.array([
+        np.square((sample.mean() - grand_mean)/sample.std())
+        for sample in samples
+        ]).sum() * counts
 
     fl = stats.f.ppf(alpha / 2, df1, df2)
     fu = stats.f.ppf(1 - alpha / 2, df1, df2)

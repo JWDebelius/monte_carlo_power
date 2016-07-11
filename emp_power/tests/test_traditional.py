@@ -63,12 +63,11 @@ class TraditionalPowerTest(TestCase):
             npt.assert_approx_equal(k, t, 4)
 
     def test_calc_anova(self):
-        # known = np.array([0.286588, 0.663229, 0.876049, 0.961419, 0.989373,
-        #                   0.997335, 0.999380, 0.999864, 0.999972, 0.999994])
+        known = np.array([0.286588, 0.663229, 0.876049, 0.961419, 0.989373,
+                          0.997335, 0.999380, 0.999864, 0.999972, 0.999994])
         test = calc_anova(self.x1, self.x2, self.x3, counts=self.counts)
-        print(test)
-        # for k, t in zip(*(known, test)):
-        #     npt.assert_approx_equal(k, t, 4)
+        for k, t in zip(*(known, test)):
+            npt.assert_approx_equal(k, t, 4)
 
     def test_calc_pearson(self):
         known = np.array([0.308253, 0.733990, 0.915513, 0.976167, 0.993823,
