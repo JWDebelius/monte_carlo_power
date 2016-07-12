@@ -152,6 +152,7 @@ def calc_anova(*samples, **kwargs):
         np.square((sample.mean() - grand_mean)/sample.std())
         for sample in samples
         ]).sum() * counts
+    # noncentrality = cohen_f2(*samples) * counts
 
     fl = stats.f.ppf(alpha / 2, df1, df2)
     fu = stats.f.ppf(1 - alpha / 2, df1, df2)
