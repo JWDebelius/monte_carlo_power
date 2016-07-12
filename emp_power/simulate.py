@@ -121,8 +121,6 @@ def simulate_bimodal(mu_lim, sigma_lim, count_lim, bench_lim, diff_lim,
         the offset between the two distributions
     sep_lim : list
         the seperation between the two bimodal distributions
-    offset_lim : list
-        the limits for the offset between the two bimodal distributions
 
     Returns
     -------
@@ -243,7 +241,8 @@ def simulate_permanova(num_samples, num0=None, wdist=[0, 0.5],
     return [dist, spread], [dm, grouping]
 
 
-def simulate_correlation(slope_lim, intercept_lim, sigma_lim, count_lim):
+def simulate_correlation(slope_lim, intercept_lim, sigma_lim, count_lim,
+    x_lim):
     """Simulates data for a simple correlation
 
     Parameters
@@ -256,6 +255,8 @@ def simulate_correlation(slope_lim, intercept_lim, sigma_lim, count_lim):
         The limits for selecting a variance
     count_lim : list
         the number of observations which should be drawn for the sample
+    x_lim : list
+        sets limits on the x values
 
     Returns
     -------
@@ -273,7 +274,7 @@ def simulate_correlation(slope_lim, intercept_lim, sigma_lim, count_lim):
     m = np.random.randint(*slope_lim)
     b = np.random.randint(*intercept_lim)
 
-    x = np.random.uniform(-n, n, n)
+    x = np.random.uniform(*x_lim, size=n)
     y = m * x + b + np.random.randn(n) * sigma
 
     return [sigma, n, m, b], [x, y]
@@ -331,7 +332,7 @@ def simulate_multivariate(slope_lim, intercept_lim, sigma_lim, count_lim,
     return [ms, b, s, n], [x, y]
 
 
-def simulate_mantel(slope_lim, intercept_lim, sigma_lim, count_lim,
+def simulate_mantel(slope_lim, intercept_lim, sigma_lim, count_lim, x_lim,
     distance=None):
     """Simulates two correlated matrices
 
@@ -345,6 +346,8 @@ def simulate_mantel(slope_lim, intercept_lim, sigma_lim, count_lim,
         The limits for selecting a variance
     count_lim : list
         the number of observations which should be drawn for the sample
+    x_lim : list
+        sets limits on the x values
     distance : function, optional
         defines the distance between the two samples. If no metric is provided,
         euclidean distance will be used.
@@ -366,7 +369,9 @@ def simulate_mantel(slope_lim, intercept_lim, sigma_lim, count_lim,
     [sigma, n, m, b], [x_vec, y_vec] = simulate_correlation(slope_lim,
                                                             intercept_lim,
                                                             sigma_lim,
-                                                            count_lim)
+                                                            count_lim,
+                                                            x_lim=x_lim,
+                                                            )
 
     # Simulates the distance matrices
     names = ['s.%i' % (i + 1) for i in range(n)]

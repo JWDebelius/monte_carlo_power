@@ -103,7 +103,8 @@ class PowerSimulation(TestCase):
             slope_lim=self.sigma_lim,
             sigma_lim=self.sigma_lim,
             count_lim=self.count_lim,
-            intercept_lim=self.mu_lim
+            intercept_lim=self.mu_lim,
+            x_lim=[-10, 10],
             )
         self.assertEqual(sigma, known_sigma)
         self.assertEqual(n, known_n)
@@ -172,7 +173,7 @@ class PowerSimulation(TestCase):
                                                       sigma_lim=self.sigma_lim,
                                                       count_lim=self.count_lim,
                                                       x_lim=[-5, 5],
-                                                      num_pops=2
+                                                      num_pops=2,
                                                       )
 
         npt.assert_array_equal(known_ms, ms)
@@ -192,7 +193,6 @@ class PowerSimulation(TestCase):
                                                     bdist=0.5,
                                                     bspread=0.1
                                                     )
-        # print(dm.data.__class__)
         npt.assert_almost_equal(permanova_dm, dm.data.astype(float), 5)
         self.assertEqual(dm_ids, dm.ids)
         pdt.assert_series_equal(known_grouping, grouping)
@@ -201,7 +201,9 @@ class PowerSimulation(TestCase):
         params, [x, y] = simulate_mantel(slope_lim=self.sigma_lim,
                                          sigma_lim=self.sigma_lim,
                                          count_lim=[4, 5],
-                                         intercept_lim=self.mu_lim)
+                                         intercept_lim=self.mu_lim,
+                                         x_lim=[-10, 10]
+                                         )
         npt.assert_almost_equal(mantel_x, x.data)
         self.assertEqual(dm_ids, x.ids)
         npt.assert_almost_equal(mantel_y, y.data)
@@ -243,17 +245,16 @@ permanova_dm = np.array([[0.00000000, 0.24412275, 0.74307712, 0.47479079],
                          [0.74307712, 0.51096098, 0.00000000, 0.16691298],
                          [0.47479079, 0.65824811, 0.16691298, 0.00000000]])
 
-mantel_x = np.array([[0.00000000, 3.74072750, 1.18493732,  5.93205438],
-                     [3.74072750, 0.00000000, 4.92566482,  2.19132687],
-                     [1.18493732, 4.92566482, 0.00000000,  7.11699169],
-                     [5.93205438, 2.19132687, 7.11699169,  0.00000000]])
+mantel_x = np.array([[00.0000000,   9.3518188,   2.9623433,  14.8301359],
+                     [09.3518188,   0.0000000,  12.3141620,   5.4783172],
+                     [02.9623433,  12.3141620,   0.0000000,  17.7924792],
+                     [14.8301359,   5.4783172,  17.7924792,   0.0000000]])
 
-mantel_y = np.array([[0.00000000, 2.77364651, 5.03513581,  2.63533583],
-                     [2.77364651, 0.00000000, 7.80878232,  0.13831067],
-                     [5.03513581, 7.80878232, 0.00000000,  7.67047165],
-                     [2.63533583, 0.13831067, 7.67047165,  0.00000000]])
+mantel_y = np.array([[00.0000000,   8.3847378,   6.8125418,  11.5334174],
+                     [08.3847378,   0.0000000,  15.1972795,   3.1486796],
+                     [06.8125418,  15.1972795,   0.0000000,  18.3459592],
+                     [11.5334174,   3.1486796,  18.3459592,   0.0000000]])
 dm_ids = ('s.1', 's.2', 's.3', 's.4')
-
 
 
 if __name__ == '__main__':
