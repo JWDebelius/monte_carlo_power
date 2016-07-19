@@ -4,16 +4,16 @@ import scipy
 import skbio
 
 
-def simulate_ttest_1(mu_lim, sigma_lim, count_lim):
+def simulate_ttest_1(mu_lim, sigma_lim, count_lim=100):
     """Simulates data for a one sample t test compared to 0.
 
     Parameters
     ----------
-    mu_lim : list
+    mu_lim : list, float
         The limits for selecting a mean
-    sigma_lim : list
+    sigma_lim : list, float
         The limits for selecting a standard deivation
-    count_lim : list
+    count_lim : list, float, optional
         the number of observations which should be drawn for the sample
 
     Returns
@@ -26,24 +26,24 @@ def simulate_ttest_1(mu_lim, sigma_lim, count_lim):
     """
 
     # Gets the distribution parameters
-    mu = np.random.randint(*mu_lim)
-    sigma = np.random.randint(*sigma_lim)
-    n = np.random.randint(*count_lim)
+    mu = _check_param(mu_lim, 'mu lim', np.random.randint)
+    sigma = _check_param(sigma_lim, 'sigma lim', np.random.randint)
+    n = _check_param(count_lim, 'count lim', np.random.randint)
 
     # Draws a sample that fits the parameters
     return [mu, sigma, n], [mu + np.random.randn(n) * sigma]
 
 
-def simulate_ttest_ind(mu_lim, sigma_lim, count_lim):
+def simulate_ttest_ind(mu_lim, sigma_lim, count_lim=100):
     """Simulates data for an independent sample t test
 
     Parameters
     ----------
-    mu_lim : list
+    mu_lim : list, float
         The limits for selecting a mean
-    sigma_lim : list
+    sigma_lim : list, float
         The limits for selecting a standard deivation
-    count_lim : list
+    count_lim : list, float, optional
         the number of observations which should be drawn for the sample
 
     Returns
@@ -55,9 +55,11 @@ def simulate_ttest_ind(mu_lim, sigma_lim, count_lim):
 
     """
     # Gets the distribution paramters
-    mu1, mu2 = np.random.randint(*mu_lim, size=2)
-    sigma1, sigma2 = np.random.randint(*sigma_lim, size=2)
-    n = np.random.randint(*count_lim)
+    mu1 = _check_param(mu_lim, 'mu lim', np.random.randint)
+    mu2 = _check_param(mu_lim, 'mu lim', np.random.randint)
+    sigma1 = _check_param(sigma_lim, 'sigma lim', np.random.randint)
+    sigma2 = _check_param(sigma_lim, 'sigma lim', np.random.randint)
+    n = _check_param(count_lim, 'count lim', np.random.randint)
 
     # Returns a pair of distributions
     samples = [mu1 + np.random.randn(n) * sigma1,
@@ -71,13 +73,13 @@ def simulate_anova(mu_lim, sigma_lim, count_lim, num_pops):
 
     Parameters
     ----------
-    mu_lim : list
+    mu_lim : list, float
         The limits for selecting a mean
-    sigma_lim : list
+    sigma_lim : list, float
         The limits for selecting a standard deivation
-    count_lim : list
+    count_lim : list, float
         the number of observations which should be drawn for the sample
-    num_pops: list
+    num_pops: float
         The number of populations to use in the ANOVA simulation
 
     Returns
@@ -90,64 +92,15 @@ def simulate_anova(mu_lim, sigma_lim, count_lim, num_pops):
     """
 
     # Defines the distribtuion parameters
-    mus = np.random.randint(*mu_lim, size=num_pops)
-    sigma = np.random.randint(*sigma_lim)
-    n = np.random.randint(*count_lim)
+    mus = np.array([_check_param(mu_lim, 'mu lim', np.random.randint)
+                    for i in range(num_pops)])
+    sigma = _check_param(sigma_lim, 'sigma lim', np.random.randint)
+    n = _check_param(count_lim, 'count lim', np.random.randint)
 
     # Draws samples which fit the population
     samples = [mu + np.random.randn(n)*sigma for mu in mus]
 
     return [mus, sigma, n], samples
-
-
-def simulate_bimodal(mu_lim, sigma_lim, count_lim, bench_lim, diff_lim,
-    sep_lim):
-    """Simulates simple bimodal data based on a normal distribution
-
-    Two bimodal distributions will be simulated using the same means and
-    variances, offset by a constant value.
-
-    Parameters
-    ----------
-    mu_lim : list
-        The limits for selecting a slope
-    sigma_lim : list
-        The limits for selecting a variance
-    count_lim : list
-        the number of observations which should be drawn for the sample
-    bench_lim: list
-        the number of observations to be placed in the second distribution
-    diff_lim: list
-        the offset between the two distributions
-    sep_lim : list
-        the seperation between the two bimodal distributions
-
-    Returns
-    -------
-    simulation_params : list
-        The values for `[mus, sigmas, number of samples, fraction of offset,
-                         seperation between distributions, seperation between
-                         means]`
-        for the sample.
-    simulation_results : list
-        the simulated bimodal distributions
-    """
-
-    # Gets the distribution parameters
-    mu = np.random.uniform(*mu_lim, size=4)
-    offset = np.random.uniform(*diff_lim)
-    sigma = np.random.uniform(*sigma_lim, size=2)
-    sep = np.random.randint(*sep_lim)
-    n = np.random.randint(*count_lim)
-    m = np.random.randint(*bench_lim)
-
-    #     Draws a sample that fits the parameters
-    sample1 = np.hstack((np.random.normal(mu[0], sigma[0], n - m),
-                         np.random.normal(mu[1] + sep, sigma[1], m)))
-    sample2 = np.hstack((np.random.normal(mu[2], sigma[0], n - m),
-                         np.random.normal(mu[3] + sep, sigma[1], m))) + offset
-
-    return [mu, sigma, n, m/n, offset, sep], [sample1, sample2]
 
 
 def simulate_permanova(num_samples, num0=None, wdist=[0, 0.5],
@@ -176,12 +129,12 @@ def simulate_permanova(num_samples, num0=None, wdist=[0, 0.5],
 
     Returns
     -------
-    dm : DistanceMatrix
-        A scikit-bio distance matrix object with the simulated distances. The
-        within-group distances are described by a normal distribution *
-        means and variances described by `wdist` and `wspread`, respective.
-        Between group distances are described by a normal distribution with
-        means and variances described by `bdist` and `bspread`.
+    DistanceMatrix
+        The simulated distance matrix. Within-group distances are described by
+        a normal distribution * means and variances described by `wdist` and
+        `wspread`, respective. Between group distances are described by a
+        normal distribution with means and variances described by `bdist` and
+        `bspread`.
     grouping : DataFrame
         A dataframe with a simulated mapping file corresponding to the groups
         in the data.
@@ -247,13 +200,13 @@ def simulate_correlation(slope_lim, intercept_lim, sigma_lim, count_lim,
 
     Parameters
     ----------
-    slope_lim : list
+    slope_lim : list, float
         The limits for selecting a slope
-    intercept_lim : list
+    intercept_lim : list, float
         the limits on values for the intercept
-    sigma_lim : list
+    sigma_lim : list, float
         The limits for selecting a variance
-    count_lim : list
+    count_lim : list, float
         the number of observations which should be drawn for the sample
     x_lim : list
         sets limits on the x values
@@ -268,11 +221,11 @@ def simulate_correlation(slope_lim, intercept_lim, sigma_lim, count_lim,
     """
 
     # Calculates the distribution for the residuals
-    sigma = np.random.randint(*sigma_lim)
-    n = np.random.randint(*count_lim)
+    sigma = _check_param(sigma_lim, 'sigma lim', np.random.int)
+    n = _check_param(count_lim, 'count lim', np.random.int)
     # Calculates the parameters for the line
-    m = np.random.randint(*slope_lim)
-    b = np.random.randint(*intercept_lim)
+    m = _check_param(slope_lim, 'slope lim', np.random.int)
+    b = _check_param(intercept_lim, 'intercept lim', np.random.int)
 
     x = np.random.uniform(*x_lim, size=n)
     y = m * x + b + np.random.randn(n) * sigma
@@ -288,11 +241,11 @@ def simulate_multivariate(slope_lim, intercept_lim, sigma_lim, count_lim,
     ----------
     slope_lim : list
         The limits for selecting a slope
-    intercept_lim : list
+    intercept_lim : list, float
         the limits on values for the intercept
-    sigma_lim : list
+    sigma_lim : list, float
         The limits for selecting a variance
-    count_lim : list
+    count_lim : list, float
         the number of observations which should be drawn for the sample
     x_lim : list
         sets limits on the range for predictors
@@ -312,9 +265,9 @@ def simulate_multivariate(slope_lim, intercept_lim, sigma_lim, count_lim,
 
     # Simulates regression parameters
     ms = np.random.randint(*slope_lim, size=num_pops)
-    s = np.random.randint(*sigma_lim)
-    b = np.random.randint(*intercept_lim)
-    n = np.random.randint(*count_lim)
+    s = _check_param(sigma_lim, 'sigma lim', np.random.int)
+    n = _check_param(count_lim, 'count lim', np.random.int)
+    b = _check_param(intercept_lim, 'intercept lim', np.random.int)
 
     slopes = np.atleast_2d(ms) * np.ones((n, 1))
 
@@ -338,13 +291,13 @@ def simulate_mantel(slope_lim, intercept_lim, sigma_lim, count_lim, x_lim,
 
     Parameters
     ----------
-    slope_lim : list
+    slope_lim : list, float
         The limits for selecting a slope
-    intercept_lim : list
+    intercept_lim : list, float
         the limits on values for the intercept
-    sigma_lim : list
+    sigma_lim : list, float
         The limits for selecting a variance
-    count_lim : list
+    count_lim : list, float
         the number of observations which should be drawn for the sample
     x_lim : list
         sets limits on the x values
@@ -405,10 +358,10 @@ def _convert_to_mirror(length, vec):
     return dm
 
 
-def _check_param(param, param_name):
+def _check_param(param, param_name, random=np.random.uniform):
     """Checks a parameter is sane"""
     if isinstance(param, list):
-        return np.random.uniform(*param)
+        return random(*param)
     elif not isinstance(param, float):
         raise ValueError('%s must be a list or a float' % param_name)
     else:
