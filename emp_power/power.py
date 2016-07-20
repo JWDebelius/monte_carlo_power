@@ -54,85 +54,6 @@ import numpy as np
 import scipy.stats
 
 
-def confidence_bound(vec, alpha=0.05, df=None, axis=None):
-    r"""Calculates a confidence bound assuming a normal distribution
-
-    Parameters
-    ----------
-    vec : array_like
-        The array of values to use in the bound calculation.
-    alpha : float, optional
-        The critical value, used for the confidence bound calculation.
-    df : float, optional
-        The degrees of freedom associated with the
-        distribution. If None is given, df is assumed to be the number of
-        elements in specified axis.
-    axis : positive int, optional
-        The axis over which to take the deviation. When axis
-        is None, a single value will be calculated for the whole matrix.
-
-    Returns
-    -------
-    bound : float
-        The confidence bound around the mean. The confidence interval is
-        [mean - bound, mean + bound].
-
-    """
-
-    # Determines the number of non-nan counts
-    vec = np.asarray(vec)
-    vec_shape = vec.shape
-    if axis is None and len(vec_shape) == 1:
-        num_counts = vec_shape[0] - np.isnan(vec).sum()
-    elif axis is None:
-        num_counts = vec_shape[0] * vec_shape[1] - np.isnan(vec).sum()
-    else:
-        num_counts = vec_shape[axis] - np.isnan(vec).sum() / \
-            (vec_shape[0] * vec_shape[1])
-
-    # Gets the df if not supplied
-    if df is None:
-        df = num_counts - 1
-
-    # Calculates the bound
-    # In the conversion from scipy.stats.nanstd -> np.nanstd `ddof=1` had to be
-    # added to match the scipy default of `bias=False`.
-    bound = np.nanstd(vec, axis=axis, ddof=1) / np.sqrt(num_counts - 1) * \
-        scipy.stats.t.ppf(1 - alpha / 2, df)
-
-    return bound
-
-
-def z_power(counts, eff, alpha=0.05):
-    """Estimates power for a z distribution from an effect size
-
-    This is based on the equations in
-        Lui, X.S. (2014) *Statistical power analysis for the social and
-        behavioral sciences: basic and advanced techniques.* New York:
-        Routledge. 378 pg.
-    The equation assumes a positive magnitude to the effect size and a
-    two-tailed test.
-
-    Parameters
-    ----------
-    counts : array
-        The number of observations for each power depth
-    effect : float
-        A standard measure of the difference between the underlying populations
-     alpha : float
-        The critial value used to calculate the power
-
-    Returns
-    power : array
-        The statistical power at the depth specified by `counts`
-
-    """
-    z = scipy.stats.norm
-    power = ((z.cdf(eff * np.sqrt(counts/2) - z.ppf(1 - alpha/2)) +
-             (z.cdf(z.ppf(alpha/2) - eff * np.sqrt(counts/2)))))
-    return power
-
-
 def subsample_power(test, samples, counts, draw_mode='ind', numeric=True,
                     alpha=0.05, ratio=None, bootstrap=True, num_iter=500,
                     num_runs=10):
@@ -241,6 +162,55 @@ def subsample_power(test, samples, counts, draw_mode='ind', numeric=True,
     power = power.squeeze()
 
     return power
+
+
+def confidence_bound(vec, alpha=0.05, df=None, axis=None):
+    r"""Calculates a confidence bound assuming a normal distribution
+
+    Parameters
+    ----------
+    vec : array_like
+        The array of values to use in the bound calculation.
+    alpha : float, optional
+        The critical value, used for the confidence bound calculation.
+    df : float, optional
+        The degrees of freedom associated with the
+        distribution. If None is given, df is assumed to be the number of
+        elements in specified axis.
+    axis : positive int, optional
+        The axis over which to take the deviation. When axis
+        is None, a single value will be calculated for the whole matrix.
+
+    Returns
+    -------
+    bound : float
+        The confidence bound around the mean. The confidence interval is
+        [mean - bound, mean + bound].
+
+    """
+
+    # Determines the number of non-nan counts
+    vec = np.asarray(vec)
+    vec_shape = vec.shape
+    if axis is None and len(vec_shape) == 1:
+        num_counts = vec_shape[0] - np.isnan(vec).sum()
+    elif axis is None:
+        num_counts = vec_shape[0] * vec_shape[1] - np.isnan(vec).sum()
+    else:
+        num_counts = vec_shape[axis] - np.isnan(vec).sum() / \
+            (vec_shape[0] * vec_shape[1])
+
+    # Gets the df if not supplied
+    if df is None:
+        df = num_counts - 1
+
+    # Calculates the bound
+    # In the conversion from scipy.stats.nanstd -> np.nanstd `ddof=1` had to be
+    # added to match the scipy default of `bias=False`.
+    bound = np.nanstd(vec, axis=axis, ddof=1) / np.sqrt(num_counts - 1) * \
+        scipy.stats.t.ppf(1 - alpha / 2, df)
+
+    return bound
 
 
 def _compare_distributions(test, samples, num_p, counts=5, mode="ind",

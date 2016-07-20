@@ -182,7 +182,7 @@ def t_power(counts, effect, alpha=0.05, ratio=1):
     if isinstance(effect, np.ndarray):
         effect = np.nanmean(effect)
     power = tt.solve_power(effect_size=effect,
-                           nobs=counts,
+                           nobs1=counts,
                            alpha=0.05,
                            power=None,
                            ratio=ratio)

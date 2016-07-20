@@ -9,7 +9,7 @@ from emp_power.simulate import (simulate_ttest_1,
                                 simulate_ttest_ind,
                                 simulate_anova,
                                 simulate_correlation,
-                                simulate_bimodal,
+                                # simulate_bimodal,
                                 simulate_multivariate,
                                 simulate_permanova,
                                 simulate_mantel,
@@ -114,38 +114,38 @@ class PowerSimulation(TestCase):
         npt.assert_almost_equal(known_x, x, 5)
         npt.assert_almost_equal(known_y, y, 5)
 
-    def test_simulate_bimodal(self):
-        parameters = {'bench_lim': [5, 6],
-                      'diff_lim': [3, 5],
-                      'sep_lim': [3, 5]
-                      }
-        known_mus = np.array([0.44398634, 1.74146461, 0.41343831, 1.83722182])
-        known_offset = 3.9768223775896585
-        known_sigmas = np.array([2.22348773, 2.53181571])
-        known_sep = 3
-        known_counts = 10
-        known_frac = 0.5
-        known_sample1 = np.array([1.04300669,  0.42767874,  1.63678506,
-                                  2.90431516, -0.79677127,  6.49457435,
-                                  3.70710101,  5.44426065,  3.98223784,
-                                  4.15177992])
-        known_sample2 = np.array([4.53686967,  6.73042143,  8.28477920,
-                                  4.25817653,  5.22376934,  9.74338802,
-                                  6.63873189,  9.13991296,  8.79473736,
-                                  9.23779215])
+    # def test_simulate_bimodal(self):
+    #     parameters = {'bench_lim': [5, 6],
+    #                   'diff_lim': [3, 5],
+    #                   'sep_lim': [3, 5]
+    #                   }
+    #     known_mus = np.array([0.44398634, 1.74146461, 0.41343831, 1.83722182])
+    #     known_offset = 3.9768223775896585
+    #     known_sigmas = np.array([2.22348773, 2.53181571])
+    #     known_sep = 3
+    #     known_counts = 10
+    #     known_frac = 0.5
+    #     known_sample1 = np.array([1.04300669,  0.42767874,  1.63678506,
+    #                               2.90431516, -0.79677127,  6.49457435,
+    #                               3.70710101,  5.44426065,  3.98223784,
+    #                               4.15177992])
+    #     known_sample2 = np.array([4.53686967,  6.73042143,  8.28477920,
+    #                               4.25817653,  5.22376934,  9.74338802,
+    #                               6.63873189,  9.13991296,  8.79473736,
+    #                               9.23779215])
 
-        [mu, sigma, counts, frac, offset, sep], [sample1, sample2] = \
-            simulate_bimodal(self.mu_lim, self.sigma_lim, self.count_lim,
-                             **parameters)
+    #     [mu, sigma, counts, frac, offset, sep], [sample1, sample2] = \
+    #         simulate_bimodal(self.mu_lim, self.sigma_lim, self.count_lim,
+    #                          **parameters)
 
-        npt.assert_almost_equal(known_mus, mu, 5)
-        npt.assert_almost_equal(known_sigmas, sigma, 5)
-        npt.assert_almost_equal(known_offset, offset, 5)
-        npt.assert_almost_equal(known_sample1, sample1, 5)
-        npt.assert_almost_equal(known_sample2, sample2, 5)
-        self.assertEqual(known_sep, sep)
-        self.assertEqual(known_counts, counts)
-        self.assertEqual(known_frac, frac)
+    #     npt.assert_almost_equal(known_mus, mu, 5)
+    #     npt.assert_almost_equal(known_sigmas, sigma, 5)
+    #     npt.assert_almost_equal(known_offset, offset, 5)
+    #     npt.assert_almost_equal(known_sample1, sample1, 5)
+    #     npt.assert_almost_equal(known_sample2, sample2, 5)
+    #     self.assertEqual(known_sep, sep)
+    #     self.assertEqual(known_counts, counts)
+    #     self.assertEqual(known_frac, frac)
 
     def test_multivarate(self):
         known_ms = np.array([1, 0])
