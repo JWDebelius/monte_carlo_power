@@ -221,11 +221,11 @@ def simulate_correlation(slope_lim, intercept_lim, sigma_lim, count_lim,
     """
 
     # Calculates the distribution for the residuals
-    sigma = _check_param(sigma_lim, 'sigma lim', np.random.int)
-    n = _check_param(count_lim, 'count lim', np.random.int)
+    sigma = _check_param(sigma_lim, 'sigma lim', np.random.randint)
+    n = _check_param(count_lim, 'count lim', np.random.randint)
     # Calculates the parameters for the line
-    m = _check_param(slope_lim, 'slope lim', np.random.int)
-    b = _check_param(intercept_lim, 'intercept lim', np.random.int)
+    m = _check_param(slope_lim, 'slope lim', np.random.randint)
+    b = _check_param(intercept_lim, 'intercept lim', np.random.randint)
 
     x = np.random.uniform(*x_lim, size=n)
     y = m * x + b + np.random.randn(n) * sigma
@@ -265,9 +265,9 @@ def simulate_multivariate(slope_lim, intercept_lim, sigma_lim, count_lim,
 
     # Simulates regression parameters
     ms = np.random.randint(*slope_lim, size=num_pops)
-    s = _check_param(sigma_lim, 'sigma lim', np.random.int)
-    n = _check_param(count_lim, 'count lim', np.random.int)
-    b = _check_param(intercept_lim, 'intercept lim', np.random.int)
+    s = _check_param(sigma_lim, 'sigma lim', np.random.randint)
+    n = _check_param(count_lim, 'count lim', np.random.randint)
+    b = _check_param(intercept_lim, 'intercept lim', np.random.randint)
 
     slopes = np.atleast_2d(ms) * np.ones((n, 1))
 
