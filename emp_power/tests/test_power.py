@@ -10,15 +10,14 @@ from unittest import TestCase, main
 
 import numpy as np
 import numpy.testing as npt
-import pandas as pd
 from scipy.stats import kruskal
 
-from power.power import (subsample_power,
-                         confidence_bound,
-                         _calculate_power,
-                         _compare_distributions,
-                         _check_subsample_power_inputs,
-                         )
+from emp_power.power import (subsample_power,
+                             confidence_bound,
+                             _calculate_power,
+                             _compare_distributions,
+                             _check_subsample_power_inputs,
+                             )
 
 
 class PowerAnalysisTest(TestCase):
@@ -45,25 +44,25 @@ class PowerAnalysisTest(TestCase):
         self.alpha = np.power(10, np.array([-1, -1.301, -2, -3])).round(3)
 
     def test_subsample_power_defaults(self):
-        test_p, test_c = subsample_power(self.f, self.pop, self.counts,
-                                         num_iter=10, num_runs=5)
+        test_p = subsample_power(self.f, self.pop, self.counts,
+                                 num_iter=10, num_runs=5)
         self.assertEqual(test_p.shape, (5, 5))
 
     def test_subsample_power_matches(self):
-        test_p, test_c = subsample_power(self.f,
-                                         samples=self.pop,
-                                         counts=self.counts,
-                                         num_iter=10,
-                                         num_runs=5,
-                                         draw_mode="matched")
+        test_p = subsample_power(self.f,
+                                 samples=self.pop,
+                                 counts=self.counts,
+                                 num_iter=10,
+                                 num_runs=5,
+                                 draw_mode="matched")
         self.assertEqual(test_p.shape, (5, 5))
 
     def test_subsample_power_multi_p(self):
-        test_p, test_c = subsample_power(lambda x: np.array([0.5, 0.5]),
-                                         samples=self.pop,
-                                         counts=self.counts,
-                                         num_iter=10,
-                                         num_runs=5)
+        test_p = subsample_power(lambda x: np.array([0.5, 0.5]),
+                                 samples=self.pop,
+                                 counts=self.counts,
+                                 num_iter=10,
+                                 num_runs=5)
         self.assertEqual(test_p.shape, (5, 5, 2))
 
     def test_confidence_bound_default(self):

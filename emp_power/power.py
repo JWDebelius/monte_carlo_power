@@ -107,7 +107,7 @@ def subsample_power(test, samples, counts, draw_mode='ind', numeric=True,
 
     Returns
     -------
-    power : array
+    ndarray
         The power calculated for each subsample at each count. The array has
         `num_runs` rows, a length with the same number of elements as
         `sample_counts` and a depth equal to the number of p values returned by
