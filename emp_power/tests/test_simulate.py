@@ -4,7 +4,6 @@ import numpy as np
 import numpy.testing as npt
 import pandas as pd
 import pandas.util.testing as pdt
-import skbio
 
 from emp_power.simulate import (simulate_ttest_1,
                                 simulate_ttest_ind,
@@ -19,8 +18,6 @@ from emp_power.simulate import (simulate_ttest_1,
                                 _simulate_gauss_vec,
                                 _vec_size,
                                 )
-
-print(skbio.__version__)
 
 class PowerSimulation(TestCase):
 
