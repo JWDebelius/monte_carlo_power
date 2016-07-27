@@ -5,33 +5,6 @@ import scipy.special as sp
 import scipy.stats as stats
 
 
-def cohen_d_one_sample(sample, x0=0):
-    """Calculates Cohen's d for comparing a value to a sample"""
-    x1, s1 = sample.mean(), sample.std()
-    return np.absolute(x1 - x0) / s1
-
-
-def cohen_ttest_ind(sample1, sample2):
-    """Calculates cohen's d for two independent samples"""
-    x1, s1, n1 = sample1.mean(), sample1.std(), len(sample1)
-    x2, s2, n2 = sample2.mean(), sample2.std(), len(sample2)
-
-    spool = np.sqrt(((n1-1) * np.square(s1) + (n2 - 1) * np.square(s2)) /
-                    (n1 + n2 - 2))
-    return np.absolute(x1 - x2) / spool
-
-
-def cohen_f2(*samples):
-    """Calculates Cohen's f-squared from eta"""
-    grand_mean = np.concatenate(samples).mean()
-
-    eta2 = np.sum([np.square((sample.mean() - grand_mean) /
-                   np.hstack(samples).std())
-                   for sample in samples]) / len(samples)
-    f2 = (eta2) / (1 - eta2)
-    return f2
-
-
 def calc_ttest_1(sample, x0, counts, alpha=0.05):
     """Calculates statistical power for a one-sample t test
 
