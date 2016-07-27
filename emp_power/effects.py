@@ -6,7 +6,7 @@ tt = TTestIndPower()
 ft = FTestAnovaPower()
 
 
-def f_effect(counts, power, alpha=0.05):
+def f_effect(counts, power, alpha=0.05, groups=3):
     """Estimates the effect size based on a two-tail F distribution
 
     Parameters
@@ -39,10 +39,12 @@ def f_effect(counts, power, alpha=0.05):
                     effect_size=None,
                     nobs=count,
                     alpha=alpha,
-                    power=pwr_
+                    power=pwr_,
+                    k_groups=groups,
                     )
             except:
                 pass
+    eff[power == 1] = np.nan
     return eff
 
 
@@ -85,6 +87,7 @@ def t_effect(counts, power, alpha=0.05, ratio=1):
                     )
             except:
                 pass
+    eff[power == 1] = np.nan
     return eff
 
 
@@ -117,10 +120,13 @@ def z_effect(counts, power, alpha=0.05):
     z_diff = z.ppf(power) + z.ppf(1 - alpha/2)
     eff = np.sqrt(np.square(z_diff) / counts)
 
+    eff[power == 1] = np.nan
+    eff[np.isinf(eff)] = np.nan
+
     return eff
 
 
-def f_power(counts, effect, alpha=0.05):
+def f_power(counts, effect, alpha=0.05, groups=2):
     """Estimates power from an effect size and the f distribution
 
     This wraps the statsmodels `statsmodels.stats.power.FTestAnovaPower`
@@ -150,7 +156,9 @@ def f_power(counts, effect, alpha=0.05):
     power = ft.solve_power(effect_size=effect,
                            nobs=counts,
                            alpha=0.05,
-                           power=None)
+                           power=None,
+                           k_groups=groups,
+                           )
     return power
 
 
