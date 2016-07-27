@@ -213,6 +213,13 @@ class PowerAnalysisTest(TestCase):
                                           samples=self.samps,
                                           counts=self.counts)
 
+    def test_check_subsample_power_inputs_bootstrap_error(self):
+        with self.assertRaises(ValueError):
+            _check_subsample_power_inputs(test=self.f,
+                                          samples=self.samps,
+                                          counts=np.arange(10, 1000, 10),
+                                          bootstrap=False)
+
     def test_check_sample_power_inputs(self):
         # Defines the know returns
         known_num_p = 1

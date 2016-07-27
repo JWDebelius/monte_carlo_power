@@ -78,6 +78,10 @@ class TraditionalPowerTest(TestCase):
         for k, t in zip(*(known, test)):
             npt.assert_approx_equal(k, t, 4)
 
+    def test_calc_anova_counts_error(self):
+        with self.assertRaises(ValueError):
+            calc_anova(self.x1, self.x2, self.x3)
+
     def test_calc_pearson(self):
         known = np.array([0.308253, 0.733990, 0.915513, 0.976167, 0.993823,
                           0.998499, 0.999653, 0.999923, 1.000000, 1.000000])
