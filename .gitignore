@@ -1,4 +1,5 @@
 ipynb/simulations/**/*.p
-monte_carlo_power.egg-info/*
-emp_power/__pycache__/*.pyc
+monte_carlo_power.egg-info/**
+emp_power/__pycache__/**
+emp_power/*.pyc
 ipynb/.ipynb_checkpoints/**
