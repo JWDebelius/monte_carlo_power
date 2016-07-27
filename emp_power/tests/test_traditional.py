@@ -1,6 +1,3 @@
-
-from __future__ import division
-
 from unittest import TestCase, main
 
 import numpy as np
@@ -44,9 +41,6 @@ class TraditionalPowerTest(TestCase):
         known_vitals = (7.3682399999999992, 4.455545203720864)
         self.assertEqual(_get_vitals(self.x1),
                          known_vitals)
-
-    def test_contingency(self):
-        pass
 
     def test_calc_ttest_1(self):
         known = np.array([0.388928, 0.787640, 0.941328, 0.985874, 0.996909,
