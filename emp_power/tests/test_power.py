@@ -169,6 +169,13 @@ class PowerAnalysisTest(TestCase):
                                       num_iter=5)
         npt.assert_almost_equal(known, np.log10(test), 5)
 
+    def test_check_subsample_power_inputs_draw_mode_error(self):
+        with self.assertRaises(ValueError):
+            _check_subsample_power_inputs(test=self.f,
+                                          samples=[np.ones((2)), np.ones((5))],
+                                          counts=self.counts,
+                                          draw_mode="Alice Price Healy")
+
     def test_check_subsample_power_inputs_matched_mode(self):
         with self.assertRaises(ValueError):
             _check_subsample_power_inputs(test=self.f,
