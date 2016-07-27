@@ -7,11 +7,11 @@ import numpy as np
 import numpy.testing as npt
 
 from emp_power.traditional import (calc_ttest_1,
-                                         calc_ttest_ind,
-                                         calc_pearson,
-                                         calc_anova,
-                                         _get_vitals
-                                         )
+                                   calc_ttest_ind,
+                                   calc_pearson,
+                                   calc_anova,
+                                   _get_vitals
+                                   )
 
 
 class TraditionalPowerTest(TestCase):
@@ -75,7 +75,6 @@ class TraditionalPowerTest(TestCase):
         known = np.array([0.801018, 0.8887184, 0.9402648, 0.9690108,
                           0.9843836])
         test = calc_anova(x1, x2, x3, counts=np.arange(5, 10))
-        print(test)
         for k, t in zip(*(known, test)):
             npt.assert_approx_equal(k, t, 4)
 
