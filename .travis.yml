@@ -17,10 +17,7 @@ install:
   - pip install -r pip_requirements.txt
   - pip install . --no-deps
 script:
-  - python emp_power/tests/test_effects.py
-  - python emp_power/tests/test_power.py
-  - python emp_power/tests/test_simulate.py
-  - python emp_power/tests/test_traditional.py
+  - nosetests --with-coverage --cover-package=emp_power
 after_success:
   - coveralls
 notifications:
