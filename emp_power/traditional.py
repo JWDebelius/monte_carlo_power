@@ -142,24 +142,26 @@ def calc_anova(*samples, **kwargs):
     samples = [np.asarray(sample) for sample in samples]
 
     k = len(samples)
-    grand_mean = np.concatenate(samples).mean()
+    grand_mean = np.hstack(samples).mean()
+    pooled = np.sqrt(
+        np.sum([np.square(x.std()) * (len(x) - 1) for x in samples]) /
+        (np.sum([len(x) for x in samples]) - 2)
+        )
 
     df1 = k - 1
     df2 = k * (counts - 1)
 
     # Calculates the noncentrality paramter
     noncentrality = np.array([
-        np.square((sample.mean() - grand_mean)/sample.std())
+        np.square((sample.mean() - grand_mean) / pooled)
         for sample in samples
         ]).sum() * counts
     # noncentrality = cohen_f2(*samples) * counts
 
-    fl = stats.f.ppf(alpha / 2, df1, df2)
-    fu = stats.f.ppf(1 - alpha / 2, df1, df2)
+    fu = stats.f.ppf(1 - alpha, df1, df2)
 
     # Calculates the power using the non-central F distribution
-    power = (1 - sp.ncfdtr(df1, df2, noncentrality, fu) +
-             sp.ncfdtr(df1, df2, noncentrality, fl))
+    power = (1 - sp.ncfdtr(df1, df2, noncentrality, fu))
     # the non central F distribution does not return a value of 1,
     # so we replace nans with a value of 1.
     power[np.isnan(power)] = 1

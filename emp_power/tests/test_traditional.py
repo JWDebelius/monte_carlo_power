@@ -6,7 +6,7 @@ from unittest import TestCase, main
 import numpy as np
 import numpy.testing as npt
 
-from emp_power.utils.traditional import (calc_ttest_1,
+from emp_power.traditional import (calc_ttest_1,
                                          calc_ttest_ind,
                                          calc_pearson,
                                          calc_anova,
@@ -63,9 +63,19 @@ class TraditionalPowerTest(TestCase):
             npt.assert_approx_equal(k, t, 4)
 
     def test_calc_anova(self):
-        known = np.array([0.286588, 0.663229, 0.876049, 0.961419, 0.989373,
-                          0.997335, 0.999380, 0.999864, 0.999972, 0.999994])
-        test = calc_anova(self.x1, self.x2, self.x3, counts=self.counts)
+        x1 = np.array([4.66090788,   8.32387767, 15.26801578,  7.28272918,
+                       9.14823571,  13.90081104,  6.94812081,  0.87343727,
+                       6.24484506,  12.06734819])
+        x2 = np.array([05.96077091, 10.15055585, 13.87804038,  9.89452164,
+                       02.92755353, 14.68067911,  9.22386107, 11.04836723,
+                       13.29938893, 10.57197312])
+        x3 = np.array([18.52338822, 19.55156514, 17.69189464, 20.97648344,
+                       11.76546829, 18.60122748, 11.30508469, 13.79754774,
+                       15.80490159, 12.69230230])
+        known = np.array([0.801018, 0.8887184, 0.9402648, 0.9690108,
+                          0.9843836])
+        test = calc_anova(x1, x2, x3, counts=np.arange(5, 10))
+        print(test)
         for k, t in zip(*(known, test)):
             npt.assert_approx_equal(k, t, 4)
 
