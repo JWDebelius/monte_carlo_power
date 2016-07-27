@@ -101,7 +101,7 @@ def format_residual_ax(ax, xlim=None, ylim=None, num_ticks=5):
 
 def _set_ticks(lims, num_ticks):
     range_ = lims[1] - lims[0]
-    interval = range_ / (num_ticks - 1)
+    interval = range_ / num_ticks
     ticks = np.arange(lims[0], lims[1] + interval / 2, interval)
     return ticks
 
@@ -110,96 +110,3 @@ def _get_symetrical(lims):
     lim_max = max(lims)
     lims = [-lim_max, lim_max]
     return lims
-
-
-def gradient_comparison(x, y, gradient, power, ax_r, alpha=0.5,
-    cmap='Set3', resid_y=[-0.5, 0.25]):
-    """..."""
-    # Sets up the axes
-    [ax1, ax2] = ax_r
-    fit = sms.OLS(y, sms.add_constant(x)).fit()
-    b, m = fit.params
-    bs, ms = fit.bse
-    ticks = np.arange(0, 1.51, 0.25)
-
-    ax1.set_xlim([0, 1.5])
-    ax1.set_ylim([0, 1.5])
-    ax1.set_xticks(ticks)
-    ax1.set_yticks(ticks)
-    ax1.set_xticklabels('')
-    ax1.set_yticklabels('')
-    ax1.set_xlabel('')
-    ax1.set_ylabel('')
-
-    ax1.text(1.45, 0.05, 'm = %1.2f +/- %1.2f' % (m, ms), ha='right')
-
-    ax2.set_xlim([-0.05, 1.05])
-    ax2.set_ylim(resid_y)
-    ax2.set_xticklabels('')
-    ax2.set_yticklabels('')
-    ax2.set_xlabel('')
-    ax2.set_ylabel('')
-
-    ax2.text(0.95, np.min(resid_y) * 1.05, 'R2 = %1.3f' % fit.rsquared, ha='right')
-
-    scatter_kws = {'c': gradient, 's': 40, 'cmap': cmap, 'alpha': alpha, 'edgecolors': 'None'}
-    line_kws = {'color': 'k', 'linewidth': 0.5}
-
-    sn.regplot(x=x,
-               y=y, 
-               scatter_kws=scatter_kws, 
-               line_kws=line_kws, 
-               ax=ax1)
-    ax2.scatter(power, fit.resid, **scatter_kws)
-    ax2.plot([-0.5, 1.5], [0, 0], color='k', linewidth=0.75, linestyle=':')
-
-
-def plot_effect_sizes(x, y, ax=None, markers=None, colors=None, labels=None,
-    xlabel=None, ylabel=None, ticks=np.arange(0, 3.1, 0.5)):
-    """Plots the effect size comparisons
-    """
-
-    num_samples = len(x)
-
-    # Gets the markers
-    if markers is None:
-        markers = np.floor(num_samples / 6) * possible_markers
-        markers.extend(possible_markers[:np.fmod(num_samples, 6)])
-        sizes = np.floor(num_samples / 6) * marker_sizes
-        sizes.extend(marker_sizes[:np.fmod(num_samples, 6)])
-    else:
-        sizes = [10] * len(markers)
-
-    # Gets the colors
-    if colors is None:
-        colors = np.floor(num_samples / 8) * possible_colors
-        colors.extend(possible_colors[:np.fmod(num_samples, 8)])
-
-    # Creates an axis, if necessary
-    if ax is None:
-        ax = plt.axes()
-
-    # Plots the data
-    for xx, yy, mark, size, color in zip(*(x, y, markers, sizes, colors)):
-        ax.plot(xx, yy,
-                marker=mark,
-                markeredgecolor=color,
-                markerfacecolor='None',
-                markeredgewidth=0.5,
-                ms=size,
-                )
-
-    # Sets the ticks
-    ax.set_xlim([ticks.min(), ticks.max()])
-    ax.set_xticks(ticks)
-    ax.set_xticklabels(ticks, size=12)
-    ax.set_xlabel(xlabel, size=15)
-
-    ax.set_ylim([ticks.min(), ticks.max()])
-    ax.set_yticks(ticks)
-    ax.set_yticklabels(ticks, size=12)
-    ax.set_ylabel(xlabel, size=15)
-
-    sn.despine(ax=ax)
-
-    return ax
