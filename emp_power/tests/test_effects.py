@@ -79,12 +79,32 @@ class PowerSimulation(TestCase):
         test_power = f_power(self.counts, self.effect, self.alpha)
         npt.assert_almost_equal(known_power, test_power)
 
+    def test_f_power_array(self):
+        known_power = np.array([0.12656744,  0.43392591,  0.66810794,
+                                0.81885655,  0.90630465,  0.95353589,
+                                0.97773116,  0.98962623,  0.99528244,
+                                0.99789883])
+        test_power = f_power(self.counts,
+                             np.array([0.5, 0.5, np.nan]),
+                             self.alpha)
+        npt.assert_almost_equal(known_power, test_power)
+
     def test_t_power(self):
         known_power = np.array([0.10768599,  0.26244303,  0.41010033,
                                 0.54068791,  0.65018550,  0.73848657,
                                 0.80758442,  0.86036751,  0.89989407,
                                 0.92900109])
         test_power = t_power(self.counts, self.effect, self.alpha)
+        npt.assert_almost_equal(known_power, test_power)
+
+    def test_t_power_array(self):
+        known_power = np.array([0.10768599,  0.26244303,  0.41010033,
+                                0.54068791,  0.65018550,  0.73848657,
+                                0.80758442,  0.86036751,  0.89989407,
+                                0.92900109])
+        test_power = t_power(self.counts,
+                             np.array([0.5, 0.5, np.nan]),
+                             self.alpha)
         npt.assert_almost_equal(known_power, test_power)
 
     def test_t_power_ratio(self):
@@ -101,6 +121,16 @@ class PowerSimulation(TestCase):
                                 0.98082831,  0.99110988,  0.99597313,
                                 0.99821261])
         test_power = z_power(self.counts, self.effect, self.alpha)
+        npt.assert_almost_equal(known_power, test_power)
+
+    def test_z_power_array(self):
+        known_power = np.array([0.19991357,  0.49063676,  0.70541390,
+                                0.84087872,  0.91836203,  0.95977970,
+                                0.98082831,  0.99110988,  0.99597313,
+                                0.99821261])
+        test_power = z_power(self.counts,
+                             np.array([0.5, 0.5, np.nan]),
+                             self.alpha)
         npt.assert_almost_equal(known_power, test_power)
 
 
