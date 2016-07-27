@@ -9,7 +9,7 @@ before_install:
   - export PATH=/home/travis/miniconda3/bin:$PATH
   - conda update --yes conda
 install:
-  - conda create --yes --name test python=3 --file conda_enviroment.txt
+  - conda create --name test python=3 --file conda_enviroment.txt
   - source activate test
   - pip install -r pip_requirements.txt
   - pip install . --no-deps
