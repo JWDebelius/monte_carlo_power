@@ -4,13 +4,12 @@ import numpy as np
 import numpy.testing as npt
 import pandas as pd
 import pandas.util.testing as pdt
+import skbio
 
 from emp_power.simulate import (simulate_ttest_1,
                                 simulate_ttest_ind,
                                 simulate_anova,
                                 simulate_correlation,
-                                # simulate_bimodal,
-                                simulate_multivariate,
                                 simulate_permanova,
                                 simulate_mantel,
                                 _convert_to_mirror,
@@ -111,75 +110,6 @@ class PowerSimulation(TestCase):
         self.assertEqual(m, known_m)
         self.assertEqual(b, known_b)
 
-        npt.assert_almost_equal(known_x, x, 5)
-        npt.assert_almost_equal(known_y, y, 5)
-
-    # def test_simulate_bimodal(self):
-    #     parameters = {'bench_lim': [5, 6],
-    #                   'diff_lim': [3, 5],
-    #                   'sep_lim': [3, 5]
-    #                   }
-    #     known_mus = np.array([0.44398634, 1.74146461, 0.41343831, 1.83722182])
-    #     known_offset = 3.9768223775896585
-    #     known_sigmas = np.array([2.22348773, 2.53181571])
-    #     known_sep = 3
-    #     known_counts = 10
-    #     known_frac = 0.5
-    #     known_sample1 = np.array([1.04300669,  0.42767874,  1.63678506,
-    #                               2.90431516, -0.79677127,  6.49457435,
-    #                               3.70710101,  5.44426065,  3.98223784,
-    #                               4.15177992])
-    #     known_sample2 = np.array([4.53686967,  6.73042143,  8.28477920,
-    #                               4.25817653,  5.22376934,  9.74338802,
-    #                               6.63873189,  9.13991296,  8.79473736,
-    #                               9.23779215])
-
-    #     [mu, sigma, counts, frac, offset, sep], [sample1, sample2] = \
-    #         simulate_bimodal(self.mu_lim, self.sigma_lim, self.count_lim,
-    #                          **parameters)
-
-    #     npt.assert_almost_equal(known_mus, mu, 5)
-    #     npt.assert_almost_equal(known_sigmas, sigma, 5)
-    #     npt.assert_almost_equal(known_offset, offset, 5)
-    #     npt.assert_almost_equal(known_sample1, sample1, 5)
-    #     npt.assert_almost_equal(known_sample2, sample2, 5)
-    #     self.assertEqual(known_sep, sep)
-    #     self.assertEqual(known_counts, counts)
-    #     self.assertEqual(known_frac, frac)
-
-    def test_multivarate(self):
-        known_ms = np.array([1, 0])
-        known_b = 2
-        known_sigma = 2
-        known_n = 10
-
-        known_x = np.array([[02.51962642,  0.39499901],
-                            [00.75776645,  0.24927519],
-                            [-0.81991015,  0.65961283],
-                            [-1.59643650,  0.59924136],
-                            [-2.35801801,  0.62402061],
-                            [02.32408712,  0.21195371],
-                            [00.20883551,  0.23522260],
-                            [-1.80581355,  0.19686900],
-                            [03.33139071,  0.28810526],
-                            [-0.98160953,  0.06191358]])
-
-        known_y = np.array([06.51250607,  4.18260899,  1.29837833, -0.32305826,
-                            -0.35144033,  4.11222624,  3.79494215, -1.06895681,
-                            05.31900089,  0.81625525])
-
-        [ms, b, s, n], [x, y] = simulate_multivariate(slope_lim=self.mu_lim,
-                                                      intercept_lim=[-3, 3],
-                                                      sigma_lim=self.sigma_lim,
-                                                      count_lim=self.count_lim,
-                                                      x_lim=[-5, 5],
-                                                      num_pops=2,
-                                                      )
-
-        npt.assert_array_equal(known_ms, ms)
-        self.assertEqual(known_b, b)
-        self.assertEqual(known_sigma, s)
-        self.assertEqual(known_n, n)
         npt.assert_almost_equal(known_x, x, 5)
         npt.assert_almost_equal(known_y, y, 5)
 

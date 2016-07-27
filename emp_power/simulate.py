@@ -233,58 +233,6 @@ def simulate_correlation(slope_lim, intercept_lim, sigma_lim, count_lim,
     return [sigma, n, m, b], [x, y]
 
 
-def simulate_multivariate(slope_lim, intercept_lim, sigma_lim, count_lim,
-    x_lim, num_pops):
-    """Simulates a multivariate regression
-
-    Parameters
-    ----------
-    slope_lim : list
-        The limits for selecting a slope
-    intercept_lim : list, float
-        the limits on values for the intercept
-    sigma_lim : list, float
-        The limits for selecting a variance
-    count_lim : list, float
-        the number of observations which should be drawn for the sample
-    x_lim : list
-        sets limits on the range for predictors
-    num_pops: int
-        the number of populations which should be returned
-
-    Returns
-    -------
-    params : list
-        The simulaton parameters used for the data
-    [xs, y] : np.arrays
-        The simulated predictor and response variates. The predictor is of size
-        `count` x `num_pops` and the response is a one-dimensional array of
-        size `count`.
-
-    """
-
-    # Simulates regression parameters
-    ms = np.random.randint(*slope_lim, size=num_pops)
-    s = _check_param(sigma_lim, 'sigma lim', np.random.randint)
-    n = _check_param(count_lim, 'count lim', np.random.randint)
-    b = _check_param(intercept_lim, 'intercept lim', np.random.randint)
-
-    slopes = np.atleast_2d(ms) * np.ones((n, 1))
-
-    # Simulates the limits for the x values
-    ranges = [sorted(np.random.uniform(*x_lim, size=2))
-              for i in np.arange(num_pops)]
-
-    x = np.array([np.random.uniform(*ranges[i], size=n)
-                  for i in np.arange(num_pops)]).transpose()
-
-    # Simulates the response
-    slopes = np.ones((n, 1)) * np.atleast_2d(ms)
-    y = np.sum(slopes * x, 1) + np.random.randn(n) * s + b
-
-    return [ms, b, s, n], [x, y]
-
-
 def simulate_mantel(slope_lim, intercept_lim, sigma_lim, count_lim, x_lim,
     distance=None):
     """Simulates two correlated matrices
