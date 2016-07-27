@@ -13,6 +13,7 @@ before_install:
 install:
   - conda create -q -n test python=3 --file conda_enviroment.txt
   - source activate test
+  - pip install python-coveralls
   - pip install -r pip_requirements.txt
   - pip install . --no-deps
 script:
