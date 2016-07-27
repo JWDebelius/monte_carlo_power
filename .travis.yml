@@ -1,0 +1,22 @@
+language: python
+python:
+  - "3.5"
+before_install:
+  # Sets up conda
+  - wget http://repo.continuum.io/miniconda/Miniconda3-3.7.3-Linux-x86_64.sh -O miniconda.sh
+  - chmod +x miniconda.sh
+  - ./miniconda.sh -b
+  - export PATH=/home/travis/miniconda3/bin:$PATH
+  - conda update --yes conda
+install:
+  - conda create --yes --name test python=3 --file conda_enviroment.txt
+  - source activate test
+  - pip install -r pip_requirements.txt
+  - pip install . --no-deps
+script:
+  - python emp_power/tests/test_effects.py
+  - python emp_power/tests/test_power.py
+  - python emp_power/tests/test_simulate.py
+  - python emp_power/tests/test_traditional.py
+after_success:
+  - coveralls
