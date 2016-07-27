@@ -6,7 +6,7 @@ tt = TTestIndPower()
 ft = FTestAnovaPower()
 
 
-def f_effect(counts, power, alpha=0.05, groups=3):
+def f_effect(counts, power, alpha=0.05, groups=2):
     """Estimates the effect size based on a two-tail F distribution
 
     Parameters
@@ -31,7 +31,7 @@ def f_effect(counts, power, alpha=0.05, groups=3):
         statsmodels.stats.power.FTestAnovaPower.solve_power
     """
     power = np.atleast_2d(power)
-    eff = np.zeros(power.shape) * np.nan
+    eff = np.ones(power.shape) * np.nan
     for idx, pwr in enumerate(power):
         for idy, (count, pwr_) in enumerate(zip(*(counts, pwr))):
             try:

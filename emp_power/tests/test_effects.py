@@ -33,6 +33,15 @@ class PowerSimulation(TestCase):
         self.assertEqual(known_effects.shape, test_effects.shape)
         npt.assert_almost_equal(known_effects[0, 1:], test_effects[0, 1:])
 
+    def test_f_effects_groups(self):
+        known_effects = np.array([1.8189894e-12, 3.0985138e-01, 2.9088176e-01,
+                                  2.7989659e-01, 2.7240589e-01, 2.6682938e-01,
+                                  2.6245312e-01, 2.5888351e-01, 2.5589220e-01,
+                                  2.5333223e-01])
+        test_effects = f_effect(self.counts, self.power, self.alpha, 5)
+        self.assertTrue((np.round(np.log10(test_effects), 5) ==
+                        np.round(np.log10(known_effects), 5)).all())
+
     def test_t_effect(self):
         known_effects = np.array([[np.nan,      0.25190748,  0.26429554,
                                    0.26728415,  0.26832483,  0.26877072,
