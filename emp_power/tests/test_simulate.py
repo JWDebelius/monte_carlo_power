@@ -127,6 +127,7 @@ class PowerSimulation(TestCase):
         pdt.assert_series_equal(known_grouping, grouping)
 
     def test_simulate_mantel(self):
+        print(skbio.__version__)
         params, [x, y] = simulate_mantel(slope_lim=self.sigma_lim,
                                          sigma_lim=self.sigma_lim,
                                          count_lim=[4, 5],
