@@ -4,7 +4,6 @@ import numpy as np
 import numpy.testing as npt
 import pandas as pd
 import pandas.util.testing as pdt
-import skbio
 
 from emp_power.simulate import (simulate_ttest_1,
                                 simulate_ttest_ind,
@@ -126,8 +125,21 @@ class PowerSimulation(TestCase):
         self.assertEqual(dm_ids, dm.ids)
         pdt.assert_series_equal(known_grouping, grouping)
 
+    def test_simulate_permanova_no_num0(self):
+        known_grouping = pd.Series([0, 0, 1, 1], index=dm_ids, name='groups')
+
+        params, [dm, grouping] = simulate_permanova(num_samples=4,
+                                                    num0=None,
+                                                    wdist=0.2,
+                                                    wspread=0.1,
+                                                    bdist=0.5,
+                                                    bspread=0.1
+                                                    )
+        self.assertEqual(dm_ids, dm.ids)
+        self.assertEqual((4, 4), dm.shape)
+        pdt.assert_series_equal(known_grouping, grouping)
+
     def test_simulate_mantel(self):
-        print(skbio.__version__)
         params, [x, y] = simulate_mantel(slope_lim=self.sigma_lim,
                                          sigma_lim=self.sigma_lim,
                                          count_lim=[4, 5],
