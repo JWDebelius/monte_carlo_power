@@ -14,9 +14,8 @@ class PlotTest(TestCase):
 
     def test_set_ticks(self):
         known = np.arange(0, 1.1, 0.25)
-        test = _set_ticks([0, 1], 0.25)
-        print(test)
-        # npt.assert_array_equal(known, test)
+        test = _set_ticks([0, 1], 4)
+        npt.assert_array_equal(known, test)
 
     def test_get_symetrical(self):
         known = [-5, 5]
