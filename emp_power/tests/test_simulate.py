@@ -18,7 +18,6 @@ from emp_power.simulate import (simulate_ttest_1,
                                 _vec_size,
                                 )
 
-
 class PowerSimulation(TestCase):
 
     def setUp(self):

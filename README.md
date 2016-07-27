@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/jwdebelius/monte_carlo_power.svg?branch=master)](https://travis-ci.org/jwdebelius/monte_carlo_power)
+
 # Monte Carlo Emperical Power
 Simulations and benchmarking for monte carlo power.
 
