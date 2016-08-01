@@ -23,6 +23,12 @@ def simulate_ttest_1(mu_lim, sigma_lim, count_lim=100):
     simulation_results : list
         The simulated normal distribution
 
+    Raises
+    ------
+    TypeError
+        If any parameter is not a float or a list.
+
+
     """
 
     # Gets the distribution parameters
@@ -52,6 +58,11 @@ def simulate_ttest_ind(mu_lim, sigma_lim, count_lim=100):
         The values for `[mu1, mu2, sigma1, sigma2, n]` for the sample.
     simulation_results : list
         The simulated normal distributions
+
+    Raises
+    ------
+    TypeError
+        If any parameter is not a float or a list.
 
     """
     # Gets the distribution paramters
@@ -89,6 +100,11 @@ def simulate_anova(mu_lim, sigma_lim, count_lim, num_pops):
         [list of means per group, sigma, sample size].
     simulation_results : list
         The simulated normal distributions
+
+    Raises
+    ------
+    TypeError
+        If the `mu_lim`, `sigma_lim`, or `count_lim` are not a float or list.
     """
 
     # Defines the distribtuion parameters
@@ -104,8 +120,7 @@ def simulate_anova(mu_lim, sigma_lim, count_lim, num_pops):
 
 
 def simulate_permanova(num_samples, num0=None, wdist=[0, 0.5],
-    wspread=[0, 0.5], bdist=[0, 0.5],
-    bspread=[0, 0.5]):
+                       wspread=[0, 0.5], bdist=[0, 0.5], bspread=[0, 0.5]):
     """Makes a distance matrix with specified mean distance and spread
 
     Paramaters
@@ -124,8 +139,6 @@ def simulate_permanova(num_samples, num0=None, wdist=[0, 0.5],
         A value or range for the distance spread for the within (`wspread`) or
         between (`bspread`) sample distances. If a list is supplied, a value
         will be drawn between the first to values.
-    current : float between [0, 1] inclusive
-        A constant value to add to the distance matrices
 
     Returns
     -------
@@ -141,9 +154,8 @@ def simulate_permanova(num_samples, num0=None, wdist=[0, 0.5],
 
     Raises
     ------
-    ValueError
-        If `wdist`, `wspread`, `bdist`, or `bspread` is not a float or list, a
-        ValueError is raised.
+    TypeError
+        If `wdist`, `wspread`, `bdist`, or `bspread` is not a float or list
 
     """
 
@@ -195,7 +207,7 @@ def simulate_permanova(num_samples, num0=None, wdist=[0, 0.5],
 
 
 def simulate_correlation(slope_lim, intercept_lim, sigma_lim, count_lim,
-    x_lim):
+                         x_lim):
     """Simulates data for a simple correlation
 
     Parameters
@@ -218,6 +230,11 @@ def simulate_correlation(slope_lim, intercept_lim, sigma_lim, count_lim,
         for the sample.
     simulation_results : list
         Vectors of coordinates for the x and y values
+
+    Raises
+    ------
+    TypeError
+        If any of the parameters are not a float or list.
     """
 
     # Calculates the distribution for the residuals
@@ -260,6 +277,12 @@ def simulate_mantel(slope_lim, intercept_lim, sigma_lim, count_lim, x_lim,
         for the sample.
     simulation_results : list
         Vectors of coordinates for the x and y values
+
+    Raises
+    ------
+    TypeError
+        If the `slope_lim`, `intercept_lim`, `sigma_lim`, `count_lim, or
+        `x_lim` of the parameters are not a float or list.
 
     """
 
@@ -311,7 +334,7 @@ def _check_param(param, param_name, random=np.random.uniform):
     if isinstance(param, list):
         return random(*param)
     elif not isinstance(param, float):
-        raise ValueError('%s must be a list or a float' % param_name)
+        raise TypeError('%s must be a list or a float' % param_name)
     else:
         return param
 
