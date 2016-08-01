@@ -7,7 +7,7 @@ ft = FTestAnovaPower()
 
 
 def f_effect(counts, power, alpha=0.05, groups=2):
-    """Estimates the effect size based on a two-tail F distribution
+    """Estimates the effect size based on an F distribution
 
     Parameters
     ----------
@@ -115,6 +115,7 @@ def z_effect(counts, power, alpha=0.05):
     ndarray
         A standard measure of the difference between the underlying
         populations
+
     """
     power = np.atleast_2d(power)
     z_diff = z.ppf(power) + z.ppf(1 - alpha/2)
