@@ -8,6 +8,11 @@ import scipy.stats as stats
 def calc_ttest_1(sample, x0, counts, alpha=0.05):
     """Calculates statistical power for a one-sample t test
 
+    This is based on
+        Lui, X.S. (2014) *Statistical power analysis for the social and
+        behavioral sciences: basic and advanced techniques.* New York:
+        Routledge. 378 pg.
+
     Parameters
     ----------
     sample : array
@@ -21,7 +26,7 @@ def calc_ttest_1(sample, x0, counts, alpha=0.05):
 
     Returns
     -------
-    power : array
+    ndarray
         This describes the probability of seeing a signifigant difference
         between the sample and mean for the specified number of observations
         (count) and critical value based on the one sample t test.
@@ -45,6 +50,11 @@ def calc_ttest_1(sample, x0, counts, alpha=0.05):
 def calc_ttest_ind(sample1, sample2, counts, alpha=0.05):
     """Calculates statistical power for a two sample t test
 
+    This is based on
+        Lui, X.S. (2014) *Statistical power analysis for the social and
+        behavioral sciences: basic and advanced techniques.* New York:
+        Routledge. 378 pg.
+
     Parameters
     ----------
     sample1, sample2 : array
@@ -56,7 +66,7 @@ def calc_ttest_ind(sample1, sample2, counts, alpha=0.05):
 
     Returns
     -------
-    power : array
+    ndrray
         This describes the probability of seeing a signifigant difference
         between the samples for the specified number of observations
         (count) and critical value based on the independent two sample t test.
@@ -84,6 +94,11 @@ def calc_ttest_ind(sample1, sample2, counts, alpha=0.05):
 def calc_anova(*samples, **kwargs):
     """Calculates statistical power for a one way ANOVA
 
+    This is based on
+        Lui, X.S. (2014) *Statistical power analysis for the social and
+        behavioral sciences: basic and advanced techniques.* New York:
+        Routledge. 378 pg.
+
     Parameters
     ----------
     samples : ndarrays
@@ -95,10 +110,10 @@ def calc_anova(*samples, **kwargs):
 
     Returns
     -------
-    power : array
+    ndarray
         This describes the probability of seeing a signifigant difference
         between the samples for the specified number of observations
-        (count) and critical value based on an ANOVA.
+        (count) and critical value.
     """
 
     # Checks the keywords
@@ -143,7 +158,31 @@ def calc_anova(*samples, **kwargs):
 
 
 def calc_pearson(sample1, sample2, counts, alpha=0.05):
-    """Calculates power for pearsons r"""
+    """Calculates power for pearsons R
+
+    This is based on
+        Lui, X.S. (2014) *Statistical power analysis for the social and
+        behavioral sciences: basic and advanced techniques.* New York:
+        Routledge. 378 pg.
+
+    Parameters
+    ----------
+    sample1, sample2 : ndarrays
+        Arrays of observations to be tested. The samples must be of the same
+        length, and sample positions should match samples.
+    counts : array
+        the number of observations per sample to be used to test the power
+    alpha : float
+        The critical value for power calculations
+
+    Returns
+    -------
+    ndarray
+        This describes the probability of seeing a signifigant difference
+        between the samples for the specified number of observations
+        (count) and critical value based on the pearson method.
+
+    """
     r = stats.pearsonr(sample1, sample2)[0]
 
     noncentrality = r / np.sqrt(1 - np.square(r)) * np.sqrt(counts)
