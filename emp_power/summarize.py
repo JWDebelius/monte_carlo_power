@@ -7,9 +7,43 @@ import pandas as pd
 import emp_power.effects as eff
 
 
-def summarize_power(power_summary, sim_num, test, colors, num_groups=2,
-    dists=None):
-    """Generates a dataframe describing a power calculation run"""
+def summarize_power(power_summary, sim_num, test, colors, dists=None,
+                    num_groups=2):
+    """Generates a dataframe describing a power calculation run
+
+    Please note, this function is primarily designed for use with the
+    simulation notebooks.
+
+    Parameters
+    ----------
+    power_summary : dict
+        A dictionary summarizing the power simulation outputs generated in
+        the monte_carlo_power simulation notebooks.
+    sim_num : int
+        Idenifier for the simulation
+    test : str
+        The name of the test applied
+    colors : dictionary
+        A dictionary linking the counts to the colors to be used in regression
+        and residual gradient plots
+    dists : list, optional
+        The list of distributions to be used to calculate effect sizes and
+        power. By default, f, t, and z distributions will be used.
+    num_groups : int, optional
+        The number of groups included, to be used with the F distribution
+
+    Returns
+    -------
+    ndarray
+        The summary of the power analysis where each row contains data from a
+        single observation. Columns include `counts`, `traditional`
+        (distribution-based power), `emperical` (emperically based power),
+        `sim_position` (a unique idenifier for each simulation), `test`,
+        `alpha` (the critical value), `sim_num` (the simulation id), `colors`,
+        and the corresponding `effect` and `power` for each distribution
+        specified in `dists`
+
+    """
 
     # Pulls out the required information
     if dists is None:
@@ -42,14 +76,38 @@ def summarize_power(power_summary, sim_num, test, colors, num_groups=2,
     return run_summary
 
 
-def modify_effect_size(df, drop_index, distributions=None, num_groups=2):
-    """Calculates a modified effect size based on dropped values"""
-    copy_cols = ['emperical', 'counts', 'color', 'simulation', 'sim_pos',
-                 'test']
-    copy_cols.extend(['%s_effect' % d for d in distributions])
+def modify_effect_size(df, drop_index, dists, num_groups=2):
+    """Calculates a modified effect size based on dropped values
+
+    Parameters
+    ----------
+    df : DataFrame
+        The output of `summarize_power` or a concatendated description of the
+        output of summarize power
+    drop_index : list, ndarray or Index
+        The observations to be excluded from the calculations
+    dists : list
+        The list of distributions to be used to calculate effect sizes and
+        power.
+    num_groups : int, optional
+        The number of groups included, to be used with the F distribution
+
+    Returns
+    -------
+    DataFrame
+        Summarizes the recalculated effect sizes and power. Columns include
+        `counts`, `traditional` (distribution-based power),
+        `emperical` (emperically based power), `sim_position` (a unique
+        idenifier for each simulation), `test`, `alpha` (the critical value),
+        `sim_num` (the simulation id), `colors`, and the corresponding
+        `effect` and `power` for each distribution specified in `dists.`
+    """
+    copy_cols = ['emperical', 'traditional', 'counts', 'color', 'simulation',
+                 'sim_pos', 'test', 'alpha']
+    copy_cols.extend(['%s_effect' % d for d in dists])
     df_mod = copy.deepcopy(df)
-    df_mod.loc[drop_index, ['%s_effect' % d for d in distributions]] = np.nan
-    _calculate_power(df_mod, distributions, num_groups)
+    df_mod.loc[drop_index, ['%s_effect' % d for d in dists]] = np.nan
+    _calculate_power(df_mod, dists, num_groups)
 
     return df_mod
 
@@ -78,26 +136,6 @@ def _build_summary_frame(sim):
          })
 
     return run_summary
-
-
-def _calculate_effect_size(df, distributions, num_groups=2):
-    """Adds the effect sizes to the dataframe"""
-    for dist in distributions:
-        f_ = partial(effect_lookup[dist], col2='emperical',
-                     num_groups=num_groups)
-        df['%s_effect' % dist] = df.apply(f_, axis=1)
-
-
-def _calculate_power(df, distributions, num_groups=2):
-    """Adds power calculations to the dataframe"""
-    mean_lookup = (df.groupby('sim_num').mean()
-                   [['%s_effect' % d for d in distributions]].to_dict())
-    for dist in distributions:
-        f_ = partial(power_lookup[dist],
-                     col2='%s_mean' % dist,
-                     num_groups=num_groups)
-        df['%s_mean' % dist] = df['sim_num'].replace(mean_lookup)
-        df['%s_power' % dist] = df.apply(f_, axis=1)
 
 
 def calc_f_effect(x, col2='emperical', num_groups=2):
@@ -148,6 +186,26 @@ def calc_z_power(x, col2, num_groups=2):
                         effect=x[col2],
                         alpha=x['alpha'])
     return power
+
+
+def _calculate_effect_size(df, distributions, num_groups=2):
+    """Adds the effect sizes to the dataframe"""
+    for dist in distributions:
+        f_ = partial(effect_lookup[dist], col2='emperical',
+                     num_groups=num_groups)
+        df['%s_effect' % dist] = df.apply(f_, axis=1)
+
+
+def _calculate_power(df, distributions, num_groups=2):
+    """Adds power calculations to the dataframe"""
+    mean_lookup = (df.groupby('sim_num').mean()
+                   [['%s_effect' % d for d in distributions]].to_dict())
+    for dist in distributions:
+        f_ = partial(power_lookup[dist],
+                     col2='%s_mean' % dist,
+                     num_groups=num_groups)
+        df['%s_mean' % dist] = df['sim_num'].replace(mean_lookup)
+        df['%s_power' % dist] = df.apply(f_, axis=1)
 
 
 effect_lookup = {'f': calc_f_effect,
