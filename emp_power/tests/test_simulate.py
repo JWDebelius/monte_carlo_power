@@ -169,7 +169,7 @@ class PowerSimulation(TestCase):
 
     def test_check_param_error(self):
         param = 'param'
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             _check_param(param, 'param')
 
     def test_simulate_gauss_vec_less(self):
