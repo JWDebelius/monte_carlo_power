@@ -1,4 +1,4 @@
-# from matplotlib import use
+from matplotlib import use
 use('Agg') #noqa
 import numpy as np
 import scipy
