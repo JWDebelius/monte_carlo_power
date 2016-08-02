@@ -58,7 +58,7 @@ def summarize_power(power_summary, sim_num, test, colors, dists=None,
     run_summary['sim_num'] = sim_num
 
     # Includes the count values to be plotted
-    run_summary['colors'] = run_summary['counts'].replace(colors)
+    run_summary['colors'] = run_summary['counts'].apply(lambda x: colors[x])
 
     # Calculates the effect sizes
     _calculate_effect_size(run_summary, dists, num_groups)
@@ -121,7 +121,8 @@ def _build_summary_frame(sim):
     (empr_r, empr_c) = emperical.shape
 
     # Draws the traditional power
-    if 'traditional_power' in sim.keys():
+    if ('traditional_power' in sim.keys() and
+            (sim['traditional_power'] is not None)):
         traditional = sim['traditional_power']
     else:
         traditional = np.nan * np.ones(counts.shape)
@@ -201,10 +202,11 @@ def _calculate_power(df, distributions, num_groups=2):
     mean_lookup = (df.groupby('sim_num').mean()
                    [['%s_effect' % d for d in distributions]].to_dict())
     for dist in distributions:
+        df['%s_mean' % dist] = \
+            df['sim_num'].replace(mean_lookup['%s_effect' % dist])
         f_ = partial(power_lookup[dist],
                      col2='%s_mean' % dist,
                      num_groups=num_groups)
-        df['%s_mean' % dist] = df['sim_num'].replace(mean_lookup)
         df['%s_power' % dist] = df.apply(f_, axis=1)
 
 
