@@ -251,7 +251,7 @@ def simulate_correlation(slope_lim, intercept_lim, sigma_lim, count_lim,
 
 
 def simulate_mantel(slope_lim, intercept_lim, sigma_lim, count_lim, x_lim,
-    distance=None):
+                    distance=None):
     """Simulates two correlated matrices
 
     Parameters
