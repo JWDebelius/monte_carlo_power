@@ -1,8 +1,8 @@
 ipynb/simulations/**/**
 ipynb/simulations/**
 monte_carlo_power.egg-info/**
-emp_power/__pycache__/plot.cpython-35.pyc
-emp_power/__pycache__/plot.cpython-35.pyc
+emp_power/__pycache__/*.cpython-35.pyc
 emp_power/__pycache__/**
+emp_power/test/__pycache__/**
 emp_power/*.pyc
 ipynb/.ipynb_checkpoints/**
