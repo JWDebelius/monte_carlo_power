@@ -122,15 +122,15 @@ def modify_effect_size(df, drop_index, dists, num_groups=2):
 def _build_summary_frame(sim):
     """Builds the intial dataframe summarizing the run"""
     counts = sim['counts']
-    empirical = sim['empirical_power']
+    empirical = sim['empirical']
 
     # Determines the number of samples handled in the summary
     (empr_r, empr_c) = empirical.shape
 
     # Draws the traditional power
-    if ('traditional_power' in sim.keys() and
-            (sim['traditional_power'] is not None)):
-        traditional = sim['traditional_power']
+    if ('traditional' in sim.keys() and
+            (sim['traditional'] is not None)):
+        traditional = sim['traditional']
     else:
         traditional = np.nan * np.ones(counts.shape)
 
