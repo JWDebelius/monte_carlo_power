@@ -16,7 +16,7 @@ import machivellian.effects as eff
 
 
 def summarize_power(power_summary, sim_num, test, colors, dists=None,
-                    num_groups=2):
+    num_groups=2):
     """Generates a dataframe describing a power calculation run
 
     Please note, this function is primarily designed for use with the
@@ -52,9 +52,7 @@ def summarize_power(power_summary, sim_num, test, colors, dists=None,
         specified in `dists`
     """
 
-    # Pulls out the required information
-    if dists is None:
-        dists = ['f', 't', 'z']
+    dists = _get_dists(dists)
 
     # Builds the initia data frame
     run_summary = _build_summary_frame(power_summary)
@@ -83,7 +81,7 @@ def summarize_power(power_summary, sim_num, test, colors, dists=None,
     return run_summary
 
 
-def modify_effect_size(df, drop_index, dists, num_groups=2):
+def modify_effect_size(df, drop_index, dists=None, num_groups=2):
     """Calculates a modified effect size based on dropped values
 
     Parameters
@@ -117,33 +115,6 @@ def modify_effect_size(df, drop_index, dists, num_groups=2):
     _calculate_power(df_mod, dists, num_groups)
 
     return df_mod
-
-
-def _build_summary_frame(sim):
-    """Builds the intial dataframe summarizing the run"""
-    counts = sim['counts']
-    empirical = sim['empirical']
-
-    # Determines the number of samples handled in the summary
-    (empr_r, empr_c) = empirical.shape
-
-    # Draws the traditional power
-    if ('traditional' in sim.keys() and
-            (sim['traditional'] is not None)):
-        traditional = sim['traditional']
-    else:
-        traditional = np.nan * np.ones(counts.shape)
-
-    # Sets up the summary dictionary
-    run_summary = pd.DataFrame.from_dict(
-        {'counts': np.hstack(np.array([counts] * empr_r)),
-         'empirical': np.hstack(empirical),
-         'traditional': np.hstack(np.array([traditional] * empr_r)),
-         'sim_position': np.hstack([np.arange(empr_c) + i * 10
-                                    for i in np.arange(empr_r)]),
-         })
-
-    return run_summary
 
 
 def calc_f_effect(x, col2='empirical', num_groups=2):
@@ -196,11 +167,42 @@ def calc_z_power(x, col2, num_groups=2):
     return power
 
 
+def _build_summary_frame(sim):
+    """Builds the intial dataframe summarizing the run"""
+    counts = sim['counts']
+    empirical = sim['empirical']
+
+    # Determines the number of samples handled in the summary
+    (empr_r, empr_c) = empirical.shape
+
+    # Draws the traditional power
+    if ('traditional' in sim.keys() and
+            (sim['traditional'] is not None)):
+        traditional = sim['traditional']
+    else:
+        traditional = np.nan * np.ones(counts.shape)
+
+    # Sets up the summary dictionary
+    run_summary = pd.DataFrame.from_dict(
+        {'counts': np.hstack(np.array([counts] * empr_r)),
+         'emperical': np.hstack(empirical),
+         'traditional': np.hstack(np.array([traditional] * empr_r)),
+         'sim_position': np.hstack([np.arange(empr_c) + i * 10
+                                    for i in np.arange(empr_r)]),
+         })
+
+    return run_summary
+
+
 def _calculate_effect_size(df, distributions, num_groups=2):
     """Adds the effect sizes to the dataframe"""
     for dist in distributions:
+        if dist == 'f2':
+            ng = 2
+        else:
+            ng = num_groups
         f_ = partial(effect_lookup[dist], col2='empirical',
-                     num_groups=num_groups)
+                     num_groups=ng)
         df['%s_effect' % dist] = df.apply(f_, axis=1)
 
 
@@ -211,17 +213,31 @@ def _calculate_power(df, distributions, num_groups=2):
     for dist in distributions:
         df['%s_mean' % dist] = \
             df['sim_num'].replace(mean_lookup['%s_effect' % dist])
+        if dist == 'f2':
+            ng = 2
+        else:
+            ng = num_groups
         f_ = partial(power_lookup[dist],
                      col2='%s_mean' % dist,
-                     num_groups=num_groups)
+                     num_groups=ng)
         df['%s_power' % dist] = df.apply(f_, axis=1)
 
 
+def _get_dists(dists):
+    # Pulls out the required information
+    if dists is None:
+        return ['f', 'f2', 't', 'z']
+    else:
+        return dists
+
+
 effect_lookup = {'f': calc_f_effect,
+                 'f2': calc_f_effect,
                  't': calc_t_effect,
                  'z': calc_z_effect
                  }
 
 power_lookup = {'f': calc_f_power,
+                'f2': calc_f_power,
                 't': calc_t_power,
                 'z': calc_z_power}

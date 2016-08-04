@@ -17,6 +17,7 @@ from machivellian.summarize import (summarize_power,
                                     _build_summary_frame,
                                     _calculate_effect_size,
                                     modify_effect_size,
+                                    _get_dists,
                                     )
 
 
@@ -87,16 +88,6 @@ class SummarizeTest(TestCase):
         self.assertEqual(test['sim_num'].unique(), 0)
         self.assertEqual(test['colors'].unique(), 'k')
 
-    def test_summarize_power_dists(self):
-        test = summarize_power(self.power_summary,
-                               sim_num=0,
-                               test='test',
-                               colors={i: 'k' % i
-                                       for i in np.arange(5, 100, 10)})
-        for d in ['f', 'z', 't']:
-            self.assertTrue('%s_effect' % d in test.columns)
-            self.assertTrue('%s_power' % d in test.columns)
-
     def test_modify_effect_sizes(self):
         drop_index = ['B']
         mod = modify_effect_size(self.df, drop_index, ['z'])
@@ -152,6 +143,11 @@ class SummarizeTest(TestCase):
         known = copy.deepcopy(self.df)
         known['z_power'] = [0.84087872,  0.91836203]
         known['z_mean'] = 0.5
+
+    def test_get_dists(self):
+        known = ['f', 'f2', 't', 'z']
+        test = _get_dists(None)
+        self.assertEqual(known, test)
 
 if __name__ == '__main__':
     main()
