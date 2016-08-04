@@ -27,7 +27,7 @@ class SummarizeTest(TestCase):
     def setUp(self):
         self.power_summary = {
             'counts': np.array([5, 15, 25, 35, 45, 55, 65, 75, 85, 95]),
-            'emperical_power': np.array([[0.04698995, 0.10223453, 0.15022543,
+            'empirical_power': np.array([[0.04698995, 0.10223453, 0.15022543,
                                           0.19666182, 0.24228406, 0.28709498,
                                           0.33092360, 0.37356885, 0.41484527,
                                           0.45459791]]),
@@ -49,20 +49,20 @@ class SummarizeTest(TestCase):
                             0.41484527, 0.45459791],
                            np.arange(10),
                            ]),
-            index=['counts', 'emperical', 'traditional', 'sim_position']
+            index=['counts', 'empirical', 'traditional', 'sim_position']
             ).T
         self.early_summary['counts'] = \
             self.early_summary['counts'].apply(lambda x: int(x))
         self.early_summary['sim_position'] = \
             self.early_summary['sim_position'].apply(lambda x: int(x))
-        self.early_summary = self.early_summary[['counts', 'emperical',
+        self.early_summary = self.early_summary[['counts', 'empirical',
                                                  'sim_position',
                                                  'traditional']]
 
         self.df = pd.DataFrame(
             data=np.array([[35, 0.05, 0.19666182, 0.5, 1, 0],
                            [45, 0.05, 0.24228406, 0.5, 1, 1]]),
-            columns=['counts', 'alpha', 'emperical', 'z_effect',
+            columns=['counts', 'alpha', 'empirical', 'z_effect',
                      'sim_num', 'sim_pos'],
             index=['A', 'B']
             )
@@ -121,7 +121,7 @@ class SummarizeTest(TestCase):
                                colors={i: 'k' % i
                                        for i in np.arange(5, 100, 10)},
                                dists=['z'])
-        columns = pd.Index(['counts', 'emperical', 'sim_position',
+        columns = pd.Index(['counts', 'empirical', 'sim_position',
                             'traditional', 'test', 'alpha',
                             'sim_num', 'colors', 'z_effect',
                             'z_mean', 'z_power'])
