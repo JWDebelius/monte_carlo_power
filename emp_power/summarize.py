@@ -37,12 +37,11 @@ def summarize_power(power_summary, sim_num, test, colors, dists=None,
     ndarray
         The summary of the power analysis where each row contains data from a
         single observation. Columns include `counts`, `traditional`
-        (distribution-based power), `emperical` (emperically based power),
-        `sim_position` (a unique idenifier for each simulation), `test`,
+        (distribution-based power), `empirical` (empirically based power),
+        `sim_position` (a unique identifier for each simulation), `test`,
         `alpha` (the critical value), `sim_num` (the simulation id), `colors`,
         and the corresponding `effect` and `power` for each distribution
         specified in `dists`
-
     """
 
     # Pulls out the required information
@@ -82,7 +81,7 @@ def modify_effect_size(df, drop_index, dists, num_groups=2):
     Parameters
     ----------
     df : DataFrame
-        The output of `summarize_power` or a concatendated description of the
+        The output of `summarize_power` or a concatenated description of the
         output of summarize power
     drop_index : list, ndarray or Index
         The observations to be excluded from the calculations
@@ -97,12 +96,12 @@ def modify_effect_size(df, drop_index, dists, num_groups=2):
     DataFrame
         Summarizes the recalculated effect sizes and power. Columns include
         `counts`, `traditional` (distribution-based power),
-        `emperical` (emperically based power), `sim_position` (a unique
+        `empirical` (empirically based power), `sim_position` (a unique
         idenifier for each simulation), `test`, `alpha` (the critical value),
         `sim_num` (the simulation id), `colors`, and the corresponding
         `effect` and `power` for each distribution specified in `dists.`
     """
-    copy_cols = ['emperical', 'traditional', 'counts', 'color', 'simulation',
+    copy_cols = ['empirical', 'traditional', 'counts', 'color', 'simulation',
                  'sim_pos', 'test', 'alpha']
     copy_cols.extend(['%s_effect' % d for d in dists])
     df_mod = copy.deepcopy(df)
@@ -115,10 +114,10 @@ def modify_effect_size(df, drop_index, dists, num_groups=2):
 def _build_summary_frame(sim):
     """Builds the intial dataframe summarizing the run"""
     counts = sim['counts']
-    emperical = sim['emperical_power']
+    empirical = sim['empirical_power']
 
     # Determines the number of samples handled in the summary
-    (empr_r, empr_c) = emperical.shape
+    (empr_r, empr_c) = empirical.shape
 
     # Draws the traditional power
     if ('traditional_power' in sim.keys() and
@@ -130,7 +129,7 @@ def _build_summary_frame(sim):
     # Sets up the summary dictionary
     run_summary = pd.DataFrame.from_dict(
         {'counts': np.hstack(np.array([counts] * empr_r)),
-         'emperical': np.hstack(emperical),
+         'empirical': np.hstack(empirical),
          'traditional': np.hstack(np.array([traditional] * empr_r)),
          'sim_position': np.hstack([np.arange(empr_c) + i * 10
                                     for i in np.arange(empr_r)]),
@@ -139,7 +138,7 @@ def _build_summary_frame(sim):
     return run_summary
 
 
-def calc_f_effect(x, col2='emperical', num_groups=2):
+def calc_f_effect(x, col2='empirical', num_groups=2):
     """Wraps the f-based power calculation for pandas `apply`"""
     effect = eff.f_effect([x['counts']],
                           [x[col2]],
@@ -148,7 +147,7 @@ def calc_f_effect(x, col2='emperical', num_groups=2):
     return effect
 
 
-def calc_t_effect(x, col2='emperical', num_groups=2):
+def calc_t_effect(x, col2='empirical', num_groups=2):
     """Wraps the t-based power calculation for pandas `apply`"""
     effect = eff.t_effect([x['counts']],
                           [x[col2]],
@@ -156,7 +155,7 @@ def calc_t_effect(x, col2='emperical', num_groups=2):
     return effect
 
 
-def calc_z_effect(x, col2='emperical', num_groups=2):
+def calc_z_effect(x, col2='empirical', num_groups=2):
     """Wraps the z-based power calculation for pandas `apply`"""
     effect = eff.z_effect([x['counts']],
                           [x[col2]],
@@ -192,7 +191,7 @@ def calc_z_power(x, col2, num_groups=2):
 def _calculate_effect_size(df, distributions, num_groups=2):
     """Adds the effect sizes to the dataframe"""
     for dist in distributions:
-        f_ = partial(effect_lookup[dist], col2='emperical',
+        f_ = partial(effect_lookup[dist], col2='empirical',
                      num_groups=num_groups)
         df['%s_effect' % dist] = df.apply(f_, axis=1)
 

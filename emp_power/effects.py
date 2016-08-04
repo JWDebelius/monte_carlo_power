@@ -24,7 +24,7 @@ def f_effect(counts, power, alpha=0.05, groups=2):
         A standard measure of the difference between the underlying
         populations
 
-    Also See
+    See Also
     --------
         statsmodels.stats.power
         statsmodels.stats.power.FTestAnovaPower
@@ -66,12 +66,11 @@ def t_effect(counts, power, alpha=0.05, ratio=1):
         A standard measure of the difference between the underlying
         populations
 
-    Also See
+    See Also
     --------
         statsmodels.stats.power
         statsmodels.stats.power.TTestIndPower
         statsmodels.stats.power.TTestIndPower.solve_power
-
     """
     power = np.atleast_2d(power)
     eff = np.zeros(power.shape) * np.nan
@@ -94,12 +93,8 @@ def t_effect(counts, power, alpha=0.05, ratio=1):
 def z_effect(counts, power, alpha=0.05):
     """Estimates the effect size for power based on the z distribution
 
-    This is based on the equations in
-        Lui, X.S. (2014) *Statistical power analysis for the social and
-        behavioral sciences: basic and advanced techniques.* New York:
-        Routledge. 378 pg.
-    The equation assumes a positive magnitude to the effect size and a
-    two-tailed test.
+    This is based on the equations in [1]_, the equation assumes a positive
+    magnitude to the effect size and a two-tailed test.
 
     Parameters
     ----------
@@ -116,6 +111,11 @@ def z_effect(counts, power, alpha=0.05):
         A standard measure of the difference between the underlying
         populations
 
+    References
+    ----------
+    .. [1] Lui, X.S. (2014) *Statistical power analysis for the social and
+    behavioral sciences: basic and advanced techniques.* New York: Routledge.
+    378 pg.
     """
     power = np.atleast_2d(power)
     z_diff = z.ppf(power) + z.ppf(1 - alpha/2)
@@ -146,11 +146,11 @@ def f_power(counts, effect, alpha=0.05, groups=2):
     ndarray
         The statistical power at the depth specified by `counts`
 
-    Also See:
+    See Also
+    --------
         statsmodels.stats.power
         statsmodels.stats.power.FTestAnovaPower
         statsmodels.stats.power.FTestAnovaPower.solve_power
-
     """
     if isinstance(effect, np.ndarray):
         effect = np.nanmean(effect)
@@ -182,11 +182,11 @@ def t_power(counts, effect, alpha=0.05, ratio=1):
     ndarray
         The statistical power at the depth specified by `counts`
 
-    Also See:
+    See Also
+    --------
         statsmodels.stats.power
         statsmodels.stats.power.TTestIndPower
         statsmodels.stats.power.TTestIndPower.solve_power
-
     """
     if isinstance(effect, np.ndarray):
         effect = np.nanmean(effect)
@@ -201,12 +201,8 @@ def t_power(counts, effect, alpha=0.05, ratio=1):
 def z_power(counts, effect, alpha=0.05):
     """Estimates power for a z distribution from an effect size
 
-    This is based on the equations in
-        Lui, X.S. (2014) *Statistical power analysis for the social and
-        behavioral sciences: basic and advanced techniques.* New York:
-        Routledge. 378 pg.
-    The equation assumes a positive magnitude to the effect size and a
-    two-tailed test.
+    This is based on the equations in [1]_, the equation assumes a positive
+    magnitude to the effect size and a two-tailed test.
 
     Parameters
     ----------
@@ -222,6 +218,11 @@ def z_power(counts, effect, alpha=0.05):
     ndarray
         The statistical power at the depth specified by `counts`
 
+    References
+    ----------
+    .. [1] Lui, X.S. (2014) *Statistical power analysis for the social and
+    behavioral sciences: basic and advanced techniques.* New York: Routledge.
+    378 pg.
     """
     if isinstance(effect, np.ndarray):
         effect = np.nanmean(effect)

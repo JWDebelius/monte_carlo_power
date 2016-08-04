@@ -4,9 +4,9 @@
 Simulations and benchmarking for monte carlo power.
 
 ## Installation
-The recommended way to install this repository is using the conda pacakge manager through [miniconda]().
+The recommended way to install this repository is using the conda pacakge manager through [miniconda](http://conda.pydata.org/miniconda.html).
 
-Conda dependencies can be installed in the conda enviroment, *power*
+Conda dependencies can be installed using the [conda_environment.txt](https://github.com/jwdebelius/monte_carlo_power/blob/master/conda_enviroment.txt) file in the enviroment, *power*:
 
 ```bash
 conda create --name power --file conda_enviroment.txt
