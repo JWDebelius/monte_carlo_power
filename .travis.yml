@@ -15,9 +15,9 @@ install:
   - source activate test
   - pip install python-coveralls
   - pip install -r pip_requirements.txt
-  - pip install . --no-deps
+  - pip install .
 script:
-  - nosetests --with-coverage --cover-package=emp_power
+  - nosetests --with-coverage --cover-package=machivellian
 after_success:
   - coveralls
 notifications:
