@@ -68,6 +68,41 @@ class SummarizeTest(TestCase):
         self.df['test'] = 'test'
         self.df['color'] = 'k'
 
+    def test_summary_power(self):
+        test = summarize_power(self.power_summary,
+                               sim_num=0,
+                               test='test',
+                               colors={i: 'k' % i
+                                       for i in np.arange(5, 100, 10)},
+                               dists=['z'])
+        columns = pd.Index(['counts', 'empirical', 'sim_position',
+                            'traditional', 'test', 'alpha',
+                            'sim_num', 'colors', 'z_effect',
+                            'z_mean', 'z_power'])
+        index = pd.Index(['test.0.%i' % i for i in np.arange(0, 10)],
+                         name='index')
+        pdt.assert_index_equal(test.columns, columns)
+        pdt.assert_index_equal(test.index, index)
+        self.assertEqual(test['test'].unique(), 'test')
+        self.assertEqual(test['alpha'].unique(), 0.05)
+        self.assertEqual(test['sim_num'].unique(), 0)
+        self.assertEqual(test['colors'].unique(), 'k')
+
+    def test_summarize_power_dists(self):
+        test = summarize_power(self.power_summary,
+                               sim_num=0,
+                               test='test',
+                               colors={i: 'k' % i
+                                       for i in np.arange(5, 100, 10)})
+        for d in ['f', 'z', 't']:
+            self.assertTrue('%s_effect' % d in test.columns)
+            self.assertTrue('%s_power' % d in test.columns)
+
+    def test_modify_effect_sizes(self):
+        drop_index = ['B']
+        mod = modify_effect_size(self.df, drop_index, ['z'])
+        self.assertTrue(pd.isnull(mod.loc['B', 'z_effect']))
+
     def test_calc_f_effect(self):
         known = pd.Series([0.191889, 0.191941], index=['A', 'B'])
         test = self.df.apply(calc_f_effect, axis=1)
@@ -102,6 +137,12 @@ class SummarizeTest(TestCase):
         test = _build_summary_frame(self.power_summary)
         pdt.assert_frame_equal(self.early_summary, test)
 
+    def test_build_summary_frame_no_trad(self):
+        self.power_summary['traditional_power'] = None
+        known = pd.Series(np.ones(10,) * np.nan, name='traditional')
+        test = _build_summary_frame(self.power_summary)
+        pdt.assert_series_equal(known, test['traditional'])
+
     def test_calculate_effect_size(self):
         known = copy.deepcopy(self.df)
         known['z_effect'] = [0.18700873,  0.18797725]
@@ -112,31 +153,6 @@ class SummarizeTest(TestCase):
         known = copy.deepcopy(self.df)
         known['z_power'] = [0.84087872,  0.91836203]
         known['z_mean'] = 0.5
-
-    def test_summary_power(self):
-        test = summarize_power(self.power_summary,
-                               sim_num=0,
-                               test='test',
-                               colors={i: 'k' % i
-                                       for i in np.arange(5, 100, 10)},
-                               dists=['z'])
-        columns = pd.Index(['counts', 'empirical', 'sim_position',
-                            'traditional', 'test', 'alpha',
-                            'sim_num', 'colors', 'z_effect',
-                            'z_mean', 'z_power'])
-        index = pd.Index(['test.0.%i' % i for i in np.arange(0, 10)],
-                         name='index')
-        pdt.assert_index_equal(test.columns, columns)
-        pdt.assert_index_equal(test.index, index)
-        self.assertEqual(test['test'].unique(), 'test')
-        self.assertEqual(test['alpha'].unique(), 0.05)
-        self.assertEqual(test['sim_num'].unique(), 0)
-        self.assertEqual(test['colors'].unique(), 'k')
-
-    def test_modify_effect_sizes(self):
-        drop_index = ['B']
-        mod = modify_effect_size(self.df, drop_index, ['z'])
-        self.assertTrue(pd.isnull(mod.loc['B', 'z_effect']))
 
 if __name__ == '__main__':
     main()
