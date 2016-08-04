@@ -50,7 +50,7 @@ def f_effect(counts, power, alpha=0.05, groups=2):
                     power=pwr_,
                     k_groups=groups,
                     )
-            except:
+            except ValueError:
                 pass
     eff[power == 1] = np.nan
     return eff
@@ -92,7 +92,7 @@ def t_effect(counts, power, alpha=0.05, ratio=1):
                     alpha=alpha,
                     power=pwr_
                     )
-            except:
+            except ValueError:
                 pass
     eff[power == 1] = np.nan
     return eff
