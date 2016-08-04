@@ -19,7 +19,7 @@ classes = """
     Operating System :: MacOS :: MacOS X
 """
 
-setup(name='monte-carlo-power',
+setup(name='machivellian',
       version="0.0.1-dev",
       license='BSD2',
       description="Library for testing monte carlo effect sizes",
