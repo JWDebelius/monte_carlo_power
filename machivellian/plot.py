@@ -1,3 +1,11 @@
+#-----------------------------------------------------------------------------
+# Copyright (c) 2016, Machiavellian Project.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file LICENSE, distributed with this software.
+#-----------------------------------------------------------------------------
+
 import numpy as np
 import scipy
 import seaborn as sn
