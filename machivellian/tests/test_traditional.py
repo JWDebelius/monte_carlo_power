@@ -3,12 +3,12 @@ from unittest import TestCase, main
 import numpy as np
 import numpy.testing as npt
 
-from emp_power.traditional import (calc_ttest_1,
-                                   calc_ttest_ind,
-                                   calc_pearson,
-                                   calc_anova,
-                                   _get_vitals
-                                   )
+from machivellian.traditional import (calc_ttest_1,
+                                      calc_ttest_ind,
+                                      calc_pearson,
+                                      calc_anova,
+                                      _get_vitals
+                                      )
 
 
 class TraditionalPowerTest(TestCase):

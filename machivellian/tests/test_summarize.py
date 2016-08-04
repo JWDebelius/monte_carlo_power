@@ -8,18 +8,17 @@ import numpy.testing as npt
 import pandas as pd
 import pandas.util.testing as pdt
 
-from emp_power.summarize import (
-                                 summarize_power,
-                                 calc_f_effect,
-                                 calc_t_effect,
-                                 calc_z_effect,
-                                 calc_f_power,
-                                 calc_t_power,
-                                 calc_z_power,
-                                 _build_summary_frame,
-                                 _calculate_effect_size,
-                                 modify_effect_size,
-                                 )
+from machivellian.summarize import (summarize_power,
+                                    calc_f_effect,
+                                    calc_t_effect,
+                                    calc_z_effect,
+                                    calc_f_power,
+                                    calc_t_power,
+                                    calc_z_power,
+                                    _build_summary_frame,
+                                    _calculate_effect_size,
+                                    modify_effect_size,
+                                    )
 
 
 class SummarizeTest(TestCase):

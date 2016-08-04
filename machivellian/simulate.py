@@ -124,18 +124,13 @@ def simulate_anova(mu_lim, sigma_lim, count_lim, num_pops):
     return [mus, sigma, n], samples
 
 
-def simulate_permanova(num_samples, num0=None, wdist=[0, 0.5],
-                       wspread=[0, 0.5], bdist=[0, 0.5], bspread=[0, 0.5]):
+def simulate_permanova(num_samples, wdist, wspread, bdist, bspread, num0=None):
     """Makes a distance matrix with specified mean distance and spread
 
     Paramaters
     ----------
     num_samples : int
         The number of samples which should be described in the distance matrix
-    num0: int, optional
-        The number of samples in the first group. (The size of the second
-        group will be given by `num_samples - num0`). If no value is supplied,
-        the value will be simulated using a binomial distribution with `p=0.5`.
     wdist, bdist : list, float, optional
         A value or range of the distance offset for the within (`wdist`) or
         between (`bdist`) sample distances. If a list is supplied, a value
@@ -144,6 +139,10 @@ def simulate_permanova(num_samples, num0=None, wdist=[0, 0.5],
         A value or range for the distance spread for the within (`wspread`) or
         between (`bspread`) sample distances. If a list is supplied, a value
         will be drawn between the first to values.
+    num0: int, optional
+        The number of samples in the first group. (The size of the second
+        group will be given by `num_samples - num0`). If no value is supplied,
+        the value will be simulated using a binomial distribution with `p=0.5`.
 
     Returns
     -------

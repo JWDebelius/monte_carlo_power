@@ -3,9 +3,9 @@ from unittest import TestCase, main
 import numpy as np
 import numpy.testing as npt
 
-from emp_power.plot import (_set_ticks,
-                            _get_symetrical,
-                            )
+from machivellian.plot import (_set_ticks,
+                               _get_symetrical,
+                               )
 
 
 class PlotTest(TestCase):

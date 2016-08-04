@@ -5,17 +5,17 @@ import numpy.testing as npt
 import pandas as pd
 import pandas.util.testing as pdt
 
-from emp_power.simulate import (simulate_ttest_1,
-                                simulate_ttest_ind,
-                                simulate_anova,
-                                simulate_correlation,
-                                simulate_permanova,
-                                simulate_mantel,
-                                _convert_to_mirror,
-                                _check_param,
-                                _simulate_gauss_vec,
-                                _vec_size,
-                                )
+from machivellian.simulate import (simulate_ttest_1,
+                                   simulate_ttest_ind,
+                                   simulate_anova,
+                                   simulate_correlation,
+                                   simulate_permanova,
+                                   simulate_mantel,
+                                   _convert_to_mirror,
+                                   _check_param,
+                                   _simulate_gauss_vec,
+                                   _vec_size,
+                                   )
 
 class PowerSimulation(TestCase):
 

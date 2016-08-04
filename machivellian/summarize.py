@@ -12,7 +12,7 @@ from functools import partial
 import numpy as np
 import pandas as pd
 
-import emp_power.effects as eff
+import machivellian.effects as eff
 
 
 def summarize_power(power_summary, sim_num, test, colors, dists=None,

@@ -3,13 +3,13 @@ from unittest import TestCase, main
 import numpy as np
 import numpy.testing as npt
 
-from emp_power.effects import (f_effect,
-                               t_effect,
-                               z_effect,
-                               f_power,
-                               t_power,
-                               z_power,
-                               )
+from machivellian.effects import (f_effect,
+                                  t_effect,
+                                  z_effect,
+                                  f_power,
+                                  t_power,
+                                  z_power,
+                                  )
 
 
 class PowerSimulation(TestCase):

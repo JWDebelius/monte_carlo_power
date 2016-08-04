@@ -12,12 +12,12 @@ import numpy as np
 import numpy.testing as npt
 from scipy.stats import kruskal
 
-from emp_power.power import (subsample_power,
-                             confidence_bound,
-                             _calculate_power,
-                             _compare_distributions,
-                             _check_subsample_power_inputs,
-                             )
+from machivellian.power import (subsample_power,
+                                confidence_bound,
+                                _calculate_power,
+                                _compare_distributions,
+                                _check_subsample_power_inputs,
+                                )
 
 
 class PowerAnalysisTest(TestCase):
