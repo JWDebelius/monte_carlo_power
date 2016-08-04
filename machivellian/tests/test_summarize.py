@@ -4,7 +4,6 @@ import copy
 from functools import partial
 
 import numpy as np
-import numpy.testing as npt
 import pandas as pd
 import pandas.util.testing as pdt
 
@@ -26,14 +25,14 @@ class SummarizeTest(TestCase):
     def setUp(self):
         self.power_summary = {
             'counts': np.array([5, 15, 25, 35, 45, 55, 65, 75, 85, 95]),
-            'empirical_power': np.array([[0.04698995, 0.10223453, 0.15022543,
-                                          0.19666182, 0.24228406, 0.28709498,
-                                          0.33092360, 0.37356885, 0.41484527,
-                                          0.45459791]]),
-            'traditional_power': np.array([0.04698995, 0.10223453, 0.15022543,
-                                          0.19666182, 0.24228406, 0.28709498,
-                                          0.33092360, 0.37356885, 0.41484527,
-                                          0.45459791]),
+            'empirical': np.array([[0.04698995, 0.10223453, 0.15022543,
+                                    0.19666182, 0.24228406, 0.28709498,
+                                    0.33092360, 0.37356885, 0.41484527,
+                                    0.45459791]]),
+            'traditional': np.array([0.04698995, 0.10223453, 0.15022543,
+                                     0.19666182, 0.24228406, 0.28709498,
+                                     0.33092360, 0.37356885, 0.41484527,
+                                     0.45459791]),
             'num_obs': 100,
             'original_p': 0.001,
             'alpha': 0.05,
@@ -138,7 +137,7 @@ class SummarizeTest(TestCase):
         pdt.assert_frame_equal(self.early_summary, test)
 
     def test_build_summary_frame_no_trad(self):
-        self.power_summary['traditional_power'] = None
+        self.power_summary['traditional'] = None
         known = pd.Series(np.ones(10,) * np.nan, name='traditional')
         test = _build_summary_frame(self.power_summary)
         pdt.assert_series_equal(known, test['traditional'])
