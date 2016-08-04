@@ -12,23 +12,21 @@ def simulate_ttest_1(mu_lim, sigma_lim, count_lim=100):
     mu_lim : list, float
         The limits for selecting a mean
     sigma_lim : list, float
-        The limits for selecting a standard deivation
+        The limits for selecting a standard deviation
     count_lim : list, float, optional
         the number of observations which should be drawn for the sample
 
     Returns
     -------
-    simulation_params : list
+    list
         The values for `[mu, sigma, n]` for the sample.
-    simulation_results : list
-        The simulated normal distribution
+    list
+        The simulated normal distribution.
 
     Raises
     ------
     TypeError
         If any parameter is not a float or a list.
-
-
     """
 
     # Gets the distribution parameters
@@ -54,16 +52,15 @@ def simulate_ttest_ind(mu_lim, sigma_lim, count_lim=100):
 
     Returns
     -------
-    simulation_params : list
+    list
         The values for `[mu1, mu2, sigma1, sigma2, n]` for the sample.
-    simulation_results : list
+    list
         The simulated normal distributions
 
     Raises
     ------
     TypeError
         If any parameter is not a float or a list.
-
     """
     # Gets the distribution paramters
     mu1 = _check_param(mu_lim, 'mu lim', np.random.randint)
@@ -95,10 +92,10 @@ def simulate_anova(mu_lim, sigma_lim, count_lim, num_pops):
 
     Returns
     -------
-    simulation_params : list
+    list
         The list of parameters for the simulations in the forms of
         [list of means per group, sigma, sample size].
-    simulation_results : list
+    list
         The simulated normal distributions
 
     Raises
@@ -148,7 +145,7 @@ def simulate_permanova(num_samples, num0=None, wdist=[0, 0.5],
         `wspread`, respective. Between group distances are described by a
         normal distribution with means and variances described by `bdist` and
         `bspread`.
-    grouping : DataFrame
+    DataFrame
         A dataframe with a simulated mapping file corresponding to the groups
         in the data.
 

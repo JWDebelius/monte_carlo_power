@@ -8,10 +8,7 @@ import scipy.stats as stats
 def calc_ttest_1(sample, x0, counts, alpha=0.05):
     """Calculates statistical power for a one-sample t test
 
-    This is based on
-        Lui, X.S. (2014) *Statistical power analysis for the social and
-        behavioral sciences: basic and advanced techniques.* New York:
-        Routledge. 378 pg.
+    This is based on [1]_.
 
     Parameters
     ----------
@@ -30,6 +27,12 @@ def calc_ttest_1(sample, x0, counts, alpha=0.05):
         This describes the probability of seeing a signifigant difference
         between the sample and mean for the specified number of observations
         (count) and critical value based on the one sample t test.
+
+    References
+    ----------
+    .. [1] Lui, X.S. (2014) *Statistical power analysis for the social and
+    behavioral sciences: basic and advanced techniques.* New York: Routledge.
+    378 pg.
     """
     # Gets the distribution paramteres
     [x, s] = _get_vitals(sample)
@@ -50,10 +53,7 @@ def calc_ttest_1(sample, x0, counts, alpha=0.05):
 def calc_ttest_ind(sample1, sample2, counts, alpha=0.05):
     """Calculates statistical power for a two sample t test
 
-    This is based on
-        Lui, X.S. (2014) *Statistical power analysis for the social and
-        behavioral sciences: basic and advanced techniques.* New York:
-        Routledge. 378 pg.
+    This is based on [1]_.
 
     Parameters
     ----------
@@ -70,6 +70,12 @@ def calc_ttest_ind(sample1, sample2, counts, alpha=0.05):
         This describes the probability of seeing a signifigant difference
         between the samples for the specified number of observations
         (count) and critical value based on the independent two sample t test.
+
+    References
+    ----------
+    .. [1] Lui, X.S. (2014) *Statistical power analysis for the social and
+    behavioral sciences: basic and advanced techniques.* New York: Routledge.
+    378 pg.
     """
     # Gets the distribuation characterization
     [x1, s1] = _get_vitals(sample1)
@@ -160,10 +166,7 @@ def calc_anova(*samples, **kwargs):
 def calc_pearson(sample1, sample2, counts, alpha=0.05):
     """Calculates power for pearsons R
 
-    This is based on
-        Lui, X.S. (2014) *Statistical power analysis for the social and
-        behavioral sciences: basic and advanced techniques.* New York:
-        Routledge. 378 pg.
+    This is based on [1]_.
 
     Parameters
     ----------
@@ -182,6 +185,11 @@ def calc_pearson(sample1, sample2, counts, alpha=0.05):
         between the samples for the specified number of observations
         (count) and critical value based on the pearson method.
 
+    References
+    ----------
+    .. [1] Lui, X.S. (2014) *Statistical power analysis for the social and
+    behavioral sciences: basic and advanced techniques.* New York: Routledge.
+    378 pg.
     """
     r = stats.pearsonr(sample1, sample2)[0]
 
