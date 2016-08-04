@@ -34,7 +34,7 @@ setup(name='machivellian',
                         'numpy >= 1.10.0',
                         'pandas >= 0.18.0',
                         'scipy >= 0.15.1',
-                        'skbio >= 0.4.2',
+                        'scikit-bio >= 0.4.2',
                         'nose >= 1.3.7',
                         ],
       )
