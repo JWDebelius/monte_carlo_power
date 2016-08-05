@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/jwdebelius/monte_carlo_power.svg?branch=master)](https://travis-ci.org/jwdebelius/monte_carlo_power)
+[![Build Status](https://travis-ci.org/jwdebelius/Machiavellian.svg?branch=master)](https://travis-ci.org/jwdebelius/Machiavellian)
 
 
 # Emperical Power
