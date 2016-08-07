@@ -211,7 +211,7 @@ def simulate_permanova(num_samples, wdist, wspread, bdist, bspread, num0=None):
 
 
 def simulate_correlation(slope_lim, intercept_lim, sigma_lim, count_lim,
-                         x_lim):
+    x_lim):
     """Simulates data for a simple correlation
 
     Parameters
@@ -255,7 +255,7 @@ def simulate_correlation(slope_lim, intercept_lim, sigma_lim, count_lim,
 
 
 def simulate_mantel(slope_lim, intercept_lim, sigma_lim, count_lim, x_lim,
-                    distance=None):
+    distance=None):
     """Simulates two correlated matrices
 
     Parameters
@@ -309,6 +309,42 @@ def simulate_mantel(slope_lim, intercept_lim, sigma_lim, count_lim, x_lim,
     return [sigma, n, m, b], [x, y]
 
 
+def simulate_discrete(p_lim, size_lim, num_groups=2):
+    """Simulates discrete counts for a chi-square test
+
+    Parameters
+    ----------
+    p_lim : list, float
+        The limits for simulated binomial probabilities
+    size_lim: list, int
+        The number of observations for the simulation
+    num_groups : int, optional
+        The number of groups to compare.
+
+    Returns
+    -------
+    DataFrame
+        A dataframe with the group designation, outcome of the test, and a
+        dummy column for the counts.
+    list
+        The parameters with the randomly selected p values, number of
+        samples per group, and the number of groups
+    """
+    # Gets the parameters
+    p_values = [_check_param(p_lim, 'binomial p') for i in range(num_groups)]
+    size = _check_param(size_lim, 'group size')
+    summaries = []
+    for i, p in enumerate(p_values):
+        index = ['s.%i' % i for i in np.arange(0, size) + size * i]
+        dichomous = np.vstack([np.random.binomial(1, p, size),
+                               np.ones(size) * i,
+                               np.ones(size)])
+        summaries.append(pd.DataFrame(dichomous.T,
+                                      index=index,
+                                      columns=['outcome', 'group', 'dummy']))
+    return pd.concat(summaries), [p_values, size, num_groups]
+
+
 def _convert_to_mirror(length, vec):
     """Converts a condensed 1D array to a mirror 2D array
     """
@@ -337,7 +373,7 @@ def _check_param(param, param_name, random=np.random.uniform):
     """Checks a parameter is sane"""
     if isinstance(param, list):
         return random(*param)
-    elif not isinstance(param, float):
+    elif not isinstance(param, (int, float)):
         raise TypeError('%s must be a list or a float' % param_name)
     else:
         return param

@@ -11,6 +11,7 @@ from machivellian.simulate import (simulate_ttest_1,
                                    simulate_correlation,
                                    simulate_permanova,
                                    simulate_mantel,
+                                   simulate_discrete,
                                    _convert_to_mirror,
                                    _check_param,
                                    _simulate_gauss_vec,
@@ -150,6 +151,24 @@ class PowerSimulation(TestCase):
         self.assertEqual(dm_ids, x.ids)
         npt.assert_almost_equal(mantel_y, y.data)
         self.assertEqual(dm_ids, x.ids)
+
+    def test_simulate_discrete(self):
+        p_lim = 0.5
+        size_lim = 5
+        num_groups = 2
+        known = pd.DataFrame(
+            np.array([[0, 1, 0, 1, 0, 1, 1, 1, 0, 0],
+                      [0, 0, 0, 0, 0, 1, 1, 1, 1, 1],
+                      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]]).T.astype(float),
+            columns=['outcome', 'group', 'dummy'],
+            index=['s.%i' % i for i in range(10)]
+            )
+        test, [tp_values, tsize, tnum_groups] = \
+            simulate_discrete(p_lim, size_lim, num_groups)
+        pdt.assert_frame_equal(known, test)
+        self.assertEqual(tp_values, [p_lim] * 2)
+        self.assertEqual(tsize, size_lim)
+        self.assertEqual(tnum_groups, num_groups)
 
     def test_convert_to_mirror(self):
         vec = np.arange(0, ((self.length) * (self.length - 1))/2) + 1
