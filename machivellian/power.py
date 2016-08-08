@@ -50,13 +50,15 @@ matches.
 # The full license is in the file COPYING.txt, distributed with this software.
 # ----------------------------------------------------------------------------
 
+from functools import partial
+
 import numpy as np
 import scipy.stats
 
 
 def subsample_power(test, samples, counts, draw_mode='ind', numeric=True,
                     alpha=0.05, ratio=None, bootstrap=True, num_iter=500,
-                    num_runs=10):
+                    num_runs=10, test_kwargs=None):
     """Subsamples data to iteratively calculate power
 
     Parameters
@@ -133,6 +135,8 @@ def subsample_power(test, samples, counts, draw_mode='ind', numeric=True,
         When `replace` is true, and `counts` and `ratio` will draw more
         observations than exist in a sample.
     """
+    if isinstance(test_kwargs, dict):
+        test = partial(test, **test_kwargs)
 
     # Checks the inputs
     ratio, num_p = _check_subsample_power_inputs(test=test,

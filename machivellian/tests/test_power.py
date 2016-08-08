@@ -65,6 +65,29 @@ class PowerAnalysisTest(TestCase):
                                  num_runs=5)
         self.assertEqual(test_p.shape, (5, 5, 2))
 
+    def test_subsample_power_kwargs(self):
+        def test(x, b=True):
+            if b:
+                return self.f(x)
+            else:
+                return np.array([self.f(x)] * 2)
+
+        test_p_bt = subsample_power(test,
+                                    samples=self.pop,
+                                    counts=self.counts,
+                                    num_iter=10,
+                                    num_runs=5,
+                                    test_kwargs={'b': True})
+        test_p_bf = subsample_power(test,
+                                    samples=self.pop,
+                                    counts=self.counts,
+                                    num_iter=10,
+                                    num_runs=5,
+                                    test_kwargs={'b': False})
+        self.assertEqual(test_p_bt.shape, (5, 5))
+        self.assertEqual(test_p_bf.shape, (5, 5, 2))
+
+
     def test_confidence_bound_default(self):
         # Sets the know confidence bound
         known = 2.2830070
