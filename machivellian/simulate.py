@@ -342,7 +342,7 @@ def simulate_discrete(p_lim, size_lim, num_groups=2):
         summaries.append(pd.DataFrame(dichomous.T,
                                       index=index,
                                       columns=['outcome', 'group', 'dummy']))
-    return pd.concat(summaries), [p_values, size, num_groups]
+    return [p_values, size, num_groups], pd.concat(summaries)
 
 
 def _convert_to_mirror(length, vec):

@@ -163,7 +163,7 @@ class PowerSimulation(TestCase):
             columns=['outcome', 'group', 'dummy'],
             index=['s.%i' % i for i in range(10)]
             )
-        test, [tp_values, tsize, tnum_groups] = \
+        [tp_values, tsize, tnum_groups], test  = \
             simulate_discrete(p_lim, size_lim, num_groups)
         pdt.assert_frame_equal(known, test)
         self.assertEqual(tp_values, [p_lim] * 2)
