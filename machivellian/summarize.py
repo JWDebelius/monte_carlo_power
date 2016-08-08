@@ -117,7 +117,7 @@ def modify_effect_size(df, drop_index, dists=None, num_groups=2):
     return df_mod
 
 
-def calc_f_effect(x, col2='empirical', num_groups=2):
+def calc_f_effect(x, col2='emperical', num_groups=2):
     """Wraps the f-based power calculation for pandas `apply`"""
     effect = eff.f_effect([x['counts']],
                           [x[col2]],
@@ -126,7 +126,7 @@ def calc_f_effect(x, col2='empirical', num_groups=2):
     return effect
 
 
-def calc_t_effect(x, col2='empirical', num_groups=2):
+def calc_t_effect(x, col2='emperical', num_groups=2):
     """Wraps the t-based power calculation for pandas `apply`"""
     effect = eff.t_effect([x['counts']],
                           [x[col2]],
@@ -134,7 +134,7 @@ def calc_t_effect(x, col2='empirical', num_groups=2):
     return effect
 
 
-def calc_z_effect(x, col2='empirical', num_groups=2):
+def calc_z_effect(x, col2='emperical', num_groups=2):
     """Wraps the z-based power calculation for pandas `apply`"""
     effect = eff.z_effect([x['counts']],
                           [x[col2]],
@@ -170,7 +170,7 @@ def calc_z_power(x, col2, num_groups=2):
 def _build_summary_frame(sim):
     """Builds the intial dataframe summarizing the run"""
     counts = sim['counts']
-    empirical = sim['empirical']
+    empirical = sim['emperical']
 
     # Determines the number of samples handled in the summary
     (empr_r, empr_c) = empirical.shape
@@ -201,7 +201,7 @@ def _calculate_effect_size(df, distributions, num_groups=2):
             ng = 2
         else:
             ng = num_groups
-        f_ = partial(effect_lookup[dist], col2='empirical',
+        f_ = partial(effect_lookup[dist], col2='emperical',
                      num_groups=ng)
         df['%s_effect' % dist] = df.apply(f_, axis=1)
 
