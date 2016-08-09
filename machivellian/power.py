@@ -69,7 +69,8 @@ def subsample_power(test, samples, counts, draw_mode='ind', numeric=True,
         array of p values when `numeric == True`; or a boolean value
         indicating the null hypothesis should be rejected, or a
         one-dimensional array of boolean values indicating the null
-        hypothesis should be rejected when `numeric == False`.
+        hypothesis should be rejected when `numeric == False`. Additional
+        keyword arguments can be provided with `test_kwargs`.
     samples : array_like
         `samples` can be a list of lists or a list of arrays where each
         sublist or row in the array corresponds to a sampled group.
@@ -106,6 +107,9 @@ def subsample_power(test, samples, counts, draw_mode='ind', numeric=True,
         on the curve.
     num_runs : positive int, optional
         The number of times to calculate each curve.
+    test_kwargs: dict, optional
+        Additional keyword arguments for the `test` which may include
+        parameters like a dataframe of values or distance matrix.
 
     Returns
     -------
