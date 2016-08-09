@@ -12,6 +12,7 @@ from machivellian.simulate import (simulate_ttest_1,
                                    simulate_permanova,
                                    simulate_mantel,
                                    simulate_discrete,
+                                   simulate_bimodal,
                                    _convert_to_mirror,
                                    _check_param,
                                    _simulate_gauss_vec,
@@ -163,12 +164,45 @@ class PowerSimulation(TestCase):
             columns=['outcome', 'group', 'dummy'],
             index=['s.%i' % i for i in range(10)]
             )
-        [tp_values, tsize, tnum_groups], test  = \
+        [tp_values, tsize, tnum_groups], test = \
             simulate_discrete(p_lim, size_lim, num_groups)
         pdt.assert_frame_equal(known, test)
         self.assertEqual(tp_values, [p_lim] * 2)
         self.assertEqual(tsize, size_lim)
         self.assertEqual(tnum_groups, num_groups)
+
+    def test_simulate_bimodal(self):
+        k_params = {'counts1': [4, 6],
+                    'counts2': [3, 7],
+                    'logn means': [0.41343831067885284, 1.8372218158758431],
+                    'logn stdv': [2.5318157129606309, 2.0368359757458867],
+                    'normal means': [1.443986342179479, 2.7414646123547528],
+                    'normal stdv': [1.9768223775896583, 2.2234877258052914]}
+
+        data = np.array([[02.43127328,  0.65591004,  0.07379813,  0.90008034,
+                          00.60954015,  6.96792305, -1.84700488,  0.05985675,
+                          03.72008186,  5.11559984,  0.28915191, 23.35171491,
+                          00.85204528,  1.09631273,  1.06326773,  2.65552524,
+                          47.78951687,  4.32552456,  2.87297111,  1.93364733],
+                         [0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,
+                          0.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,  1.,
+                          1.,  1.]])
+        k_df = pd.DataFrame(data=data.T,
+                            index=['s.%i' % i for i in np.arange(20)],
+                            columns=['values', 'groups']
+                            )
+
+        params, df = simulate_bimodal(n_mu_lim=self.sigma_lim,
+                                      n_sigma_lim=self.sigma_lim,
+                                      l_mu_lim=self.mu_lim,
+                                      l_sigma_lim=self.sigma_lim,
+                                      count_lim=10,
+                                      frac_lim=[0.2, 0.8])
+        # pdt.assert_frame_equal(k_df, df)
+        self.assertEqual(set(k_params.keys()), set(params.keys()))
+        for k in k_params.keys():
+            npt.assert_almost_equal(np.array(k_params[k]), np.array(params[k]))
+        pdt.assert_frame_equal(k_df, df)
 
     def test_convert_to_mirror(self):
         vec = np.arange(0, ((self.length) * (self.length - 1))/2) + 1
@@ -178,7 +212,7 @@ class PowerSimulation(TestCase):
     def test_check_param_list(self):
         param = [0, 1]
         new_param = _check_param(param, 'param')
-        self.assertTrue(isinstance(new_param, float))
+        self.assertTrue(isinstance(new_param, np.ndarray))
         self.assertTrue(0 < new_param < 1)
 
     def test_check_param_float(self):
