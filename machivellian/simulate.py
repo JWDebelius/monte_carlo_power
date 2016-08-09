@@ -40,7 +40,7 @@ def simulate_ttest_1(mu_lim, sigma_lim, count_lim=100):
     # Gets the distribution parameters
     mu = _check_param(mu_lim, 'mu lim', np.random.randint)
     sigma = _check_param(sigma_lim, 'sigma lim', np.random.randint)
-    n = _check_param(count_lim, 'count lim', np.random.randint)
+    n = int(_check_param(count_lim, 'count lim', np.random.randint))
 
     # Draws a sample that fits the parameters
     return [mu, sigma, n], [mu + np.random.randn(n) * sigma]
@@ -75,7 +75,7 @@ def simulate_ttest_ind(mu_lim, sigma_lim, count_lim=100):
     mu2 = _check_param(mu_lim, 'mu lim', np.random.randint)
     sigma1 = _check_param(sigma_lim, 'sigma lim', np.random.randint)
     sigma2 = _check_param(sigma_lim, 'sigma lim', np.random.randint)
-    n = _check_param(count_lim, 'count lim', np.random.randint)
+    n = int(_check_param(count_lim, 'count lim', np.random.randint))
 
     # Returns a pair of distributions
     samples = [mu1 + np.random.randn(n) * sigma1,
@@ -113,10 +113,10 @@ def simulate_anova(mu_lim, sigma_lim, count_lim, num_pops):
     """
 
     # Defines the distribtuion parameters
-    mus = np.array([_check_param(mu_lim, 'mu lim', np.random.randint)
+    mus = np.hstack([_check_param(mu_lim, 'mu lim', np.random.randint)
                     for i in range(num_pops)])
     sigma = _check_param(sigma_lim, 'sigma lim', np.random.randint)
-    n = _check_param(count_lim, 'count lim', np.random.randint)
+    n = int(_check_param(count_lim, 'count lim', np.random.randint))
 
     # Draws samples which fit the population
     samples = [mu + np.random.randn(n)*sigma for mu in mus]
@@ -243,7 +243,7 @@ def simulate_correlation(slope_lim, intercept_lim, sigma_lim, count_lim,
 
     # Calculates the distribution for the residuals
     sigma = _check_param(sigma_lim, 'sigma lim', np.random.randint)
-    n = _check_param(count_lim, 'count lim', np.random.randint)
+    n = int(_check_param(count_lim, 'count lim', np.random.randint))
     # Calculates the parameters for the line
     m = _check_param(slope_lim, 'slope lim', np.random.randint)
     b = _check_param(intercept_lim, 'intercept lim', np.random.randint)
@@ -309,15 +309,15 @@ def simulate_mantel(slope_lim, intercept_lim, sigma_lim, count_lim, x_lim,
     return [sigma, n, m, b], [x, y]
 
 
-def simulate_discrete(p_lim, size_lim, num_groups=2):
+def simulate_discrete(p_lim, count_lim, num_groups=2):
     """Simulates discrete counts for a chi-square test
 
     Parameters
     ----------
     p_lim : list, float
         The limits for simulated binomial probabilities
-    size_lim: list, int
-        The number of observations for the simulation
+    count_lim : list, float
+        the number of observations which should be drawn for the sample
     num_groups : int, optional
         The number of groups to compare.
 
@@ -332,7 +332,7 @@ def simulate_discrete(p_lim, size_lim, num_groups=2):
     """
     # Gets the parameters
     p_values = [_check_param(p_lim, 'binomial p') for i in range(num_groups)]
-    size = _check_param(size_lim, 'group size')
+    size = int(_check_param(count_lim, 'group size'))
     summaries = []
     for i, p in enumerate(p_values):
         index = ['s.%i' % i for i in np.arange(0, size) + size * i]
@@ -343,6 +343,71 @@ def simulate_discrete(p_lim, size_lim, num_groups=2):
                                       index=index,
                                       columns=['outcome', 'group', 'dummy']))
     return [p_values, size, num_groups], pd.concat(summaries)
+
+
+def simulate_bimodal(n_mu_lim, l_mu_lim, n_sigma_lim, l_sigma_lim, count_lim,
+                     frac_lim):
+    """Simulates a bimodal distribution
+
+    Parameters
+    ----------
+    n_mu_lim : list, float
+        The limits for selecting a mean of the normal distributions
+    l_mu_lim : list, float
+        The limits for selecting a mean of the log normal distributions
+    n_sigma_lim : list, float
+        The limits for selecting a standard deviation of the normal
+        distribution
+    l_sigma_lim : list, float
+        The limits for selecting a standard deviation of the log normal
+        distribution
+    count_lim : list, float
+        the number of observations which should be drawn for the sample
+    frac_pops: list, float
+        The fraction of the population to place in the normal distribution
+
+    Returns
+    -------
+    dict
+        The parameters from the simulation
+    list
+        The simulated bimodal distributions
+    """
+    [mu_n1, mu_n2] = _check_param(n_mu_lim, 'n_mu_lim', size=2)
+    [mu_l1, mu_l2] = _check_param(l_mu_lim, 'l_mu_lim', size=2)
+    [s_n1, s_n2] = _check_param(n_sigma_lim, 'n_sigma_lim', size=2)
+    [s_l1, s_l2] = _check_param(l_sigma_lim, 'l_sigma_lim', size=2)
+    counts = _check_param(count_lim, 'count_lim', np.random.randint)
+    [f1, f2] = _check_param(frac_lim, 'frac_lim', size=2)
+
+    # Gets the fraction of samples
+    c_n1 = int(np.round(f1 * counts, 0))
+    c_n2 = int(np.round(f2 * counts, 0))
+    c_l1 = int(counts - c_n1)
+    c_l2 = int(counts - c_n2)
+
+    # Builds the bimodal vector
+    vecs = np.hstack((
+            np.hstack((np.random.lognormal(mean=mu_l1, sigma=s_l1, size=c_l1),
+                      np.random.normal(loc=mu_n1, scale=s_n1, size=c_n1))),
+            np.hstack((np.random.lognormal(mean=mu_l2, sigma=s_l2, size=c_l2),
+                       np.random.normal(loc=mu_n2, scale=s_n2, size=c_n2)))
+            ))
+    groups = np.hstack((np.zeros(counts), np.ones(counts)))
+    index = ['s.%i' % i for i in np.arange(counts * 2)]
+    df = pd.DataFrame(np.vstack((vecs, groups)).T,
+                      index=index,
+                      columns=['values', 'groups'])
+
+    params = {'normal means': [mu_n1, mu_n2],
+              'normal stdv': [s_n1, s_n2],
+              'logn means': [mu_l1, mu_l2],
+              'logn stdv': [s_l1, s_l2],
+              'counts1': [c_n1, c_l1],
+              'counts2': [c_n2, c_l2],
+              }
+
+    return params, df
 
 
 def _convert_to_mirror(length, vec):
@@ -369,10 +434,10 @@ def _convert_to_mirror(length, vec):
     return dm
 
 
-def _check_param(param, param_name, random=np.random.uniform):
+def _check_param(param, param_name, random=np.random.uniform, size=1):
     """Checks a parameter is sane"""
     if isinstance(param, list):
-        return random(*param)
+        return random(*param, size=size)
     elif not isinstance(param, (int, float)):
         raise TypeError('%s must be a list or a float' % param_name)
     else:
