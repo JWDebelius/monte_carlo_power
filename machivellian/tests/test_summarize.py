@@ -77,7 +77,7 @@ class SummarizeTest(TestCase):
                                dists=['z'])
         columns = pd.Index(['counts', 'emperical', 'sim_position',
                             'traditional', 'test', 'alpha',
-                            'sim_num', 'colors', 'z_effect',
+                            'sim_num', 'p_all', 'colors', 'z_effect',
                             'z_mean', 'z_power'])
         index = pd.Index(['test.0.%i' % i for i in np.arange(0, 10)],
                          name='index')
