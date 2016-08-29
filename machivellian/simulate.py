@@ -113,8 +113,7 @@ def simulate_anova(mu_lim, sigma_lim, count_lim, num_pops):
     """
 
     # Defines the distribtuion parameters
-    mus = np.hstack([_check_param(mu_lim, 'mu lim', np.random.randint)
-                    for i in range(num_pops)])
+    mus = _check_param(mu_lim, 'mu lim', np.random.randint, num_pops)
     sigma = _check_param(sigma_lim, 'sigma lim', np.random.randint)
     n = int(_check_param(count_lim, 'count lim', np.random.randint))
 
@@ -122,6 +121,180 @@ def simulate_anova(mu_lim, sigma_lim, count_lim, num_pops):
     samples = [mu + np.random.randn(n)*sigma for mu in mus]
 
     return [mus, sigma, n], samples
+
+
+def simulate_discrete(p_lim, count_lim, num_groups=2):
+    """Simulates discrete counts for a chi-square test
+
+    Parameters
+    ----------
+    p_lim : list, float
+        The limits for simulated binomial probabilities
+    count_lim : list, float
+        the number of observations which should be drawn for the sample
+    num_groups : int, optional
+        The number of groups to compare.
+
+    Returns
+    -------
+    DataFrame
+        A dataframe with the group designation, outcome of the test, and a
+        dummy column for the counts.
+    list
+        The parameters with the randomly selected p values, number of
+        samples per group, and the number of groups
+    """
+    # Gets the parameters
+    p_values = [_check_param(p_lim, 'binomial p') for i in range(num_groups)]
+    size = int(_check_param(count_lim, 'group size'))
+    summaries = []
+    for i, p in enumerate(p_values):
+        index = ['s.%i' % i for i in np.arange(0, size) + size * i]
+        dichomous = np.vstack([np.random.binomial(1, p, size),
+                               np.ones(size) * i,
+                               np.ones(size)])
+        summaries.append(pd.DataFrame(dichomous.T,
+                                      index=index,
+                                      columns=['outcome', 'group', 'dummy']))
+    return [p_values, size, num_groups], pd.concat(summaries)
+
+
+def simulate_bimodal(n_mu_lim, l_mu_lim, n_sigma_lim, l_sigma_lim, count_lim,
+    frac_lim):
+    """Simulates a bimodal distribution
+
+    Parameters
+    ----------
+    n_mu_lim : list, float
+        The limits for selecting a mean of the normal distributions
+    l_mu_lim : list, float
+        The limits for selecting a mean of the log normal distributions
+    n_sigma_lim : list, float
+        The limits for selecting a standard deviation of the normal
+        distribution
+    l_sigma_lim : list, float
+        The limits for selecting a standard deviation of the log normal
+        distribution
+    count_lim : list, float
+        the number of observations which should be drawn for the sample
+    frac_pops: list, float
+        The fraction of the population to place in the normal distribution
+
+    Returns
+    -------
+    dict
+        The parameters from the simulation
+    list
+        The simulated bimodal distributions
+    """
+    [mu_n1, mu_n2] = _check_param(n_mu_lim, 'n_mu_lim', size=2)
+    [mu_l1, mu_l2] = _check_param(l_mu_lim, 'l_mu_lim', size=2)
+    [s_n1, s_n2] = _check_param(n_sigma_lim, 'n_sigma_lim', size=2)
+    [s_l1, s_l2] = _check_param(l_sigma_lim, 'l_sigma_lim', size=2)
+    counts = _check_param(count_lim, 'count_lim', np.random.randint)
+    [f1, f2] = _check_param(frac_lim, 'frac_lim', size=2)
+
+    # Gets the fraction of samples
+    c_n1 = int(np.round(f1 * counts, 0))
+    c_n2 = int(np.round(f2 * counts, 0))
+    c_l1 = int(counts - c_n1)
+    c_l2 = int(counts - c_n2)
+
+    # Builds the bimodal vector
+    vecs = np.hstack((
+            np.hstack((np.random.lognormal(mean=mu_l1, sigma=s_l1, size=c_l1),
+                      np.random.normal(loc=mu_n1, scale=s_n1, size=c_n1))),
+            np.hstack((np.random.lognormal(mean=mu_l2, sigma=s_l2, size=c_l2),
+                       np.random.normal(loc=mu_n2, scale=s_n2, size=c_n2)))
+            ))
+    groups = np.hstack((np.zeros(counts), np.ones(counts)))
+    index = ['s.%i' % i for i in np.arange(counts * 2)]
+    df = pd.DataFrame(np.vstack((vecs, groups)).T,
+                      index=index,
+                      columns=['values', 'groups'])
+
+    params = {'normal means': [mu_n1, mu_n2],
+              'normal stdv': [s_n1, s_n2],
+              'logn means': [mu_l1, mu_l2],
+              'logn stdv': [s_l1, s_l2],
+              'counts1': [c_n1, c_l1],
+              'counts2': [c_n2, c_l2],
+              }
+
+    return params, df
+
+
+def simulate_lognormal(mu_lim, sigma_lim, count_lim):
+    """Simulates log normal data of a specified size
+
+    Parameters
+    ----------
+    mu_lim : list, float
+        The limits for selecting a mean for the log normal distributions
+    sigma_lim : list, float
+        The limits for selecting a standard deivation for the log normal
+        distributions
+    count_lim : list, float
+        the number of observations which should be drawn for the sample
+
+    Returns
+    -------
+    list
+        The values for the means, standard deviations and sample size
+    list
+        The sample vectors for the log noraml distributions
+
+    Raises
+    ------
+    TypeError
+        When the limits are not a list, integer or float
+
+    """
+    # Estimates the parameters
+    [x1, x2] = _check_param(mu_lim, 'mu lim', np.random.uniform, 2)
+    [s1, s2] = _check_param(sigma_lim, 'sigma lim', np.random.uniform, 2)
+    n = int(_check_param(count_lim, 'count lim', np.random.randint))
+
+    v1 = np.random.lognormal(x1, s1, n)
+    v2 = np.random.lognormal(x2, s2, n)
+
+    return [(x1, x2), (s1, s2), n], [v1, v2]
+
+
+def simulate_uniform(range_lim, delta_lim, counts_lim):
+    """Simulates uniform data of a specified size
+
+    Parameters
+    ----------
+    range_lim : list, int
+        The upper limit of the uniform distribution
+    delta_lim: list, int
+        The offset between the two distributions
+    count_lim : list, float
+        the number of observations which should be drawn for the sample
+
+    Returns
+    -------
+    list
+        A list with the upper limit, offset and sample size for the samples
+    list
+        The two vectors with the uniform distributions
+
+    Raises
+    ------
+    TypeError
+        When the limits are not a list, integer or float
+
+    """
+
+    r_ = _check_param(range_lim, 'range_lim', np.random.uniform)
+    d_ = _check_param(delta_lim, 'delta_lim', np.random.uniform)
+    n_ = _check_param(counts_lim, 'counts_lim', np.random.randint)
+
+    v1 = np.random.uniform(0, r_, n_)
+    v2 = np.random.uniform(0, r_, n_) + d_
+
+    return [r_, d_, n_], [v1, v2]
 
 
 def simulate_permanova(num_samples, wdist, wspread, bdist, bspread, num0=None):
@@ -307,107 +480,6 @@ def simulate_mantel(slope_lim, intercept_lim, sigma_lim, count_lim, x_lim,
     y = skbio.DistanceMatrix.from_iterable(y_vec, distance, keys=names)
 
     return [sigma, n, m, b], [x, y]
-
-
-def simulate_discrete(p_lim, count_lim, num_groups=2):
-    """Simulates discrete counts for a chi-square test
-
-    Parameters
-    ----------
-    p_lim : list, float
-        The limits for simulated binomial probabilities
-    count_lim : list, float
-        the number of observations which should be drawn for the sample
-    num_groups : int, optional
-        The number of groups to compare.
-
-    Returns
-    -------
-    DataFrame
-        A dataframe with the group designation, outcome of the test, and a
-        dummy column for the counts.
-    list
-        The parameters with the randomly selected p values, number of
-        samples per group, and the number of groups
-    """
-    # Gets the parameters
-    p_values = [_check_param(p_lim, 'binomial p') for i in range(num_groups)]
-    size = int(_check_param(count_lim, 'group size'))
-    summaries = []
-    for i, p in enumerate(p_values):
-        index = ['s.%i' % i for i in np.arange(0, size) + size * i]
-        dichomous = np.vstack([np.random.binomial(1, p, size),
-                               np.ones(size) * i,
-                               np.ones(size)])
-        summaries.append(pd.DataFrame(dichomous.T,
-                                      index=index,
-                                      columns=['outcome', 'group', 'dummy']))
-    return [p_values, size, num_groups], pd.concat(summaries)
-
-
-def simulate_bimodal(n_mu_lim, l_mu_lim, n_sigma_lim, l_sigma_lim, count_lim,
-                     frac_lim):
-    """Simulates a bimodal distribution
-
-    Parameters
-    ----------
-    n_mu_lim : list, float
-        The limits for selecting a mean of the normal distributions
-    l_mu_lim : list, float
-        The limits for selecting a mean of the log normal distributions
-    n_sigma_lim : list, float
-        The limits for selecting a standard deviation of the normal
-        distribution
-    l_sigma_lim : list, float
-        The limits for selecting a standard deviation of the log normal
-        distribution
-    count_lim : list, float
-        the number of observations which should be drawn for the sample
-    frac_pops: list, float
-        The fraction of the population to place in the normal distribution
-
-    Returns
-    -------
-    dict
-        The parameters from the simulation
-    list
-        The simulated bimodal distributions
-    """
-    [mu_n1, mu_n2] = _check_param(n_mu_lim, 'n_mu_lim', size=2)
-    [mu_l1, mu_l2] = _check_param(l_mu_lim, 'l_mu_lim', size=2)
-    [s_n1, s_n2] = _check_param(n_sigma_lim, 'n_sigma_lim', size=2)
-    [s_l1, s_l2] = _check_param(l_sigma_lim, 'l_sigma_lim', size=2)
-    counts = _check_param(count_lim, 'count_lim', np.random.randint)
-    [f1, f2] = _check_param(frac_lim, 'frac_lim', size=2)
-
-    # Gets the fraction of samples
-    c_n1 = int(np.round(f1 * counts, 0))
-    c_n2 = int(np.round(f2 * counts, 0))
-    c_l1 = int(counts - c_n1)
-    c_l2 = int(counts - c_n2)
-
-    # Builds the bimodal vector
-    vecs = np.hstack((
-            np.hstack((np.random.lognormal(mean=mu_l1, sigma=s_l1, size=c_l1),
-                      np.random.normal(loc=mu_n1, scale=s_n1, size=c_n1))),
-            np.hstack((np.random.lognormal(mean=mu_l2, sigma=s_l2, size=c_l2),
-                       np.random.normal(loc=mu_n2, scale=s_n2, size=c_n2)))
-            ))
-    groups = np.hstack((np.zeros(counts), np.ones(counts)))
-    index = ['s.%i' % i for i in np.arange(counts * 2)]
-    df = pd.DataFrame(np.vstack((vecs, groups)).T,
-                      index=index,
-                      columns=['values', 'groups'])
-
-    params = {'normal means': [mu_n1, mu_n2],
-              'normal stdv': [s_n1, s_n2],
-              'logn means': [mu_l1, mu_l2],
-              'logn stdv': [s_l1, s_l2],
-              'counts1': [c_n1, c_l1],
-              'counts2': [c_n2, c_l2],
-              }
-
-    return params, df
 
 
 def _convert_to_mirror(length, vec):
