@@ -61,6 +61,7 @@ def summarize_power(power_summary, sim_num, test, colors, dists=None,
     run_summary['test'] = test
     run_summary['alpha'] = power_summary['alpha']
     run_summary['sim_num'] = sim_num
+    run_summary['p_all'] = power_summary['original_p']
 
     # Includes the count values to be plotted
     run_summary['colors'] = run_summary['counts'].apply(lambda x: colors[x])
