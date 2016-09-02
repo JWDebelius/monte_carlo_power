@@ -6,6 +6,6 @@ emp_power/__pycache__/**
 emp_power/test/__pycache__/**
 emp_power/*.pyc
 ipynb/.ipynb_checkpoints/**
-
+**/.DS_Store
 *.swp
 *.pyc
