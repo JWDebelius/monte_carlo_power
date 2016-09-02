@@ -11,11 +11,15 @@ from machivellian.simulate import (simulate_ttest_1,
                                    simulate_correlation,
                                    simulate_permanova,
                                    simulate_mantel,
+                                   simulate_discrete,
+                                   simulate_lognormal,
+                                   simulate_uniform,
                                    _convert_to_mirror,
                                    _check_param,
                                    _simulate_gauss_vec,
                                    _vec_size,
                                    )
+
 
 class PowerSimulation(TestCase):
 
@@ -111,6 +115,52 @@ class PowerSimulation(TestCase):
         npt.assert_almost_equal(known_x, x, 5)
         npt.assert_almost_equal(known_y, y, 5)
 
+    def test_simulate_lognormal(self):
+        (k_m1, k_m2) = (0.44398634217947897, 1.7414646123547528)
+        (k_s1, k_s2) = (1.4134383106788528, 2.8372218158758429)
+        k_n = 10
+        k_v1 = np.array([48.41121309,   1.09162746,   1.82013940,  14.59568269,
+                         00.43121108,   0.67553144,   2.03226702,   0.97798153,
+                         00.28883120,   1.16696462])
+        k_v2 = np.array([2.06140398e+00,   3.16154969e+01,   5.06959262e-02,
+                         7.82627345e-01,   1.49637590e+02,   1.10890095e+03,
+                         7.83877984e-02,   3.55535510e+01,   3.53194115e-01,
+                         5.01767782e-01])
+
+        [(m1, m2), (s1, s2), n], [v1, v2] = simulate_lognormal(self.mu_lim,
+                                                               self.sigma_lim,
+                                                               10)
+
+        npt.assert_almost_equal(k_m1, m1, 7)
+        npt.assert_almost_equal(k_m2, m2, 7)
+        npt.assert_almost_equal(k_s1, s1, 7)
+        npt.assert_almost_equal(k_s2, s2, 7)
+        self.assertEqual(k_n, n)
+        npt.assert_almost_equal(k_v1, v1, 5)
+        npt.assert_almost_equal(k_v2, v2, 5)
+
+    def test_simulate_unifrom(self):
+        # Sets up known values
+        known_r = 0.44398634217947897
+        known_d = 2.741464612354753
+        known_n = 10
+        known_v1 = np.array([0.09178048,  0.40785070,  0.21684790,  0.27160592,
+                             0.34005263,  0.23017051,  0.13177537,  0.08334566,
+                             0.03584802,  0.32785741])
+        known_v2 = np.array([2.93739988,  2.81175203,  3.13214464,  2.86315526,
+                             2.92537930,  2.87292006,  3.02063786,  2.99890468,
+                             3.00782498,  2.85948467])
+        # Simulates the data
+        [r, d, n], [v1, v2] = simulate_uniform(self.mu_lim,
+                                               self.sigma_lim,
+                                               10)
+        # Tests the results
+        npt.assert_almost_equal(known_r, r, 7)
+        npt.assert_almost_equal(known_d, d, 7)
+        self.assertEqual(known_n, n)
+        npt.assert_almost_equal(known_v1, v1, 5)
+        npt.assert_almost_equal(known_v2, v2, 5)
+
     def test_simulate_permanova(self):
         known_grouping = pd.Series([0, 0, 1, 1], index=dm_ids, name='groups')
 
@@ -151,6 +201,24 @@ class PowerSimulation(TestCase):
         npt.assert_almost_equal(mantel_y, y.data)
         self.assertEqual(dm_ids, x.ids)
 
+    def test_simulate_discrete(self):
+        p_lim = 0.5
+        size_lim = 5
+        num_groups = 2
+        known = pd.DataFrame(
+            np.array([[0, 1, 0, 1, 0, 1, 1, 1, 0, 0],
+                      [0, 0, 0, 0, 0, 1, 1, 1, 1, 1],
+                      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]]).T.astype(float),
+            columns=['outcome', 'group', 'dummy'],
+            index=['s.%i' % i for i in range(10)]
+            )
+        [tp_values, tsize, tnum_groups], test = \
+            simulate_discrete(p_lim, size_lim, num_groups)
+        pdt.assert_frame_equal(known, test)
+        self.assertEqual(tp_values, [p_lim] * 2)
+        self.assertEqual(tsize, size_lim)
+        self.assertEqual(tnum_groups, num_groups)
+
     def test_convert_to_mirror(self):
         vec = np.arange(0, ((self.length) * (self.length - 1))/2) + 1
         test_dm = _convert_to_mirror(self.length, vec)
@@ -159,7 +227,7 @@ class PowerSimulation(TestCase):
     def test_check_param_list(self):
         param = [0, 1]
         new_param = _check_param(param, 'param')
-        self.assertTrue(isinstance(new_param, float))
+        self.assertTrue(isinstance(new_param, np.ndarray))
         self.assertTrue(0 < new_param < 1)
 
     def test_check_param_float(self):

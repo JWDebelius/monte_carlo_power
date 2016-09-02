@@ -50,13 +50,15 @@ matches.
 # The full license is in the file COPYING.txt, distributed with this software.
 # ----------------------------------------------------------------------------
 
+from functools import partial
+
 import numpy as np
 import scipy.stats
 
 
 def subsample_power(test, samples, counts, draw_mode='ind', numeric=True,
                     alpha=0.05, ratio=None, bootstrap=True, num_iter=500,
-                    num_runs=10):
+                    num_runs=10, test_kwargs=None):
     """Subsamples data to iteratively calculate power
 
     Parameters
@@ -67,7 +69,8 @@ def subsample_power(test, samples, counts, draw_mode='ind', numeric=True,
         array of p values when `numeric == True`; or a boolean value
         indicating the null hypothesis should be rejected, or a
         one-dimensional array of boolean values indicating the null
-        hypothesis should be rejected when `numeric == False`.
+        hypothesis should be rejected when `numeric == False`. Additional
+        keyword arguments can be provided with `test_kwargs`.
     samples : array_like
         `samples` can be a list of lists or a list of arrays where each
         sublist or row in the array corresponds to a sampled group.
@@ -104,6 +107,9 @@ def subsample_power(test, samples, counts, draw_mode='ind', numeric=True,
         on the curve.
     num_runs : positive int, optional
         The number of times to calculate each curve.
+    test_kwargs: dict, optional
+        Additional keyword arguments for the `test` which may include
+        parameters like a dataframe of values or distance matrix.
 
     Returns
     -------
@@ -133,6 +139,8 @@ def subsample_power(test, samples, counts, draw_mode='ind', numeric=True,
         When `replace` is true, and `counts` and `ratio` will draw more
         observations than exist in a sample.
     """
+    if isinstance(test_kwargs, dict):
+        test = partial(test, **test_kwargs)
 
     # Checks the inputs
     ratio, num_p = _check_subsample_power_inputs(test=test,

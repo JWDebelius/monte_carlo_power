@@ -61,6 +61,7 @@ def summarize_power(power_summary, sim_num, test, colors, dists=None,
     run_summary['test'] = test
     run_summary['alpha'] = power_summary['alpha']
     run_summary['sim_num'] = sim_num
+    run_summary['p_all'] = power_summary['original_p']
 
     # Includes the count values to be plotted
     run_summary['colors'] = run_summary['counts'].apply(lambda x: colors[x])
@@ -117,7 +118,7 @@ def modify_effect_size(df, drop_index, dists=None, num_groups=2):
     return df_mod
 
 
-def calc_f_effect(x, col2='empirical', num_groups=2):
+def calc_f_effect(x, col2='emperical', num_groups=2):
     """Wraps the f-based power calculation for pandas `apply`"""
     effect = eff.f_effect([x['counts']],
                           [x[col2]],
@@ -126,7 +127,7 @@ def calc_f_effect(x, col2='empirical', num_groups=2):
     return effect
 
 
-def calc_t_effect(x, col2='empirical', num_groups=2):
+def calc_t_effect(x, col2='emperical', num_groups=2):
     """Wraps the t-based power calculation for pandas `apply`"""
     effect = eff.t_effect([x['counts']],
                           [x[col2]],
@@ -134,7 +135,7 @@ def calc_t_effect(x, col2='empirical', num_groups=2):
     return effect
 
 
-def calc_z_effect(x, col2='empirical', num_groups=2):
+def calc_z_effect(x, col2='emperical', num_groups=2):
     """Wraps the z-based power calculation for pandas `apply`"""
     effect = eff.z_effect([x['counts']],
                           [x[col2]],

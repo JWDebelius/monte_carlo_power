@@ -40,7 +40,7 @@ def simulate_ttest_1(mu_lim, sigma_lim, count_lim=100):
     # Gets the distribution parameters
     mu = _check_param(mu_lim, 'mu lim', np.random.randint)
     sigma = _check_param(sigma_lim, 'sigma lim', np.random.randint)
-    n = _check_param(count_lim, 'count lim', np.random.randint)
+    n = int(_check_param(count_lim, 'count lim', np.random.randint))
 
     # Draws a sample that fits the parameters
     return [mu, sigma, n], [mu + np.random.randn(n) * sigma]
@@ -75,7 +75,7 @@ def simulate_ttest_ind(mu_lim, sigma_lim, count_lim=100):
     mu2 = _check_param(mu_lim, 'mu lim', np.random.randint)
     sigma1 = _check_param(sigma_lim, 'sigma lim', np.random.randint)
     sigma2 = _check_param(sigma_lim, 'sigma lim', np.random.randint)
-    n = _check_param(count_lim, 'count lim', np.random.randint)
+    n = int(_check_param(count_lim, 'count lim', np.random.randint))
 
     # Returns a pair of distributions
     samples = [mu1 + np.random.randn(n) * sigma1,
@@ -113,15 +113,123 @@ def simulate_anova(mu_lim, sigma_lim, count_lim, num_pops):
     """
 
     # Defines the distribtuion parameters
-    mus = np.array([_check_param(mu_lim, 'mu lim', np.random.randint)
-                    for i in range(num_pops)])
+    mus = _check_param(mu_lim, 'mu lim', np.random.randint, num_pops)
     sigma = _check_param(sigma_lim, 'sigma lim', np.random.randint)
-    n = _check_param(count_lim, 'count lim', np.random.randint)
+    n = int(_check_param(count_lim, 'count lim', np.random.randint))
 
     # Draws samples which fit the population
     samples = [mu + np.random.randn(n)*sigma for mu in mus]
 
     return [mus, sigma, n], samples
+
+
+def simulate_discrete(p_lim, count_lim, num_groups=2):
+    """Simulates discrete counts for a chi-square test
+
+    Parameters
+    ----------
+    p_lim : list, float
+        The limits for simulated binomial probabilities
+    count_lim : list, float
+        the number of observations which should be drawn for the sample
+    num_groups : int, optional
+        The number of groups to compare.
+
+    Returns
+    -------
+    DataFrame
+        A dataframe with the group designation, outcome of the test, and a
+        dummy column for the counts.
+    list
+        The parameters with the randomly selected p values, number of
+        samples per group, and the number of groups
+    """
+    # Gets the parameters
+    p_values = [_check_param(p_lim, 'binomial p') for i in range(num_groups)]
+    size = int(_check_param(count_lim, 'group size'))
+    summaries = []
+    for i, p in enumerate(p_values):
+        index = ['s.%i' % i for i in np.arange(0, size) + size * i]
+        dichomous = np.vstack([np.random.binomial(1, p, size),
+                               np.ones(size) * i,
+                               np.ones(size)])
+        summaries.append(pd.DataFrame(dichomous.T,
+                                      index=index,
+                                      columns=['outcome', 'group', 'dummy']))
+    return [p_values, size, num_groups], pd.concat(summaries)
+
+
+def simulate_lognormal(mu_lim, sigma_lim, count_lim):
+    """Simulates log normal data of a specified size
+
+    Parameters
+    ----------
+    mu_lim : list, float
+        The limits for selecting a mean for the log normal distributions
+    sigma_lim : list, float
+        The limits for selecting a standard deivation for the log normal
+        distributions
+    count_lim : list, float
+        the number of observations which should be drawn for the sample
+
+    Returns
+    -------
+    list
+        The values for the means, standard deviations and sample size
+    list
+        The sample vectors for the log noraml distributions
+
+    Raises
+    ------
+    TypeError
+        When the limits are not a list, integer or float
+
+    """
+    # Estimates the parameters
+    [x1, x2] = _check_param(mu_lim, 'mu lim', np.random.uniform, 2)
+    [s1, s2] = _check_param(sigma_lim, 'sigma lim', np.random.uniform, 2)
+    n = int(_check_param(count_lim, 'count lim', np.random.randint))
+
+    v1 = np.random.lognormal(x1, s1, n)
+    v2 = np.random.lognormal(x2, s2, n)
+
+    return [(x1, x2), (s1, s2), n], [v1, v2]
+
+
+def simulate_uniform(range_lim, delta_lim, counts_lim):
+    """Simulates uniform data of a specified size
+
+    Parameters
+    ----------
+    range_lim : list, int
+        The upper limit of the uniform distribution
+    delta_lim: list, int
+        The offset between the two distributions
+    count_lim : list, float
+        the number of observations which should be drawn for the sample
+
+    Returns
+    -------
+    list
+        A list with the upper limit, offset and sample size for the samples
+    list
+        The two vectors with the uniform distributions
+
+    Raises
+    ------
+    TypeError
+        When the limits are not a list, integer or float
+
+    """
+
+    r_ = _check_param(range_lim, 'range_lim', np.random.uniform)
+    d_ = _check_param(delta_lim, 'delta_lim', np.random.uniform)
+    n_ = _check_param(counts_lim, 'counts_lim', np.random.randint)
+
+    v1 = np.random.uniform(0, r_, n_)
+    v2 = np.random.uniform(0, r_, n_) + d_
+
+    return [r_, d_, n_], [v1, v2]
 
 
 def simulate_permanova(num_samples, wdist, wspread, bdist, bspread, num0=None):
@@ -211,7 +319,7 @@ def simulate_permanova(num_samples, wdist, wspread, bdist, bspread, num0=None):
 
 
 def simulate_correlation(slope_lim, intercept_lim, sigma_lim, count_lim,
-                         x_lim):
+    x_lim):
     """Simulates data for a simple correlation
 
     Parameters
@@ -243,7 +351,7 @@ def simulate_correlation(slope_lim, intercept_lim, sigma_lim, count_lim,
 
     # Calculates the distribution for the residuals
     sigma = _check_param(sigma_lim, 'sigma lim', np.random.randint)
-    n = _check_param(count_lim, 'count lim', np.random.randint)
+    n = int(_check_param(count_lim, 'count lim', np.random.randint))
     # Calculates the parameters for the line
     m = _check_param(slope_lim, 'slope lim', np.random.randint)
     b = _check_param(intercept_lim, 'intercept lim', np.random.randint)
@@ -255,7 +363,7 @@ def simulate_correlation(slope_lim, intercept_lim, sigma_lim, count_lim,
 
 
 def simulate_mantel(slope_lim, intercept_lim, sigma_lim, count_lim, x_lim,
-                    distance=None):
+    distance=None):
     """Simulates two correlated matrices
 
     Parameters
@@ -333,11 +441,11 @@ def _convert_to_mirror(length, vec):
     return dm
 
 
-def _check_param(param, param_name, random=np.random.uniform):
+def _check_param(param, param_name, random=np.random.uniform, size=1):
     """Checks a parameter is sane"""
     if isinstance(param, list):
-        return random(*param)
-    elif not isinstance(param, float):
+        return random(*param, size=size)
+    elif not isinstance(param, (int, float)):
         raise TypeError('%s must be a list or a float' % param_name)
     else:
         return param

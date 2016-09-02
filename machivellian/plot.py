@@ -107,7 +107,7 @@ def gradient_residuals(ax, x, y, gradient, data, x_resid=None,
                     }
 
     #  Fits the regression
-    fit = smf.ols('%s ~ %s' % (x, y), data=data).fit()
+    fit = smf.ols('%s ~ %s' % (y, x), data=data).fit()
     resid_vec = data[x_resid]
 
     ax.scatter(resid_vec.loc[fit.resid.index], fit.resid, **scatter_kws)
