@@ -2,7 +2,9 @@
 
 
 # Emperical Power
-Simulations and benchmarking for Debelius *et al*. Simulation notebooks are designed to run in a series: simulating data, calculating emperical power, and then calculating power based on a fit effect size. The analysis notebook demonstrates the application of the method.
+Simulations and benchmarking for **[Manuscript Name]**
+
+Simulation notebooks are designed to run in a series: simulating data, calculating emperical power, and then calculating power based on a fit effect size. The analysis notebook demonstrates the application of the method.
 
 ## Installation
 The recommended way to install this repository is using the conda pacakge manager through [miniconda](http://conda.pydata.org/miniconda.html).
@@ -13,8 +15,10 @@ Dependencies can be installed using the [conda_environment.txt](conda_enviroment
 $ conda create --name power --file conda_enviroment.txt
 $ source activate power
 $ pip install -r requirements.txt
+$ pip install ipymd
 $ pip install git+https://github.com/jwdebelius/monte_carlo_power --no-deps
 ```
+Additionally, follow the [ipymd instructions](https://github.com/rossant/ipymd) to finalize the installation.
 
 ## Simulation Notebooks
 
