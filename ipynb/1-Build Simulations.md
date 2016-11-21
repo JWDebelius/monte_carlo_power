@@ -152,7 +152,7 @@ We'll set up simulations with means between 0 and 10, with standard deviations b
 
 ## One way ANOVA
 
-A one-way Analysis of Variance (ANOVA) is typically  used to compare a set of multiple distributions ($n \geq 3$), to determine if one or more means are different. 
+A one-way Analysis of Variance (ANOVA) is typically  used to compare a set of multiple distributions ($n \geq 3$), to determine if one or more means are different.
 
 $\begin{matrix}
 \textbf{H}_{0} & \bar{x}_{1} = \bar{x}_{2} = ... \bar{x}_{k} & \\
@@ -205,7 +205,7 @@ We'll simulate two sets of distributions for ANOVA: a 3 sample and an 8 sample A
 
 Data from lognormal and uniform distributions are not aspymototically normal, and therefore cannot easily be tested using a normal distribution. Therefore, a rank-sum distribution may be a more appropriate test. We use a Mann Whitney U test, which ranks the observations from each group to determine if there is a difference in the ranks.
 
-### Log Normal Distribution 
+### Log Normal Distribution
 
 We will simulate log normal data, which has a long right tail, using means between 0 and 10, standard deviations between 5 and 15, and sample sizes between 60 and 100.
 
@@ -285,12 +285,13 @@ We'll build our simulations containing between 120 and 200 observations (60 to 1
 ...                               'kwargs': {'num_samples': np.random.randint(120, 200),
 ...                                          'num0': None,
 ...                                          'wdist': [0.3, 0.6],
-...                                          'wspread': [0.5, 0.8], 
+...                                          'wspread': [0.5, 0.8],
 ...                                          'bdist': [0.45, 0.65],
 ...                                          'bspread': [0.5, 0.8],
 ...                                          }
 ...                               }
 ```
+
 # Continous Distributions
 
 Many biological phenomena are characterized by continuous, rather than discrete variables. Therefore, we're going to explore the performance of the method with continuous data.
@@ -302,7 +303,7 @@ $\begin{align}
 y = mx + b + \epsilon
 \end{align}\tag{5}$
 
-Here, we'll focus on the relationship between the variables, and check that there is a relationship between the 
+Here, we'll focus on the relationship between the variables, and check that there is a relationship between the
 
 $\begin{align}
 \textbf{H}_{0}: m = 0\\
