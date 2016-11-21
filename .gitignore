@@ -8,6 +8,7 @@ emp_power/*.pyc
 ipynb/.ipynb_checkpoints/**
 ipynb/data/hand/**
 ipynb/data/costello/**
+ipynb/data/classrom/**
 **/.DS_Store
 *.swp
 *.pyc
