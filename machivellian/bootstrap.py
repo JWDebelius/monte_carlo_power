@@ -85,7 +85,10 @@ def bootstrap_mantel(ids, dm1, dm2, permutations=99, **kwargs):
     dm_1p = _bootstrap_dm(ids, dm1)
     dm_2p = _bootstrap_dm(ids, dm2)
 
-    return skbio.stats.distance.mantel(dm_1p, dm_2p, permutations=99, **kwargs)
+    return skbio.stats.distance.mantel(dm_1p,
+                                       dm_2p,
+                                       permutations=permutations,
+                                       **kwargs)
 
 
 def _bootstrap_dm(ids, dm, new_names=None):

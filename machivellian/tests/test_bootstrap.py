@@ -4,10 +4,10 @@ import numpy as np
 import numpy.testing as npt
 import pandas as pd
 import skbio
-from machivellian.permutation_bootstrap import (_bootstrap_dm,
-                                                bootstrap_permanova,
-                                                bootstrap_mantel,
-                                                )
+from machivellian.bootstrap import (_bootstrap_dm,
+                                    bootstrap_permanova,
+                                    bootstrap_mantel,
+                                    )
 
 
 class TestPermutationBootstrap(TestCase):
