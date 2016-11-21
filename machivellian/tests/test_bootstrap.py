@@ -56,7 +56,7 @@ class TestPermutationBootstrap(TestCase):
             self.assertEqual(v, test_result[k])
 
     def test_boostrap_mantel(self):
-        known = (1.0, 0.1, 4)
+        known = (1.0, 1./3, 4)
         test = bootstrap_mantel(self.ids, self.dm1, self.dm2,
                                 permutations=5)
         self.assertTrue(
