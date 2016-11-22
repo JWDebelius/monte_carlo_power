@@ -13,6 +13,118 @@ import scipy.special as sp
 import scipy.stats as stats
 
 
+def effect_ttest_1(sample, x0):
+    """Calculates a the Cohen's d [1]_,[2_] effect size for a one-sample t test
+
+    Parameters
+    ----------
+    sample : array
+        The sample to be compared
+    x0 : float
+        The mean value compared to the distribution
+
+    Returns
+    -------
+    float
+        This describes the seperation between the two underlying populations
+        (difference in means over variance)
+
+    References
+    ----------
+    .. [1] Lui, X.S. (2014) *Statistical power analysis for the social and
+    behavioral sciences: basic and advanced techniques.* New York: Routledge.
+    378 pg.
+    .. [2] Cohen, J. (1992) A Power Primer. *Psychology Bulletin*. 112:115.
+    """
+    [x, s] = _get_vitals(sample)
+    d = (x - x0) / s
+
+    return d
+
+
+def effect_ttest_ind(sample1, sample2):
+    """
+    Calculates the cohen's d [1_][2_] effect size for two independent samples
+
+    This sample size assumes sample sizes to be equal. Alternative formulas
+    weight the effect size by $\sqrt{2}$; check whether the effect sizes
+    are correlated. This weighting depends on the pooled variance calculation.
+
+    Parameters
+    ----------
+    sample1, sample2 : array
+        The samples being tested
+
+    Returns
+    -------
+    float
+        The cohen's d effect size
+
+    References
+    ----------
+    .. [1] Cohen, J. (1992) A Power Primer. *Psychology Bulletin*. 112:115.
+    .. [2] Lui, X.S. (2014) *Statistical power analysis for the social and
+    behavioral sciences: basic and advanced techniques.* New York: Routledge.
+    378 pg.
+
+
+    """
+    [x1, s1] = _get_vitals(sample1)
+    [x2, s2] = _get_vitals(sample2)
+    n1 = len(sample1)
+    n2 = len(sample2)
+    s_pool = np.sqrt((np.square(s1) * (n1 - 1) + np.square(s2) * (n2 - 1)) /
+                     (n1 + n2 - 2))
+
+    d = (x1 - x2) / s_pool
+
+    return d
+
+
+def effect_anova(*samples):
+    """Calculates Cohen's f [1]_, [2]_ for a one-way ANOVA
+
+    Parameters
+    ----------
+    samples : ndarray
+        Arrays of observations to be tested.
+
+    Returns
+    -------
+    float
+        The cohen's f effect size
+
+    References
+    ----------
+    .. [1] Cohen, J. (1992) A Power Primer. *Psychology Bulletin*. 112:115.
+    .. [2] Lui, X.S. (2014) *Statistical power analysis for the social and
+    behavioral sciences: basic and advanced techniques.* New York: Routledge.
+    378 pg.
+
+    """
+    # Converts the samples to arrays
+    samples = [np.asarray(sample) for sample in samples]
+    # Gets the number of groups
+    num_groups = len(samples)
+
+    # Calculates the grand mean
+    grand_mean = np.hstack(samples).mean()
+
+    # Calculates the pooled standard devation
+    pooled = np.sqrt(
+        np.sum([np.square(x.std()) * (len(x) - 1) for x in samples]) /
+        (np.sum([len(x) for x in samples]) - num_groups)
+        )
+
+    # Calculates the f statistic
+    f2 = np.sqrt(np.array([
+            np.square((sample.mean() - grand_mean) / pooled)
+            for sample in samples
+            ]).sum() / num_groups)
+
+    return f2
+
+
 def calc_ttest_1(sample, x0, counts, alpha=0.05):
     """Calculates statistical power for a one-sample t test
 
@@ -58,35 +170,6 @@ def calc_ttest_1(sample, x0, counts, alpha=0.05):
     return power
 
 
-def effect_ttest_1(sample, x0):
-    """Calculates a the Cohen's d [1]_,[2_] effect size for a one-sample t test
-
-    Parameters
-    ----------
-    sample : array
-        The sample to be compared
-    x0 : float
-        The mean value compared to the distribution
-
-    Returns
-    -------
-    float
-        This describes the seperation between the two underlying populations
-        (difference in means over variance)
-
-    References
-    ----------
-    .. [1] Lui, X.S. (2014) *Statistical power analysis for the social and
-    behavioral sciences: basic and advanced techniques.* New York: Routledge.
-    378 pg.
-    .. [2] Cohen, J. (1992) A Power Primer. *Psychology Bulletin*. 112:115.
-    """
-    [x, s] = _get_vitals(sample)
-    d = (x - x0) / s
-
-    return d
-
-
 def calc_ttest_ind(sample1, sample2, counts, alpha=0.05):
     """Calculates statistical power for a two sample t test
 
@@ -123,7 +206,7 @@ def calc_ttest_ind(sample1, sample2, counts, alpha=0.05):
     df = (counts - 1) * np.square(s1 + s2)/(np.square(s1) + np.square(s2))
 
     # Calculates the non centrality parameter
-    noncentrality = np.absolute(d) * np.sqrt(counts)
+    noncentrality = np.absolute(d) * np.sqrt(counts / 2)
 
     tsu = stats.t.ppf(1 - alpha / 2, df)
     tsl = stats.t.ppf(alpha / 2, df)
@@ -131,42 +214,6 @@ def calc_ttest_ind(sample1, sample2, counts, alpha=0.05):
                  sp.nctdtr(df, noncentrality, tsl))
 
     return power
-
-
-def effect_ttest_ind(sample1, sample2):
-    """
-    Calculates the cohen's d [1_][2_] effect size for two independent samples
-
-    This sample size assumes sample sizes to be equal. Alternative formulas
-    weight the effect size by $\sqrt{2}$; check whether the effect sizes
-    are correlated. This weighting depends on the pooled variance calculation.
-
-    Parameters
-    ----------
-    sample1, sample2 : array
-        The samples being tested
-
-    Returns
-    -------
-    float
-        The cohen's d effect size
-
-    References
-    ----------
-    .. [1] Cohen, J. (1992) A Power Primer. *Psychology Bulletin*. 112:115.
-    .. [2] Lui, X.S. (2014) *Statistical power analysis for the social and
-    behavioral sciences: basic and advanced techniques.* New York: Routledge.
-    378 pg.
-
-
-    """
-    [x1, s1] = _get_vitals(sample1)
-    [x2, s2] = _get_vitals(sample2)
-    s_pool = np.sqrt((np.square(s1) + np.square(s2)))
-
-    d = (x1 - x2) / s_pool
-
-    return d
 
 
 def calc_anova(*samples, **kwargs):
@@ -206,15 +253,23 @@ def calc_anova(*samples, **kwargs):
 
     # Converts the samples to arrays
     samples = [np.asarray(sample) for sample in samples]
+
     k = len(samples)
-
-    f2 = effect_anova(*samples)
-
     df1 = k - 1
     df2 = k * (counts - 1)
 
     # Calculates the noncentrality paramter
-    noncentrality = f2 * counts
+    grand_mean = np.hstack(samples).mean()
+    pooled = np.sqrt(
+        np.sum([np.square(x.std()) * (len(x) - 1) for x in samples]) /
+        (np.sum([len(x) for x in samples]) - 2)
+        )
+
+    # Calculates the noncentrality paramter
+    noncentrality = np.array([
+        np.square((sample.mean() - grand_mean) / pooled)
+        for sample in samples
+        ]).sum() * counts
     # noncentrality = cohen_f2(*samples) * counts
 
     fu = stats.f.ppf(1 - alpha, df1, df2)
@@ -226,41 +281,6 @@ def calc_anova(*samples, **kwargs):
     power[np.isnan(power)] = 1
 
     return power
-
-
-def effect_anova(*samples):
-    """Calculates Cohen's f [1]_, [2]_ for a one-way ANOVA
-
-    Parameters
-    ----------
-    samples : ndarray
-        Arrays of observations to be tested.
-
-    Returns
-    -------
-    float
-        The cohen's f effect size
-
-    References
-    ----------
-    .. [1] Cohen, J. (1992) A Power Primer. *Psychology Bulletin*. 112:115.
-    .. [2] Lui, X.S. (2014) *Statistical power analysis for the social and
-    behavioral sciences: basic and advanced techniques.* New York: Routledge.
-    378 pg.
-
-    """
-    # Converts the samples to arrays
-    samples = [np.asarray(sample) for sample in samples]
-    grand_mean = np.hstack(samples).mean()
-    pooled = np.sqrt(
-        np.sum([np.square(x.std()) * (len(x) - 1) for x in samples]) /
-        (np.sum([len(x) for x in samples]) - 2)
-        )
-    f2 = np.array([
-            np.square((sample.mean() - grand_mean) / pooled)
-            for sample in samples
-            ]).sum()
-    return f2
 
 
 def calc_pearson(sample1, sample2, counts, alpha=0.05):

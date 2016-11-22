@@ -7,6 +7,7 @@ from machivellian.traditional import (calc_ttest_1,
                                       calc_ttest_ind,
                                       calc_pearson,
                                       calc_anova,
+                                      effect_anova,
                                       effect_ttest_1,
                                       effect_ttest_ind,
                                       _get_vitals
@@ -49,17 +50,22 @@ class TraditionalPowerTest(TestCase):
         test = effect_ttest_1(self.x1, 0)
         npt.assert_array_equal(known, test, 5)
 
+    def test_effect_ttest_ind(self):
+        known = 0.95652019994761539
+        test = effect_ttest_ind(self.x1, self.x2)
+        npt.assert_almost_equal(known, test, 5)
+
+    def test_effect_anova(self):
+        known = 0.51434935693700468
+        test = effect_anova(self.x1, self.x2, self.x3)
+        npt.assert_almost_equal(known, test, 5)
+
     def test_calc_ttest_1(self):
         known = np.array([0.388928, 0.787640, 0.941328, 0.985874, 0.996909,
                           0.999371, 0.999879, 1.000000, 1.000000, 1.000000])
         test = calc_ttest_1(self.x1, 3, self.counts)
         for k, t in zip(*(known, test)):
             npt.assert_approx_equal(k, t, 4)
-
-    def test_effect_ttest_ind(self):
-        known = 0.67636191972487114
-        test = effect_ttest_ind(self.x1, self.x2)
-        npt.assert_array_equal(known, test, 5)
 
     def test_calc_ttest_ind(self):
         known = np.array([0.263753, 0.524261, 0.714399, 0.837774, 0.91173,
