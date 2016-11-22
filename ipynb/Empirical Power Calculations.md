@@ -62,13 +62,13 @@ We assume that all the data associated with this study will be in a sub director
 ```python
 >>> base_directory = './simulations/'
 ...
->>> sim_dir = os.path.join(base_directory, 'data')
->>> if not os.path.exists(sim_dir):
+>>> sim_location = os.path.join(base_directory, 'data')
+>>> if not os.path.exists(sim_location):
 ...     raise ValueError('The simulation directory does not exist.'
 ...                      'Go back and simulate some data!')
 ...
->>> power_dir = os.path.join(base_directory, 'power')
->>> if not os.path.exists(power_dir):
+>>> power_location = os.path.join(base_directory, 'power')
+>>> if not os.path.exists(power_location):
 ...     os.makedirs(power_location)
 ```
 
@@ -163,9 +163,8 @@ We need to extract the samples for the simulation, so we have appropriate sample
 >>> distributions['ttest_1'] = {
 ...     'extraction': extract_ttest_1_samples,
 ...     'test': emp_ttest_1,
-...     'traditional': partial(trad.calc_ttest_1,
-...                            x0=0,
-...                            counts=counts),
+...     'statistic': partial(trad.effect_ttest_1, x0=0),
+...     'traditional': partial(trad.calc_ttest_1, x0=0),
 ...     'power_kwargs': {},
 ...     'permutations': None
 ...     }
@@ -241,15 +240,15 @@ $\begin{align*}
 ...     samples = sim['samples']
 ...     test_kwargs = {}
 ...
-...    return samples, test_kwargs
+...     return samples, test_kwargs
 ```
 
 ```python
 >>> distributions['ttest_ind'] = {
 ...     'extraction': extract_ttest_ind_samples,
 ...     'test': emp_ttest_ind,
-...     'traditional': partial(trad.calc_ttest_ind,
-...                            counts=counts),
+...     'statistic': trad.effect_ttest_ind,
+...     'traditional': trad.calc_ttest_ind,
 ...     'power_kwargs': {},
 ...     'permutations': None
 ...     }
@@ -327,8 +326,8 @@ $\begin{align*}
 >>> distributions['anova_3'] = {
 ...     'extraction': extract_anova_samples,
 ...     'test': emp_anova,
-...     'traditional': partial(trad.calc_anova,
-...                           counts=counts),
+...     'statistic': trad.effect_anova,
+...     'traditional': trad.calc_anova,
 ...     'power_kwargs': {},
 ...     'permutations': {},
 ...     }
@@ -336,17 +335,8 @@ $\begin{align*}
 >>> distributions['anova_8'] = {
 ...     'extraction': extract_anova_samples,
 ...     'test': emp_anova,
-...     'traditional': partial(trad.calc_anova,
-...                           counts=counts),
-...     'power_kwargs': {},
-...     'permutations': {},
-...     }
-...
->>> distributions['anova_20'] = {
-...     'extraction': extract_anova_samples,
-...     'test': emp_anova,
-...     'traditional': partial(trad.calc_anova,
-...                           counts=counts),
+...     'statistic': trad.effect_anova,
+...     'traditional': trad.calc_anova,
 ...     'power_kwargs': {},
 ...     'permutations': {},
 ...     }
@@ -380,6 +370,11 @@ Scipy's `scipy.stats.pearsonr` can calculate the correlation coeffecient *and* a
 ...     return scipy.stats.pearsonr(*samples)[1]
 ```
 
+```python
+>>> def stat_pearson(sample1, sample2):
+...     return scipy.stats.pearsonr(sample1, sample2)[0]
+```
+
 ### 3.4.2 Noncentrality Parameter
 
 The noncentrality parameter for pearson's correlation coeffecient is given by
@@ -402,8 +397,8 @@ $\begin{align}
 >>> distributions['correlation'] = {
 ...     'extraction': extract_linear_samples,
 ...     'test': emp_pearson,
-...     'traditional': partial(trad.calc_pearson,
-...                           counts=counts),
+...     'statistic': stat_pearson,
+...     'traditional':trad.calc_pearson,
 ...     'power_kwargs': {'draw_mode': 'matched'},
 ...     'permutations': None
 ...     }
@@ -518,18 +513,19 @@ $\begin{align}
 # Power Calculation
 
 ```python
->>> def calculate_power(sim, save_fp, extraction, test,
+>>> def calculate_power(sim, save_fp, extraction, test, statistic,
 ...                     traditional, power_kwargs, permutations):
 ...     """Extracts the information"""
 ...     samples, test_kwargs = extraction(sim)
 ...
+...     max_count = min([len(sample) for sample in samples])
+...     counts = np.arange(5, max_count, 10)
+...
 ...     if traditional is not None:
-...         trad_power = traditional(*samples)
+...         trad_power = traditional(*samples, counts=counts)
 ...     else:
 ...         trad_power = None
 ...
-...     max_count = min([len(sample) for sample in samples])
-...     counts = np.arange(5, max_count, 10)
 ...
 ...     emp_power = subsample_power(test=test,
 ...                                 samples=samples,
@@ -541,13 +537,15 @@ $\begin{align}
 ...                                 test_kwargs=test_kwargs,
 ...                                 **power_kwargs
 ...                                 )
-...     power_summary = {
-...                      'emperical': emp_power,
+...
+...     power_summary = {'emperical': emp_power,
 ...                      'traditional': trad_power,
 ...                      'original_p': test(samples, **test_kwargs),
+...                      'statistic': statistic(*samples, **test_kwargs),
 ...                      'permutations': permutations,
 ...                      'alpha': alpha,
 ...                      'counts': counts,
+...                      'original_size': len(samples[0]),
 ...                      }
 ...     with open(power_fp, 'wb') as f_:
 ...         pickle.dump(power_summary, f_)
@@ -574,4 +572,15 @@ $\begin{align}
 ...         test_summary['sim'] = sim
 ...         test_summary['save_fp'] = power_fp
 ...         calculate_power(**test_summary)
+anova_8
+ttest_1
+correlation
+anova_3
+ttest_ind
+CPU times: user 2min 53s, sys: 619 ms, total: 2min 54s
+Wall time: 2min 55s
+```
+
+```python
+
 ```
