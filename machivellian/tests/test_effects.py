@@ -3,117 +3,32 @@ from unittest import TestCase, main
 import numpy as np
 import numpy.testing as npt
 
-from machivellian.effects import (f_effect,
-                                  t_effect,
-                                  z_effect,
-                                  f_power,
-                                  t_power,
+from machivellian.effects import (z_effect,
                                   z_power,
+                                  cv_z_effect,
+                                  _check_shapes,
                                   )
 
 
 class PowerSimulation(TestCase):
 
     def setUp(self):
+        np.random.seed(5)
         self.counts = np.array([5, 15, 25, 35, 45, 55, 65, 75, 85, 95])
         self.power = np.array([0.04698995, 0.10223453, 0.15022543, 0.19666182,
                                0.24228406, 0.28709498, 0.33092360, 0.37356885,
                                0.41484527, 0.45459791])
-        self.alpha = 0.05
+        self.alpha = 0.05 / 2
         self.effect = 0.5
 
-    def test_f_effect(self):
-        known_effects = np.array([[np.nan,      0.18543664,  0.19105543,
-                                   0.19188928,  0.19194147,  0.19182950,
-                                   0.19168930,  0.19155769,  0.19144256,
-                                   0.19134509]])
-        test_effects = f_effect(self.counts, self.power, self.alpha)
-
-        self.assertTrue(np.isnan(test_effects[0, 0]))
-        self.assertEqual(known_effects.shape, test_effects.shape)
-        npt.assert_almost_equal(known_effects[0, 1:], test_effects[0, 1:])
-
-    def test_f_effects_groups(self):
-        known_effects = np.array([1.8189894e-12, 3.0985138e-01, 2.9088176e-01,
-                                  2.7989659e-01, 2.7240589e-01, 2.6682938e-01,
-                                  2.6245312e-01, 2.5888351e-01, 2.5589220e-01,
-                                  2.5333223e-01])
-        test_effects = f_effect(self.counts, self.power, self.alpha, 5)
-        self.assertTrue((np.round(np.log10(test_effects), 5) ==
-                        np.round(np.log10(known_effects), 5)).all())
-
-    def test_t_effect(self):
-        known_effects = np.array([[np.nan,      0.25190748,  0.26429554,
-                                   0.26728415,  0.26832483,  0.26877072,
-                                   0.26898195,  0.26908683,  0.26914712,
-                                   0.26918235]])
-        test_effects = t_effect(self.counts, self.power, self.alpha)
-        self.assertTrue(np.isnan(test_effects[0, 0]))
-        self.assertEqual(known_effects.shape, test_effects.shape)
-        npt.assert_almost_equal(known_effects[0, 1:], test_effects[0, 1:])
-
-    def test_t_effect_ratio(self):
-        known_effects = np.array([[np.nan,      0.21553381,  0.22731081,
-                                   0.23036026,  0.23151793,  0.23206086,
-                                   0.23235050,  0.23252443,  0.23263891,
-                                   0.23271512]])
-        test_effects = t_effect(self.counts, self.power, self.alpha, ratio=2)
-        self.assertTrue(np.isnan(test_effects[0, 0]))
-        self.assertEqual(known_effects.shape, test_effects.shape)
-        npt.assert_almost_equal(known_effects[0, 1:], test_effects[0, 1:])
-
     def test_z_effect(self):
-        known_effects = np.array([[0.12754385,  0.17842640,  0.18489939,
-                                   0.18700873,  0.18797725,  0.18851606,
-                                   0.18885525,  0.18908777,  0.18925724,
-                                   0.18938648]])
+        known_effects = np.array([0.12754385,  0.17842640,  0.18489939,
+                                  0.18700873,  0.18797725,  0.18851606,
+                                  0.18885525,  0.18908777,  0.18925724,
+                                  0.18938648])
         test_effects = z_effect(self.counts, self.power, self.alpha)
         self.assertEqual(known_effects.shape, test_effects.shape)
-        npt.assert_almost_equal(known_effects, test_effects)
-
-    def test_f_power(self):
-        known_power = np.array([0.12656744,  0.43392591,  0.66810794,
-                                0.81885655,  0.90630465,  0.95353589,
-                                0.97773116,  0.98962623,  0.99528244,
-                                0.99789883])
-        test_power = f_power(self.counts, self.effect, self.alpha)
-        npt.assert_almost_equal(known_power, test_power)
-
-    def test_f_power_array(self):
-        known_power = np.array([0.12656744,  0.43392591,  0.66810794,
-                                0.81885655,  0.90630465,  0.95353589,
-                                0.97773116,  0.98962623,  0.99528244,
-                                0.99789883])
-        test_power = f_power(self.counts,
-                             np.array([0.5, 0.5, np.nan]),
-                             self.alpha)
-        npt.assert_almost_equal(known_power, test_power)
-
-    def test_t_power(self):
-        known_power = np.array([0.10768599,  0.26244303,  0.41010033,
-                                0.54068791,  0.65018550,  0.73848657,
-                                0.80758442,  0.86036751,  0.89989407,
-                                0.92900109])
-        test_power = t_power(self.counts, self.effect, self.alpha)
-        npt.assert_almost_equal(known_power, test_power)
-
-    def test_t_power_array(self):
-        known_power = np.array([0.10768599,  0.26244303,  0.41010033,
-                                0.54068791,  0.65018550,  0.73848657,
-                                0.80758442,  0.86036751,  0.89989407,
-                                0.92900109])
-        test_power = t_power(self.counts,
-                             np.array([0.5, 0.5, np.nan]),
-                             self.alpha)
-        npt.assert_almost_equal(known_power, test_power)
-
-    def test_t_power_ratio(self):
-        known_power = np.array([0.13533966,  0.33962944,  0.52172130,
-                                0.66738897,  0.77602251,  0.85309549,
-                                0.90574798,  0.94065587,  0.96323879,
-                                0.97755102])
-        test_power = t_power(self.counts, self.effect, self.alpha, ratio=2)
-        npt.assert_almost_equal(known_power, test_power)
+        npt.assert_almost_equal(known_effects, test_effects, 5)
 
     def test_z_power(self):
         known_power = np.array([0.19991357,  0.49063676,  0.70541390,
@@ -133,6 +48,49 @@ class PowerSimulation(TestCase):
                              self.alpha)
         npt.assert_almost_equal(known_power, test_power)
 
+    def test_cv_z_effect(self):
+        known_summary = np.array([[15.,   0.10223453,   0.10909324],
+                                  [25.,   0.15022543,   0.15306127],
+                                  [35.,   0.19666182,   0.19673070],
+                                  [45.,   0.24228406,   0.24009355],
+                                  [55.,   0.28709498,   0.28293113],
+                                  [65.,   0.33092360,   0.32499586],
+                                  [75.,   0.37356885,   0.36605964],
+                                  [85.,   0.41484527,   0.40592785],
+                                  [95.,   0.45459791,   0.44444222]])
+        known_effect = {'effect': 0.18704606,
+                        'effect_std': 0.00332908,
+                        'effect_n': 9,
+                        'train_r2': 0.99699031,
+                        'train_rmse': 1.524549345004565e-09,
+                        }
+        effect, summary = cv_z_effect(self.counts, self.power, self.alpha)
+        npt.assert_almost_equal(known_summary, summary, 5)
+        self.assertEqual(known_effect.keys(), effect.keys())
+        for k, v in effect.items():
+            npt.assert_almost_equal(v, known_effect[k], 5)
+
+    def test_check_shapes_2d(self):
+        counts, power = _check_shapes(self.counts,
+                                      np.vstack([self.power, self.power]))
+        self.assertEqual(counts.shape, power.shape)
+        self.assertEqual(len(power.shape), 1)
+
+    def test_check_shapes_1d(self):
+        counts, power = _check_shapes(self.counts, self.power)
+        self.assertEqual(counts.shape, power.shape)
+
+    def test_check_shapes_too_many_counts(self):
+        with self.assertRaises(ValueError):
+            _check_shapes(np.atleast_2d(self.counts), self.power)
+
+    def test_check_shapes_1d_error(self):
+        with self.assertRaises(ValueError):
+            _check_shapes(self.counts[:3], self.power)
+
+    def test_check_shapes_other_error(self):
+        with self.assertRaises(ValueError):
+            _check_shapes(self.counts[:3], np.vstack([self.power, self.power]))
 
 if __name__ == '__main__':
     main()
