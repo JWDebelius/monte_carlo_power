@@ -5,7 +5,6 @@ import numpy.testing as npt
 
 from machivellian.effects import (z_effect,
                                   z_power,
-                                  cv_z_effect,
                                   _check_shapes,
                                   )
 
@@ -47,28 +46,6 @@ class PowerSimulation(TestCase):
                              np.array([0.5, 0.5, np.nan]),
                              self.alpha)
         npt.assert_almost_equal(known_power, test_power)
-
-    def test_cv_z_effect(self):
-        known_summary = np.array([[15.,   0.10223453,   0.10909324],
-                                  [25.,   0.15022543,   0.15306127],
-                                  [35.,   0.19666182,   0.19673070],
-                                  [45.,   0.24228406,   0.24009355],
-                                  [55.,   0.28709498,   0.28293113],
-                                  [65.,   0.33092360,   0.32499586],
-                                  [75.,   0.37356885,   0.36605964],
-                                  [85.,   0.41484527,   0.40592785],
-                                  [95.,   0.45459791,   0.44444222]])
-        known_effect = {'effect': 0.18704606,
-                        'effect_std': 0.00332908,
-                        'effect_n': 9,
-                        'train_r2': 0.99699031,
-                        'train_rmse': 1.524549345004565e-09,
-                        }
-        effect, summary = cv_z_effect(self.counts, self.power, self.alpha)
-        npt.assert_almost_equal(known_summary, summary, 5)
-        self.assertEqual(known_effect.keys(), effect.keys())
-        for k, v in effect.items():
-            npt.assert_almost_equal(v, known_effect[k], 5)
 
     def test_check_shapes_2d(self):
         counts, power = _check_shapes(self.counts,
