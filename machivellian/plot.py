@@ -13,9 +13,11 @@ import scipy
 import seaborn as sn
 import statsmodels.formula.api as smf
 
+from machivellian.power import confidence_bound
+
 
 def gradient_regression(ax, x, y, gradient, data, size=40,
-                        alpha=0.5, line_color='k', **reg_kwargs):
+    alpha=0.5, line_color='k', **reg_kwargs):
     """Creates a regression plot colored by gradient metadata
 
     Parameters
@@ -53,7 +55,7 @@ def gradient_regression(ax, x, y, gradient, data, size=40,
                 }
 
     # Plots the regression plot
-    sn.regplot(y, x,
+    sn.regplot(y=y, x=x,
                data=data,
                ax=ax,
                scatter_kws=scatter_kws,
@@ -64,7 +66,7 @@ def gradient_regression(ax, x, y, gradient, data, size=40,
 
 
 def gradient_residuals(ax, x, y, gradient, data, x_resid=None,
-                       size=40, alpha=0.5):
+    size=40, alpha=0.5):
     """Creates a colored plot of the regression residuals against a category
 
     Parameters
@@ -179,7 +181,7 @@ def format_residual_axis(ax, xlim=None, ylim=None, num_ticks=5, line_kws=None):
 
 
 def summarize_regression(summary, test_names, titles, x, y, gradient,
-                         alpha, ylabel, ylim):
+    alpha, ylabel, ylim):
     """Makes a figure with regression features
 
     Parameters
@@ -247,122 +249,164 @@ def summarize_regression(summary, test_names, titles, x, y, gradient,
     return fig
 
 
-def plot_ttest_ind_distributions(axd, axs, mu1, mu2, sigma1, sigma2, sample1,
-    sample2, color1=None, color2=None, bins=None):
-    """Makes a pretty plot of the distribution and samples
+def plot_alternate_t(noncentrality, df, alpha=0.05, ax=None):
+    """Creates an under the curve plot of statistical power
 
     Parameters
     ----------
-    axd, axs: Axes
-        The matplotlib axes for the distribution (`axd`) and the samples
-        (`axs`)
-    mu1, mu2: float
-        The means of the underlying normal distributions
-    sigma1, sigma2: float
-        The standard deviation for the underlying distributions
-    sample1, sample2: array-like
-        The samples drawn from the distributions
-    color1, color2: None, array-like, str
-        By default, the values will use the seaborn colorpallet values for the
-        first and third colors. (Blue and red if using the default pallet.)
-        Otherwise, a valid color representation like a 3 or 4 element iterable,
-        hexcode, or color string can be used.
-    bins: None, ndarray
-        The values which should be used for the data distribution. f None are
-        provided, bins will be an ndarray between -30 and 30, counting up by
-        2.5.
+    noncentrality: float
+        The noncentrality parameter, representing the offset between
+        the null and alternative hypothesis. This can be calculated
+        as the product of `machiavellian.traditional.effect_ttest_1`
+        times the square root of the sample size.
+
+    df: int
+        The number of degrees of freedom associated with the analysis.
+        This should  be the number of observations less 1.
+
+    alpha: float
+        The critical value for the analysis. This is a two-tailed test.
+
+    axes : Axes, optional
+        A matplotlib axes object where the results should be plotted.
+
+    Returns
+    -------
+        The joint distributions is plotted on the axes.
     """
-    if color1 is None:
-        color1 = sn.color_palette()[0]
-    if color2 is None:
-        color2 = sn.color_palette()[2]
 
-    if bins is None:
-        bins = np.arange(-30, 30, 2.5)
+    if ax is None:
+        ax = plt.axes()
 
-    # Generates the normal distributions
-    x = np.linspace(bins.min(), bins.max(), 250)
-    y1 = scipy.stats.norm.pdf(x, loc=mu1, scale=sigma1)
-    y2 = scipy.stats.norm.pdf(x, loc=mu2, scale=sigma2)
-    # Plots the noraml distributions
-    axd.plot(x, y1, color=color1)
-    axd.plot(x, y2, color=color2)
+    x, y1, y2, crit = _summarize_t(noncentrality, df, alpha)
+    color1, color2 = _get_colors()
 
-    # Plots the samples
-    sn.distplot(sample1, ax=axs, norm_hist=True,
-                kde=False, bins=bins, color=color1)
-    sn.distplot(sample2, ax=axs, norm_hist=True,
-                kde=False, bins=bins, color=color2)
+    ax.plot(x, y1, color=color1)
+    ax.plot(x, y2, color=color2)
+
+    sn.despine(ax=ax, left=True, offset=10)
+
+    return ax
+
+
+def add_noncentrality(noncentrality, df, alpha, ax):
+    """Labels the noncentrality parameter"""
+    x, y1, y2, crit = _summarize_t(noncentrality, df, alpha)
+    height = np.max(np.hstack([y1, y2]))
+    x0 = 0
+    x1 = noncentrality
+
+    ax.annotate(s='', xy=(x0, height), xytext=(x1, height),
+                arrowprops={'arrowstyle': '<|-|>',
+                            'linewidth': 2},
+                color='k')
+    ax.text(s='$\lambda(n)$', x=(x1 - x0) / 2, y=height * 1.05,
+            ha='center', size=15)
+
+
+def plot_power_curve(ax, counts, power_trace=None, power_scatter=None,
+                     color=None, ci_alpha=0.05):
+    """Plots power as a function of the number of observations
+
+    Parameters
+    ----------
+
+
+    Returns
+    -------
+
+
+    Raises
+    ------
+
+
+    """
+    if ((power_trace is None) and (power_scatter is None)):
+        raise ValueError('No power value has been specified.')
+
+    if color is None:
+        color = sn.color_palette()[0]
+
+    # Plots the curve
+    if power_trace is not None:
+        pwr_mean, pwr_lo, pwr_hi = _summarize_trace(power_trace,
+                                                    ci_alpha=ci_alpha)
+        if not np.isnan(pwr_lo).all():
+            ax.fill_between(counts,
+                            pwr_lo,
+                            pwr_hi,
+                            color=color,
+                            alpha=0.5)
+        ax.plot(counts,
+                pwr_mean,
+                color=color)
+
+    # Plots the scatter data
+    if power_scatter is not None:
+        ax.plot(counts,
+                power_scatter.T,
+                marker='o',
+                markerfacecolor='None',
+                markeredgecolor=color,
+                markeredgewidth=1
+                )
 
     # Cleans up the axes
-    axd.set_yticks([-1])
-    axd.set_xticklabels('')
-
-    sn.despine(ax=axd, left=True, right=True, top=True, offset=5)
-    sn.despine(ax=axs, left=True, right=True, top=True, offset=5)
+    sn.despine(ax=ax)
 
 
-def plot_t_hypotheses(ax, nct, df, alpha=0.05, color1=None, color2=None):
-    """Plots data distribution and hypotheses
+def _summarize_t(noncentrality, df, alpha=0.05):
+    """Gets the features for a t-distribution
 
     Parameters
     ----------
-    ax : axes
-        The axis on which the data should be plotted
-    nct : float
-        The noncentrality parameter for the sample size
-    df: float
-        The degrees of freedom for the t distribution (usually the number of
-        observations - 1)
-    alpha: float, optional
-        The type I error rate, or critical value for the test. By default, this
-        is 0.05.
-    color1, color2: None, array-like, str
-        By default, the values will use the seaborn colorpallet values for the
-        first and third colors. (Blue and red if using the default pallet.)
-        Otherwise, a valid color representation like a 3 or 4 element iterable,
-        hexcode, or color string can be used.
+    noncentrality: float
+        The noncentrality parameter, representing the offset between
+        the null and alternative hypothesis. This can be calculated
+        as the product of `machiavellian.traditional.effect_ttest_1`
+        times the square root of the sample size.
+
+    df: int
+        The number of degrees of freedom associated with the analysis.
+        This should  be the number of observations less 1.
+
+    alpha: float
+        The critical value for the analysis. This is a two-tailed test.
     """
 
-    # Calculates the curves for the null and alternate hypotheses
+    x = np.arange(-7.5, 7.6, 0.1)
+    y1 = scipy.stats.t.pdf(x, loc=0, scale=1, df=df)
+    y2 = scipy.stats.t.pdf(x, loc=noncentrality, scale=1, df=df)
+
     crit = scipy.stats.t.ppf(1 - alpha/2, df=df)
-    x = np.arange(-5, 9, 0.1)
-    y1 = scipy.stats.t.pdf(x, df=df)
-    y2 = scipy.stats.t.pdf(x, loc=nct, df=df)
 
-    # Adds the axis for the plot
-    ax.set_ylim([0, 0.5])
-    sn.despine(ax=ax, left=True, right=True, top=True, offset=10)
-    ax.set_yticks([-1])
-    ax.set_xticklabels('')
-
-    if color2 is None:
-        color2 = sn.color_palette()[1]
-    if color1 is None:
-        color1 = [0.15, 0.15, 0.15]
-
-    #  Plots the alternate hypothesis
-    ax.plot(x, y2, color=color2)
-    ax.plot([nct] * 2, [0.35, 0.42], color=color2)
-    ax.fill_between(x[(x < -crit)], y2[(x < -crit)], alpha=0.25, color=color2)
-    ax.fill_between(x[(x > crit)], y2[(x > crit)], alpha=0.25, color=color2)
-
-    # Plots the null hypothesis
-    ax.plot(x, y1, color=color1)
-    ax.plot([0, 0], [0.35, 0.42], color=color1)
-    ax.fill_between(x[x <= -crit], y1[x <= -crit], alpha=0.25, color=color1)
-    ax.fill_between(x[x >= crit], y1[x >= crit], alpha=0.25, color=color1)
-
-    # Adds annotation
-    ax.annotate(s='', xy=(0, 0.4),
-                xytext=(nct, 0.4),
-                arrowprops={'arrowstyle': '<|-|>',
-                            'linewidth': 2,
-                            },
-                color='k')
-    ax.text(s='$\lambda$(n)', x=(nct/2), y=0.42, ha='center', size=15)
+    return x, y1, y2, crit
 
 
+def _summarize_trace(power_trace, ci_alpha=None):
+    """Summarizes the power curve for plotting"""
+    power_trace = np.atleast_2d(power_trace)
+    pwr_mean = power_trace.mean(0)
+
+    if power_trace.shape[0] == 1:
+        pwr_err = np.zeros(power_trace.shape) * np.nan
+    elif ci_alpha is None:
+        pwr_err = power_trace.std(0)
+    else:
+        pwr_err = confidence_bound(power_trace, alpha=ci_alpha, axis=0)
+
+    pwr_lo = pwr_mean - pwr_err
+    pwr_hi = pwr_mean + pwr_err
+
+    return pwr_mean, pwr_lo, pwr_hi
+
+
+def _get_colors():
+    """Provides distribution colors"""
+    color2 = np.round(sn.color_palette()[2], 5)
+    color1 = [0.15, 0.15, 0.15]
+
+    return color1, color2
 
 
 def _set_ticks(lims, num_ticks):
