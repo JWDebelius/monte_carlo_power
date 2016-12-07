@@ -159,6 +159,11 @@ We need to extract the samples for the simulation, so we have appropriate sample
 ...     return samples, test_kwargs
 ```
 
+### Update distribution tracking
+
+We're going to have to specify a test alpha for our power calculations. By default, scipy uses a two-tail t-test 
+The quality of fit later will depending on using the correct alpha value. However, the effect size calculation is based on a one-tail test. So, we'll
+
 ```python
 >>> distributions['ttest_1'] = {
 ...     'extraction': extract_ttest_1_samples,
@@ -166,6 +171,7 @@ We need to extract the samples for the simulation, so we have appropriate sample
 ...     'statistic': partial(trad.effect_ttest_1, x0=0),
 ...     'traditional': partial(trad.calc_ttest_1, x0=0),
 ...     'power_kwargs': {},
+...     'test_alpha':
 ...     'permutations': None
 ...     }
 ```
@@ -408,7 +414,9 @@ $\begin{align}
 
 ## Rank Sum Tests
 
-[Something about rank-sum tests here].
+A rank sum test
+
+...
 
 ```python
 >>> def emp_rank_sum(ids):
@@ -417,7 +425,7 @@ $\begin{align}
 
 ### Log Normal Data Extraction
 
-...Something about log normal data
+We use log-normal data as a model for highly skewed data.
 
 ```python
 >>> def extract_lognormal_samples(sim):
@@ -438,6 +446,8 @@ $\begin{align}
 
 ### Uniform Data Extraction
 
+We also investigate uniform data.
+
 ```python
 >>> def extract_unifrom_samples(sim):
 ...     samples = sim['samples']
@@ -456,6 +466,8 @@ $\begin{align}
 ```
 
 ## Permutative Tests
+
+Something about permutaiton tests
 
 ### Permanova
 
@@ -572,15 +584,11 @@ $\begin{align}
 ...         test_summary['sim'] = sim
 ...         test_summary['save_fp'] = power_fp
 ...         calculate_power(**test_summary)
-anova_8
-ttest_1
-correlation
 anova_3
 ttest_ind
-CPU times: user 2min 53s, sys: 619 ms, total: 2min 54s
-Wall time: 2min 55s
-```
-
-```python
-
+correlation
+ttest_1
+anova_8
+CPU times: user 5min 56s, sys: 1.83 s, total: 5min 57s
+Wall time: 5min 59s
 ```
