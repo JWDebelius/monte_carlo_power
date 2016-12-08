@@ -25,7 +25,18 @@ class PowerSimulation(TestCase):
                                   0.18700873,  0.18797725,  0.18851606,
                                   0.18885525,  0.18908777,  0.18925724,
                                   0.18938648])
-        test_effects = z_effect(self.counts, self.power, self.alpha)
+        test_effects = z_effect(self.counts, self.power, self.alpha,
+                                lower_lim=0, upper_lim=1)
+        self.assertEqual(known_effects.shape, test_effects.shape)
+        npt.assert_almost_equal(known_effects, test_effects, 5)
+
+    def test_z_effect_lims(self):
+        known_effects = np.array([np.nan,      0.17842640,  0.18489939,
+                                  0.18700873,  0.18797725,  0.18851606,
+                                  0.18885525,  0.18908777,  0.18925724,
+                                  0.18938648])
+        test_effects = z_effect(self.counts, self.power, self.alpha,
+                                size_lim=5)
         self.assertEqual(known_effects.shape, test_effects.shape)
         npt.assert_almost_equal(known_effects, test_effects, 5)
 
