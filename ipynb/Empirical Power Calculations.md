@@ -161,8 +161,9 @@ We need to extract the samples for the simulation, so we have appropriate sample
 
 ### Update distribution tracking
 
-We're going to have to specify a test alpha for our power calculations. By default, scipy uses a two-tail t-test 
-The quality of fit later will depending on using the correct alpha value. However, the effect size calculation is based on a one-tail test. So, we'll
+We're going to describe our test with a variety of parameters. We include information about the way to draw the samples out of the simulation files, the test to apply, how to calculate the test statistic and distribution-based power.
+
+The test we're using is a two-tailed test, but the power calculation we use is a one-tailed test. So, we'll track the one-tailed power adjustment.
 
 ```python
 >>> distributions['ttest_1'] = {
@@ -171,7 +172,7 @@ The quality of fit later will depending on using the correct alpha value. Howeve
 ...     'statistic': partial(trad.effect_ttest_1, x0=0),
 ...     'traditional': partial(trad.calc_ttest_1, x0=0),
 ...     'power_kwargs': {},
-...     'test_alpha':
+...     'alpha_adj': 0.5,
 ...     'permutations': None
 ...     }
 ```
@@ -249,13 +250,18 @@ $\begin{align*}
 ...     return samples, test_kwargs
 ```
 
+There is no requirement that the means in our simulation are ordered in anyway. So, the test statistic can be positive or negative. However, when we fit the data, the test statistic can only be positive. So, we'll take the absloute value of the power.
+
+This limitation also means that we much perform a two-tailed test, which will require subsequent adjustment.
+
 ```python
 >>> distributions['ttest_ind'] = {
 ...     'extraction': extract_ttest_ind_samples,
 ...     'test': emp_ttest_ind,
-...     'statistic': trad.effect_ttest_ind,
+...     'statistic': lambda x, y: np.absolute(trad.effect_ttest_ind(x, y)),
 ...     'traditional': trad.calc_ttest_ind,
 ...     'power_kwargs': {},
+...     'alpha_adj': 0.5,
 ...     'permutations': None
 ...     }
 ```
@@ -328,6 +334,8 @@ $\begin{align*}
 ...     return samples, test_kwargs
 ```
 
+An ANOVA is functionally a one-tailed test, so we do not need to adjust the p-value.
+
 ```python
 >>> distributions['anova_3'] = {
 ...     'extraction': extract_anova_samples,
@@ -335,6 +343,7 @@ $\begin{align*}
 ...     'statistic': trad.effect_anova,
 ...     'traditional': trad.calc_anova,
 ...     'power_kwargs': {},
+...     'alpha_adj': 1,
 ...     'permutations': {},
 ...     }
 ...
@@ -344,6 +353,7 @@ $\begin{align*}
 ...     'statistic': trad.effect_anova,
 ...     'traditional': trad.calc_anova,
 ...     'power_kwargs': {},
+...     'alpha_adj': 1,
 ...     'permutations': {},
 ...     }
 ```
@@ -406,6 +416,7 @@ $\begin{align}
 ...     'statistic': stat_pearson,
 ...     'traditional':trad.calc_pearson,
 ...     'power_kwargs': {'draw_mode': 'matched'},
+...     'alpha_adj': 0.5,
 ...     'permutations': None
 ...     }
 ```
@@ -440,6 +451,7 @@ We use log-normal data as a model for highly skewed data.
 ...     'test': emp_rank_sum,
 ...     'traditional': None,
 ...     'power_kwargs': {},
+...     'alpha_adj': lambda x: x,
 ...     'permutations': None,
 ...     }
 ```
@@ -526,7 +538,7 @@ Something about permutaiton tests
 
 ```python
 >>> def calculate_power(sim, save_fp, extraction, test, statistic,
-...                     traditional, power_kwargs, permutations):
+...                     traditional, power_kwargs, permutations, alpha_adj):
 ...     """Extracts the information"""
 ...     samples, test_kwargs = extraction(sim)
 ...
@@ -556,6 +568,7 @@ Something about permutaiton tests
 ...                      'statistic': statistic(*samples, **test_kwargs),
 ...                      'permutations': permutations,
 ...                      'alpha': alpha,
+...                      'alpha_adj': alpha_adj,
 ...                      'counts': counts,
 ...                      'original_size': len(samples[0]),
 ...                      }
@@ -577,18 +590,22 @@ Something about permutaiton tests
 ...     for i in range(num_rounds):
 ...         sim_fp = os.path.join(sim_dir, 'simulation_%i.p' % i)
 ...         power_fp = os.path.join(power_dir,  'simulation_%i.p' % i)
-...         if os.path.exists(power_fp):
+...         if os.path.exists(power_fp) and not overwrite:
 ...             continue
 ...         with open(sim_fp, 'rb') as f_:
 ...             sim = pickle.load(f_)
 ...         test_summary['sim'] = sim
 ...         test_summary['save_fp'] = power_fp
 ...         calculate_power(**test_summary)
-anova_3
+ttest_1
 ttest_ind
 correlation
-ttest_1
 anova_8
-CPU times: user 5min 56s, sys: 1.83 s, total: 5min 57s
-Wall time: 5min 59s
+anova_3
+CPU times: user 5min 46s, sys: 1.62 s, total: 5min 47s
+Wall time: 5min 49s
+```
+
+```python
+
 ```
