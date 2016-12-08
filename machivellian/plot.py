@@ -14,6 +14,23 @@ import seaborn as sn
 import statsmodels.formula.api as smf
 
 from machivellian.power import confidence_bound
+from machivellian.effects import z_power
+
+
+def add_labels(axes, style='(%s)', format_=None, size=12, start='A'):
+    """Adds alphabetical axis labels"""
+
+    if format_ is None:
+        def format_(x):
+            return x
+
+    for ax, l in zip(*(axes, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')):
+        x_lo, x_hi = ax.get_xlim()
+        y_lo, y_hi = ax.get_ylim()
+
+        left = x_lo + 0.1 * (x_hi - x_lo)
+        bottom = y_hi - 0.1 * (y_hi - y_lo)
+        ax.text(left, bottom, style % format_(l), size=size)
 
 
 def gradient_regression(ax, x, y, gradient, data, size=40,
@@ -305,54 +322,100 @@ def add_noncentrality(noncentrality, df, alpha, ax):
 
 
 def plot_power_curve(ax, counts, power_trace=None, power_scatter=None,
-                     color=None, ci_alpha=0.05):
-    """Plots power as a function of the number of observations
+    color=None):
+    """Plots a smooth power curve or a scatter of points
 
     Parameters
     ----------
-
+    ax : Axes
+    counts: 1d ndarray
+    power_trace: 1d ndarray
+    power_scatter: ndarray
+    color:
 
     Returns
     -------
-
+        Plot the power data on the axes
 
     Raises
     ------
-
+        Value Error if `power_trace` and `power_scatter` are both
+        unspecified.
 
     """
-    if ((power_trace is None) and (power_scatter is None)):
-        raise ValueError('No power value has been specified.')
+
+    if power_trace is None and power_scatter is None:
+        raise ValueError('At least one power type must be specified')
 
     if color is None:
         color = sn.color_palette()[0]
 
-    # Plots the curve
     if power_trace is not None:
-        pwr_mean, pwr_lo, pwr_hi = _summarize_trace(power_trace,
-                                                    ci_alpha=ci_alpha)
-        if not np.isnan(pwr_lo).all():
-            ax.fill_between(counts,
-                            pwr_lo,
-                            pwr_hi,
-                            color=color,
-                            alpha=0.5)
-        ax.plot(counts,
-                pwr_mean,
-                color=color)
+        ax.plot(counts, power_trace, color=color)
 
-    # Plots the scatter data
     if power_scatter is not None:
         ax.plot(counts,
                 power_scatter.T,
                 marker='o',
                 markerfacecolor='None',
                 markeredgecolor=color,
-                markeredgewidth=1
+                markeredgewidth=1,
+                linestyle=''
                 )
 
     # Cleans up the axes
+    ax.set_yticks(np.arange(0, 1.01, 0.25))
+    ax.set_ylim([0, 1.05])
     sn.despine(ax=ax)
+
+
+def plot_interval_power(ax, counts, effects, power_alpha=0.05, ci_alpha=None,
+                        color=None, fill_saturation=0.25):
+    """Makes some sort of pretty plot of the power"""
+    if color is None:
+        color = sn.color_palette()[0]
+
+    power_bar, power_low, power_hi = _get_effect_interval(counts,
+                                                          effects,
+                                                          power_alpha,
+                                                          ci_alpha)
+
+    ax.fill_between(counts, power_low, power_hi,
+                    alpha=fill_saturation,
+                    color=color)
+    ax.plot(counts, power_bar, color=color, linestyle='-')
+
+    ax.set_yticks(np.arange(0, 1.01, 0.25))
+    ax.set_ylim([0, 1.05])
+    sn.despine(ax=ax)
+
+
+def _get_effect_interval(counts, effect, power_alpha=0.05, ci_alpha=None):
+    """Calculate the confidence interal around the effect"""
+
+    if isinstance(effect, (int, float)):
+        l_bar = effect
+        ci = np.nan
+
+    elif ci_alpha is None:
+        ci = np.nanstd(effect)
+        l_bar = np.nanmean(effect)
+    else:
+        ci = confidence_bound(effect, alpha=ci_alpha)
+        l_bar = np.nanmean(effect)
+
+    l_low = l_bar - ci
+    l_hi = l_bar + ci
+
+    power_bar = z_power(counts, l_bar, power_alpha)
+    if not np.isnan(ci):
+        power_low = z_power(counts, l_low, power_alpha)
+        power_hi = z_power(counts, l_hi, power_alpha)
+    else:
+        power_low = np.nan * power_bar
+        power_hi = np.nan * power_bar
+
+    return power_bar, power_low, power_hi
 
 
 def _summarize_t(noncentrality, df, alpha=0.05):

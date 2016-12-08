@@ -9,10 +9,17 @@ from machivellian.plot import (_set_ticks,
                                _get_colors,
                                _summarize_trace,
                                plot_power_curve,
+                               _get_effect_interval
                                )
 
 
 class PlotTest(TestCase):
+
+    def setUp(self):
+        self.counts = np.arange(5, 50, 10)
+        self.l_ = np.array([0.5, 0.4, 0.6])
+        self.k_mean = np.array([0.299159,  0.614718,  0.803765,  0.905440,
+                                0.956298])
 
     def test_plot_power_curve_error(self):
         with self.assertRaises(ValueError):
@@ -143,6 +150,35 @@ class PlotTest(TestCase):
         npt.assert_almost_equal(known_mean, mean, 5)
         npt.assert_almost_equal(known_lo, lo, 5)
         npt.assert_almost_equal(known_hi, hi, 5)
+
+    def test_get_effect_interval_single(self):
+        mean, low, hi = _get_effect_interval(self.counts, self.l_[0])
+
+        npt.assert_almost_equal(mean, self.k_mean, 5)
+        self.assertTrue(np.isnan(low).all())
+        self.assertTrue(np.isnan(hi).all())
+
+    def test_get_effect_interval_no_ci(self):
+        known_lo = np.array([0.239040,  0.490191,  0.672526,  0.796770,
+                             0.877286])
+        known_hi = np.array([0.365331,  0.728362,  0.896776,  0.963771,
+                             0.987995])
+        mean, lo, hi = _get_effect_interval(self.counts, self.l_)
+        npt.assert_almost_equal(mean, self.k_mean, 5)
+        npt.assert_almost_equal(lo, known_lo, 5)
+        npt.assert_almost_equal(hi, known_hi, 5)
+
+    def test_get_effect_interval_ci(self):
+        known_lo = np.array([0.113691,  0.187622,  0.252683,  0.313220,
+                             0.370066])
+        known_hi = np.array([0.560994,  0.929215,  0.991258,  0.999074,
+                             0.999912])
+
+        mean, lo, hi = _get_effect_interval(self.counts, self.l_,
+                                            ci_alpha=0.05)
+        npt.assert_almost_equal(mean, self.k_mean, 5)
+        npt.assert_almost_equal(lo, known_lo, 5)
+        npt.assert_almost_equal(hi, known_hi, 5)
 
 
 if __name__ == '__main__':
