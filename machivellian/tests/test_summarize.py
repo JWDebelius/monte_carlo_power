@@ -56,9 +56,9 @@ class SummarizeTest(TestCase):
                                                  'traditional']]
 
         self.df = pd.DataFrame(
-            data=np.array([[35, 0.05, 0.19666182, 0.5, 1, 0],
-                           [45, 0.05, 0.24228406, 0.5, 1, 1]]),
-            columns=['counts', 'alpha', 'emperical', 'z_effect',
+            data=np.array([[35, 0.025, 0.19666182, 0.5, 1, 0],
+                           [45, 0.025, 0.24228406, 0.5, 1, 1]]),
+            columns=['counts', 'alpha', 'empirical', 'z_effect',
                      'sim_num', 'sim_pos'],
             index=['A', 'B']
             )
@@ -89,25 +89,25 @@ class SummarizeTest(TestCase):
     #     mod = modify_effect_size(self.df, drop_index, ['z'])
     #     self.assertTrue(pd.isnull(mod.loc['B', 'z_effect']))
 
-    # def test_calc_z_effect(self):
-    #     known = pd.Series([0.18700873,  0.18797725], index=['A', 'B'])
-    #     test = self.df.apply(calc_z_effect, axis=1)
-    #     pdt.assert_series_equal(known, test)
+    def test_calc_z_effect(self):
+        known = pd.Series([0.18700873,  0.18797725], index=['A', 'B'])
+        test = self.df.apply(calc_z_effect, axis=1)
+        pdt.assert_series_equal(known, test)
 
-    # def test_calc_z_power(self):
-    #     known = pd.Series([0.84087872,  0.91836203], index=['A', 'B'])
-    #     test = self.df.apply(partial(calc_z_power, col2='z_effect'), axis=1)
-    #     pdt.assert_series_equal(known, test)
+    def test_calc_z_power(self):
+        known = pd.Series([0.84087872,  0.91836203], index=['A', 'B'])
+        test = self.df.apply(partial(calc_z_power, col2='z_effect'), axis=1)
+        pdt.assert_series_equal(known, test)
 
-    # def test_build_summary_frame(self):
-    #     test = _build_summary_frame(self.power_summary)
-    #     pdt.assert_frame_equal(self.early_summary, test)
+    def test_build_summary_frame(self):
+        test = _build_summary_frame(self.power_summary)
+        pdt.assert_frame_equal(self.early_summary, test)
 
-    # def test_build_summary_frame_no_trad(self):
-    #     self.power_summary['traditional'] = None
-    #     known = pd.Series(np.ones(10,) * np.nan, name='traditional')
-    #     test = _build_summary_frame(self.power_summary)
-    #     pdt.assert_series_equal(known, test['traditional'])
+    def test_build_summary_frame_no_trad(self):
+        self.power_summary['traditional'] = None
+        known = pd.Series(np.ones(10,) * np.nan, name='traditional')
+        test = _build_summary_frame(self.power_summary)
+        pdt.assert_series_equal(known, test['traditional'])
 
     # def test_calculate_effect_size(self):
     #     known = copy.deepcopy(self.df)
