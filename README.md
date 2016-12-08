@@ -9,16 +9,39 @@ Simulation notebooks are designed to run in a series: simulating data, calculati
 ## Installation
 The recommended way to install this repository is using the conda pacakge manager through [miniconda](http://conda.pydata.org/miniconda.html).
 
-Dependencies can be installed using the [conda_environment.txt](conda_enviroment.txt) and [pip_requirements.txt](pip_requirements.txt) file.
+Dependencies can be installed using the [conda_environment.txt](conda_enviroment.txt) and [pip_requirements.txt](pip_requirements.txt) file. After you download the repository files, navigate to the folder containing the files. You can then build the conda enviroment using the following commands.
 
 ```bash
 $ conda create --name power --file conda_enviroment.txt
 $ source activate power
 $ pip install -r requirements.txt
-$ pip install ipymd
-$ pip install git+https://github.com/jwdebelius/monte_carlo_power --no-deps
+$ pip install -e . --no-deps
+``` 
+To use the markdown based notebooks, you will need to setup the profile for the `ipymd` package. You'll first need to create an `ipymd` enviroment, with
+
+```bash
+$ ipython profile create ipymd
 ```
-Additionally, follow the [ipymd instructions](https://github.com/rossant/ipymd) to finalize the installation.
+Adjust the newly created profile by adding
+
+```
+#------------------------
+# ipymd
+#------------------------
+c.NotebookApp.contents_manager_class = 'ipymd.IPymdContentsManager'
+```
+
+at the top of the file.
+
+## Starting the notebooks
+
+The markdown notebooks can be executed with the commands by navigating to the power directory, and running the following commands:
+
+```bash
+$ source activate power
+$ jupyter notebook profile=ipymd
+```
+A window at https://localhost:8888 should start in your browser. You can navigate through the notebooks using the play buttons or shift enter. For more guidance on Jupyter notebooks, visit the [Project Jupyter site](http://jupyter.org/).
 
 ## Simulation Notebooks
 
@@ -43,6 +66,4 @@ tar -czf simulations.tgz
 
 ## Credits
 
-[`power.py`](https://github.com/biocore/scikit-bio/blob/master/skbio/stats/power.py) and [`test_power.py`](https://github.com/biocore/scikit-bio/blob/master/skbio/stats/tests/test_power.py) are modified from [scikit-bio](www.scikit-bio.org) 0.5.0. The code is relased under a BSD-2.0 license; copyright (c) 2013 scikit-bio development team.
-
-These were written and modified by Justine Debelius ([@jwdebelius](https://github.com/jwdebelius)), Greg Caporaso ([@gregcaporaso](https://github.com/gregcaporaso)), Jai Ram Rideout ([@jairideout](https://github.com/jairideout)), Evan Bolyen ([@eboylen](https://github.com/ebolyen)), and Vivek Rai ([@vivekitkgp](https://github.com/vivekiitkgp)).
+[`power.py`](https://github.com/biocore/scikit-bio/blob/master/skbio/stats/power.py) and [`test_power.py`](https://github.com/biocore/scikit-bio/blob/master/skbio/stats/tests/test_power.py) are modified from [scikit-bio](www.scikit-bio.org) 0.5.0. The code is relased under a BSD-2.0 license; copyright (c) 2013 scikit-bio development team. The functions were written and modified by Justine Debelius ([@jwdebelius](https://github.com/jwdebelius)), Greg Caporaso ([@gregcaporaso](https://github.com/gregcaporaso)), Jai Ram Rideout ([@jairideout](https://github.com/jairideout)), Evan Bolyen ([@eboylen](https://github.com/ebolyen)), and Vivek Rai ([@vivekitkgp](https://github.com/vivekiitkgp)).
