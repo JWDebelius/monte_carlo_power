@@ -87,7 +87,6 @@ class PowerAnalysisTest(TestCase):
         self.assertEqual(test_p_bt.shape, (5, 5))
         self.assertEqual(test_p_bf.shape, (5, 5, 2))
 
-
     def test_confidence_bound_default(self):
         # Sets the know confidence bound
         known = 2.2830070
