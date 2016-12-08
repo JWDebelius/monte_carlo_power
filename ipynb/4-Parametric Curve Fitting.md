@@ -73,7 +73,7 @@ For each test, we'll take the average of the cleaned effect size, and calculate 
 
 ```python
 >>> effects = pd.concat([
-...         all_powers.groupby('sim_id').first()[['test', 'statistic']],
+...         all_powers.groupby('sim_id').first()[['test', 'statistic', 'alpha_adj', 'sim_num']],
 ...         all_powers.groupby('sim_id').count()[['z_clean']].rename(columns={'z_clean': 'param_count'}),
 ...         all_powers.groupby('sim_id').mean()[['z_clean']].rename(columns={'z_clean': 'param_mean'}),
 ...         all_powers.groupby('sim_id').std()[['z_clean']].rename(columns={'z_clean': 'param_std'}),
