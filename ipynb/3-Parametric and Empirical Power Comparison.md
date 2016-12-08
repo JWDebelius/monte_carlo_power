@@ -1,24 +1,17 @@
-# Parametric Power Comparison
+# Parametric and Empirical Power Comparison
 
-In the last two notebooks, we simulated data and calculated empirical power. Here, we'll compare the theoretical and empirical power. We'll also estimate an effect size, and calculate power based on that estimate.
+In the last two notebooks, we simulated data and calculated empirical power. Here, we'll compare the parametric power calculations, the empirical power values and the predicted power. This notebook will generate Figure S1.
 
 ```python
 >>> import os
 >>> import pickle
 >>> import warnings
 ...
->>> from functools import partial
-...
 >>> import matplotlib.pyplot as plt
 >>> import numpy as np
 >>> import pandas as pd
 >>> import seaborn as sn
->>> import scipy
->>> import statsmodels.formula.api as smf
 ...
->>> # import machivellian.covert
-... import machivellian.traditional as trad
->>> import machivellian.effects as eff
 >>> import machivellian.plot as plot
 >>> import machivellian.summarize as summarize
 ...
@@ -26,7 +19,7 @@ In the last two notebooks, we simulated data and calculated empirical power. Her
 >>> sn.set_style('ticks')
 ```
 
-# Parameters
+# 2. Parameters
 
 We've performed 100 simulations, which are stored in the simulation directory.
 
@@ -52,12 +45,6 @@ Power in previous notebooks was calculated with between 5 and no more htan 100 o
 >>> counts = np.arange(5, 100, 10)
 ```
 
-We'll fit our power curves using a power value of 0.05, and calculate the fitted curves using the same value. This was the critical value used to calculate distribution-based and emperical power.
-
-```python
->>> alpha = 0.05
-```
-
 We'll use the spectral colormap, scaled by the count depth.
 
 ```python
@@ -67,7 +54,8 @@ We'll use the spectral colormap, scaled by the count depth.
 ...           for (i, count) in enumerate(counts)}
 ```
 
-# Loading Power Calculations
+# 3. Loading Power Calculations
+
 We'll compare the behavior of distribution-based power, emperical power and the power calculated from curve fitting on the parametric tests. We can compare the behavior of emperical power, and power fit to emperical values for all tests.
 
 ```python
@@ -123,9 +111,9 @@ We'll start by loading the poewr data for all the tests we've preformed.
 ...             sim = pickle.load(f_)
 ...         summaries.append(
 ...             summarize.summarize_power(power_summary=sim,
-...                                                 sim_num=i,
-...                                                 test=test_name,
-...                                                 colors=colors)
+...                                       sim_num=i,
+...                                       test=test_name,
+...                                       colors=colors)
 ...             )
 ...     summaries = pd.concat(summaries)
 ...     summaries.to_csv(return_fp, sep='\t')
@@ -135,9 +123,26 @@ We'll start by loading the poewr data for all the tests we've preformed.
 >>> all_powers['sim_id'] = all_powers['test'] + '.' + all_powers['sim_num'].astype(str)
 ```
 
-# Power Calculation
+# 4. Power Calculation
 
 We're going to plot a comparison between the emperical and traditional power calculations, to see if there's a strong relationship. We'll plot the distribution-based power on the x axis and the emperical power on the y axis.
+
+```python
+>>> def add_labels(axes, style='(%s)', format_=None, size=12, start='A'):
+...     """Adds alphabetical axis labels"""
+...
+...     if format_ is None:
+...         def format_(x):
+...             return x
+...
+...     for ax, l in zip(*(axes, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')):
+...         x_lo, x_hi = ax.get_xlim()
+...         y_lo, y_hi = ax.get_ylim()
+...
+...         left = x_lo + 0.1 * (x_hi - x_lo)
+...         bottom = y_hi - 0.1 * (y_hi - y_lo)
+...         ax.text(left, bottom, style % format_(l), size=size)
+```
 
 ```python
 >>> te_fig = plot.summarize_regression(all_powers,
@@ -151,46 +156,15 @@ We're going to plot a comparison between the emperical and traditional power cal
 ...                                    ylabel='Empirical'
 ...                                    )
 >>> te_fig.axes[7].set_xlabel('Distribution Power')
+>>> add_labels(te_fig.axes)
 ```
 
-We find a high degree of correlation between the traditional values and the empirical results, with the exception of the correlation values. The points are colored by sample size, which suggest the major deviations for the correlation are from sample sizes less than 5. We hypothesize this may be due to issues with the subsampling at small sample sizes.
+We see a high degree of correlation between the distribution-based power and the empirical power, although there is poor performance in the correlation with 5 observations per group.
 
-# Pseudo Effect Size Calculation
-
-Next, we'll calculate the average pseudo effect size for the data, using a value based on the z effect.
+Let's save the comparison dataframe, which we'll use to calculate the empirical power values in the [next notebook]().
 
 ```python
->>> all_powers['z_effect'] = all_powers.apply(
-...     partial(summarize.calc_z_effect, col2='empirical'),
-...     axis=1
-...     )
+>>> all_powers.to_csv('./simulations/parametric_power_summary.txt',
+...                   sep='\t')
 ```
 
-We can correct the effect sizes
-
-```python
->>> def clean_effect(x):
-...     if (10 < x['counts']) | ((0.1 <= x['empirical']) & (x['empirical'] <= 0.95)):
-...         return x['z_effect']
-...     else:
-...         return np.nan
-...
->>> all_powers['z_clean'] = all_powers.apply(clean_effect, axis='columns')
-```
-
-```python
->>> fig = plot.summarize_regression(all_powers,
-...                                 test_names=tests,
-...                                 titles=titles,
-...                                 x='statistic',
-...                                 y='z_clean',
-...                                 gradient='colors',
-...                                 alpha=0.1,
-...                                 ylim=[-1, 1],
-...                                 ylabel='Empirical'
-...                                 )
-```
-
-```python
-
-```
