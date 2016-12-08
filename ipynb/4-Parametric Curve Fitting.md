@@ -142,4 +142,10 @@ Let's also compare the predicted fit against the distribution-based power.
 >>> plot.add_labels(tp_fig.axes)
 ```
 
+Let's save the calibration parameter calculated for each experiment.
+
+```python
+>>> effects.to_csv('./simulations/parametric_effect_summary.txt', sep='\t', index_label='sim_id')
+```
+
 We've now demonstrated that power can be accurately predicted for parametric distributions. Next, we'll look at the power values under an alternate sample size and critical value.
