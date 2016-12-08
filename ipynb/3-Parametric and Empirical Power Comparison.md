@@ -128,23 +128,6 @@ We'll start by loading the poewr data for all the tests we've preformed.
 We're going to plot a comparison between the emperical and traditional power calculations, to see if there's a strong relationship. We'll plot the distribution-based power on the x axis and the emperical power on the y axis.
 
 ```python
->>> def add_labels(axes, style='(%s)', format_=None, size=12, start='A'):
-...     """Adds alphabetical axis labels"""
-...
-...     if format_ is None:
-...         def format_(x):
-...             return x
-...
-...     for ax, l in zip(*(axes, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')):
-...         x_lo, x_hi = ax.get_xlim()
-...         y_lo, y_hi = ax.get_ylim()
-...
-...         left = x_lo + 0.1 * (x_hi - x_lo)
-...         bottom = y_hi - 0.1 * (y_hi - y_lo)
-...         ax.text(left, bottom, style % format_(l), size=size)
-```
-
-```python
 >>> te_fig = plot.summarize_regression(all_powers,
 ...                                    test_names=tests,
 ...                                    titles=titles,
@@ -156,7 +139,7 @@ We're going to plot a comparison between the emperical and traditional power cal
 ...                                    ylabel='Empirical'
 ...                                    )
 >>> te_fig.axes[7].set_xlabel('Distribution Power')
->>> add_labels(te_fig.axes)
+>>> plot.add_labels(te_fig.axes)
 ```
 
 We see a high degree of correlation between the distribution-based power and the empirical power, although there is poor performance in the correlation with 5 observations per group.
@@ -168,3 +151,4 @@ Let's save the comparison dataframe, which we'll use to calculate the empirical 
 ...                   sep='\t')
 ```
 
+We've demonstrated the ability of the empirical distribution to recapitulate the empirical distribution. Next, we'll loke at the the performance of the power prediction.
