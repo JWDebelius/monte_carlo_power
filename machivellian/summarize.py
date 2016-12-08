@@ -50,7 +50,9 @@ def summarize_power(power_summary, sim_num, test, colors):
 
     #  Adds static information
     run_summary['test'] = test
-    run_summary['alpha'] = power_summary['alpha'] * power_summary['alpha_adj']
+    run_summary['ori_alpha'] = power_summary['alpha']
+    run_summary['alpha'] = power_summary['alpha_adj'] * power_summary['alpha']
+    run_summary['alpha_adj_factor'] = power_summary['alpha_adj']
     run_summary['sim_num'] = sim_num
     run_summary['p_all'] = power_summary['original_p']
     run_summary['statistic'] = power_summary['statistic']

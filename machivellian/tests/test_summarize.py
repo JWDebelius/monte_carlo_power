@@ -72,14 +72,17 @@ class SummarizeTest(TestCase):
                                colors={i: 'k' % i
                                        for i in np.arange(5, 100, 10)})
         columns = pd.Index(['counts', 'empirical', 'sim_position',
-                            'traditional', 'test', 'alpha',
-                            'sim_num', 'p_all', 'statistic', 'colors'])
+                            'traditional', 'test', 'ori_alpha', 'alpha',
+                            'alpha_adj_factor', 'sim_num', 'p_all',
+                            'statistic', 'colors'])
         index = pd.Index(['test.0.%i' % i for i in np.arange(0, 10)],
                          name='index')
         pdt.assert_index_equal(test.columns, columns)
         pdt.assert_index_equal(test.index, index)
         self.assertEqual(test['test'].unique(), 'test')
         self.assertEqual(test['alpha'].unique(), 0.025)
+        self.assertEqual(test['alpha_adj_factor'].unique(), 0.5)
+        self.assertEqual(test['ori_alpha'].unique(), 0.05)
         self.assertEqual(test['sim_num'].unique(), 0)
         self.assertEqual(test['colors'].unique(), 'k')
         self.assertEqual(test['statistic'].unique(), 12)
