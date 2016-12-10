@@ -4,6 +4,7 @@ import numpy as np
 import numpy.testing as npt
 import pandas as pd
 import pandas.util.testing as pdt
+import scipy
 
 from machivellian.simulate import (simulate_ttest_1,
                                    simulate_ttest_ind,
@@ -14,10 +15,7 @@ from machivellian.simulate import (simulate_ttest_1,
                                    simulate_discrete,
                                    simulate_lognormal,
                                    simulate_uniform,
-                                   _convert_to_mirror,
                                    _check_param,
-                                   _simulate_gauss_vec,
-                                   _vec_size,
                                    )
 
 
@@ -32,6 +30,9 @@ class PowerSimulation(TestCase):
         self.dm = np.array([[0, 1, 2],
                             [1, 0, 3],
                             [2, 3, 0]])
+        self.dm_ids = ('s.1', 's.2', 's.3', 's.4')
+        self.grouping = pd.Series([0, 0, 1, 1], index=self.dm_ids,
+                                  name='groups')
 
     def test_ttest_1_simulate(self):
         known_mu = 1
@@ -162,44 +163,75 @@ class PowerSimulation(TestCase):
         npt.assert_almost_equal(known_v2, v2, 5)
 
     def test_simulate_permanova(self):
-        known_grouping = pd.Series([0, 0, 1, 1], index=dm_ids, name='groups')
+        known_dm = np.array(
+            [[0.00000000,  5.36572663,  5.64232269,  2.69658014],
+             [5.36572663,  0.00000000,  0.27659606,  2.66914649],
+             [5.64232269,  0.27659606,  0.00000000,  2.94574255],
+             [2.69658014,  2.66914649,  2.94574255,  0.00000000]
+             ])
 
-        params, [dm, grouping] = simulate_permanova(num_samples=4,
-                                                    num0=2,
-                                                    wdist=0.2,
-                                                    wspread=0.1,
-                                                    bdist=0.5,
-                                                    bspread=0.1
-                                                    )
-        npt.assert_almost_equal(permanova_dm, dm.data.astype(float), 5)
-        self.assertEqual(dm_ids, dm.ids)
-        pdt.assert_series_equal(known_grouping, grouping)
+        params, [dm, grouping] = simulate_permanova(self.mu_lim,
+                                                    self.sigma_lim,
+                                                    2)
 
-    def test_simulate_permanova_no_num0(self):
-        known_grouping = pd.Series([0, 0, 1, 1], index=dm_ids, name='groups')
+        npt.assert_almost_equal(known_dm, dm.data, 5)
+        self.assertEqual(self.dm_ids, dm.ids)
+        pdt.assert_series_equal(self.grouping, grouping)
 
-        params, [dm, grouping] = simulate_permanova(num_samples=4,
-                                                    num0=None,
-                                                    wdist=0.2,
-                                                    wspread=0.1,
-                                                    bdist=0.5,
-                                                    bspread=0.1
-                                                    )
-        self.assertEqual(dm_ids, dm.ids)
-        self.assertEqual((4, 4), dm.shape)
-        pdt.assert_series_equal(known_grouping, grouping)
+    def test_simulate_permanova_simulate(self):
+        known_dm = np.array([
+            [000.00000000,   47.31958563,   40.62424136,  460.01218481],
+            [047.31958563,    0.00000000,    6.69534427,  507.33177045],
+            [040.62424136,    6.69534427,    0.00000000,  500.63642618],
+            [460.01218481,  507.33177045,  500.63642618,    0.00000000]
+            ])
+
+        params, [dm, grouping] = simulate_permanova(
+            self.mu_lim, self.sigma_lim, 2, simulate=simulate_lognormal)
+
+        npt.assert_almost_equal(known_dm, dm.data, 5)
+        self.assertEqual(self.dm_ids, dm.ids)
+        pdt.assert_series_equal(self.grouping, grouping)
+
+    def test_simulate_permanova_distance(self):
+        known_dm = np.array([
+            [0.00000000,  0.84401831,  0.92789730,  0.29874024],
+            [0.84401830,  0.00000000,  0.38682847,  0.72912002],
+            [0.92789730,  0.38682840,  0.00000000,  0.87044450],
+            [0.29874024,  0.72912002,  0.87044450,  0.00000000]])
+
+        params, [dm, grouping] = simulate_permanova(
+            self.mu_lim, self.sigma_lim, 2,
+            distance=scipy.spatial.distance.canberra)
+
+        npt.assert_almost_equal(known_dm, dm.data, 5)
+        self.assertEqual(self.dm_ids, dm.ids)
+        pdt.assert_series_equal(self.grouping, grouping)
 
     def test_simulate_mantel(self):
+        known_x = np.array([
+            [00.0000000,   9.3518188,   2.9623433,  14.8301359],
+            [09.3518188,   0.0000000,  12.3141620,   5.4783172],
+            [02.9623433,  12.3141620,   0.0000000,  17.7924792],
+            [14.8301359,   5.4783172,  17.7924792,   0.0000000]
+            ])
+
+        known_y = np.array([
+            [00.0000000,   8.3847378,   6.8125418,  11.5334174],
+            [08.3847378,   0.0000000,  15.1972795,   3.1486796],
+            [06.8125418,  15.1972795,   0.0000000,  18.3459592],
+            [11.5334174,   3.1486796,  18.3459592,   0.0000000]])
+
         params, [x, y] = simulate_mantel(slope_lim=self.sigma_lim,
                                          sigma_lim=self.sigma_lim,
                                          count_lim=[4, 5],
                                          intercept_lim=self.mu_lim,
                                          x_lim=[-10, 10]
                                          )
-        npt.assert_almost_equal(mantel_x, x.data)
-        self.assertEqual(dm_ids, x.ids)
-        npt.assert_almost_equal(mantel_y, y.data)
-        self.assertEqual(dm_ids, x.ids)
+        npt.assert_almost_equal(known_x, x.data)
+        self.assertEqual(self.dm_ids, x.ids)
+        npt.assert_almost_equal(known_y, y.data)
+        self.assertEqual(self.dm_ids, y.ids)
 
     def test_simulate_discrete(self):
         p_lim = 0.5
@@ -219,11 +251,6 @@ class PowerSimulation(TestCase):
         self.assertEqual(tsize, size_lim)
         self.assertEqual(tnum_groups, num_groups)
 
-    def test_convert_to_mirror(self):
-        vec = np.arange(0, ((self.length) * (self.length - 1))/2) + 1
-        test_dm = _convert_to_mirror(self.length, vec)
-        npt.assert_array_equal(test_dm, self.dm)
-
     def test_check_param_list(self):
         param = [0, 1]
         new_param = _check_param(param, 'param')
@@ -239,32 +266,6 @@ class PowerSimulation(TestCase):
         param = 'param'
         with self.assertRaises(TypeError):
             _check_param(param, 'param')
-
-    def test_simulate_gauss_vec_less(self):
-        vec = _simulate_gauss_vec(0, 1, 3)
-        self.assertEqual(vec.shape, (3, ))
-        self.assertFalse((vec < 0).any())
-        self.assertFalse((vec > 1).any())
-
-    def test_vec_size(self):
-        test_shape = _vec_size(5)
-        self.assertEqual(test_shape, 10)
-
-permanova_dm = np.array([[0.00000000, 0.24412275, 0.74307712, 0.47479079],
-                         [0.24412275, 0.00000000, 0.51096098, 0.65824811],
-                         [0.74307712, 0.51096098, 0.00000000, 0.16691298],
-                         [0.47479079, 0.65824811, 0.16691298, 0.00000000]])
-
-mantel_x = np.array([[00.0000000,   9.3518188,   2.9623433,  14.8301359],
-                     [09.3518188,   0.0000000,  12.3141620,   5.4783172],
-                     [02.9623433,  12.3141620,   0.0000000,  17.7924792],
-                     [14.8301359,   5.4783172,  17.7924792,   0.0000000]])
-
-mantel_y = np.array([[00.0000000,   8.3847378,   6.8125418,  11.5334174],
-                     [08.3847378,   0.0000000,  15.1972795,   3.1486796],
-                     [06.8125418,  15.1972795,   0.0000000,  18.3459592],
-                     [11.5334174,   3.1486796,  18.3459592,   0.0000000]])
-dm_ids = ('s.1', 's.2', 's.3', 's.4')
 
 
 if __name__ == '__main__':

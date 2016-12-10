@@ -232,28 +232,32 @@ def simulate_uniform(range_lim, delta_lim, counts_lim):
     return [r_, d_, n_], [v1, v2]
 
 
-def simulate_permanova(num_samples, wdist, wspread, bdist, bspread, num0=None):
+# def simulate_permanova(num_samples, wdist, wspread, bdist, bspread, counts_lim):
+def simulate_permanova(mu_lim, sigma_lim, count_lim=100, distance=None,
+                       simulate=None, simulate_kwds=None):
     """Makes a distance matrix with specified mean distance and spread
 
-    Paramaters
-    ----------
-    num_samples : int
-        The number of samples which should be described in the distance matrix
-    wdist, bdist : list, float, optional
-        A value or range of the distance offset for the within (`wdist`) or
-        between (`bdist`) sample distances. If a list is supplied, a value
-        will be drawn between the first to values.
-    wspread, bspread : list, float, optional
-        A value or range for the distance spread for the within (`wspread`) or
-        between (`bspread`) sample distances. If a list is supplied, a value
-        will be drawn between the first to values.
-    num0: int, optional
-        The number of samples in the first group. (The size of the second
-        group will be given by `num_samples - num0`). If no value is supplied,
-        the value will be simulated using a binomial distribution with `p=0.5`.
+   Parameters
+   ----------
+    mu_lim : list, float
+        The limits for selecting a mean of the distributions being transformed
+        into a distance matrix
+    sigma_lim : list, float
+        The limits for selecting a standard deivation for the distributions
+        transformed into a distance matrix
+    count_lim : list, float
+        the number of observations which should be drawn for each sample
+    distance : function
+        A distance metric function. By default, Euclidean distance is used.
+    simulate : function
+        A function which accepts a mean, standard deviation, and sample size
+        argument and returns parameters and distributions
 
     Returns
     -------
+    list:
+        The means, variance and sample size used in the simulation of the
+        underlying data.
     DistanceMatrix
         The simulated distance matrix. Within-group distances are described by
         a normal distribution * means and variances described by `wdist` and
@@ -264,58 +268,31 @@ def simulate_permanova(num_samples, wdist, wspread, bdist, bspread, num0=None):
         A dataframe with a simulated mapping file corresponding to the groups
         in the data.
 
-    Raises
-    ------
-    TypeError
-        If `wdist`, `wspread`, `bdist`, or `bspread` is not a float or list
-
     """
 
-    # Gets the group sizes
-    if num0 is None:
-        num0 = np.random.binomial(1, 0.5, (num_samples)).sum()
-    num1 = num_samples - num0
+    # Handles the distance
+    if distance is None:
+        distance = scipy.spatial.distance.euclidean
 
-    # Simulates the withi n and between sample distance
-    wdist0 = _check_param(wdist, 'wdist')
-    wdist1 = _check_param(wdist, 'wdist')
-    bdist_ = _check_param(bdist, 'bdist')
+    if simulate is None:
+        simulate = simulate_ttest_ind
 
-    # Simulates the within and between sample spread
-    wspread0 = _check_param(wspread, 'wspread')
-    wspread1 = _check_param(wspread, 'wspread')
-    bspread_ = _check_param(bspread, 'bspread')
+    # Simulates the samples
+    if simulate_kwds is None:
+        params, samples = simulate(mu_lim, sigma_lim, count_lim)
+    else:
+        params, samples = simulate(mu_lim, sigma_lim, count_lim,
+                                   **simulate_kwds)
 
-    dist = [wdist0, wdist1, bdist_]
-    spread = [wspread0, wspread1, bspread]
+    labels = np.hstack([i * np.ones(len(s)) for i, s in enumerate(samples)])
+    names = ['s.%i' % (i + 1) for i in range(len(labels))]
 
-    # Simulates the distances
-    vec0 = _simulate_gauss_vec(wdist0, wspread0, _vec_size(num0))
-    vec1 = _simulate_gauss_vec(wdist1, wspread1, _vec_size(num1))
-    vecb = _simulate_gauss_vec(bdist_, bspread_, (num0, num1))
+    dm = skbio.DistanceMatrix.from_iterable(np.hstack(samples),
+                                            distance,
+                                            keys=names)
+    grouping = pd.Series(labels.astype(int), index=names, name='groups')
 
-    # Reshapes the within distance vectors
-    dm0 = _convert_to_mirror(num0, vec0)
-    dm1 = _convert_to_mirror(num1, vec1)
-
-    # Creates the distance array
-    dm = np.zeros((num_samples, num_samples)) * np.nan
-    dm[0:num0, 0:num0] = dm0
-    dm[num0:num_samples, num0:num_samples] = dm1
-    dm[0:num0, num0:num_samples] = vecb
-    dm[num0:num_samples, 0:num0] = vecb.transpose()
-
-    # Simulates the mapping data
-    groups = np.hstack((np.zeros(num0), np.ones(num1))).astype(int)
-
-    # Simulates the sample ids
-    ids = np.array(['s.%i' % (i + 1) for i in np.arange(num_samples)])
-
-    # Makes the distance matrix and mapping file
-    dm = skbio.DistanceMatrix(dm, ids=ids)
-    grouping = pd.Series(groups, index=ids, name='groups')
-
-    return [dist, spread], [dm, grouping]
+    return params, [dm, grouping]
 
 
 def simulate_correlation(slope_lim, intercept_lim, sigma_lim, count_lim,
@@ -417,30 +394,6 @@ def simulate_mantel(slope_lim, intercept_lim, sigma_lim, count_lim, x_lim,
     return [sigma, n, m, b], [x, y]
 
 
-def _convert_to_mirror(length, vec):
-    """Converts a condensed 1D array to a mirror 2D array
-    """
-
-    vec = np.hstack(vec)
-    # Creates the output matrix
-    dm = np.zeros((length, length))
-    # Adds a counter to watch the positon
-    pos_count = 0
-
-    # Populates the distance matrix
-    for idx in range(length-1):
-        # Gets the position for the two dimensional matrix
-        pos2 = np.arange(idx+1, length)
-        # Gets the postion for hte one dimensional matrix
-        pos1 = np.arange(idx, length-1) + pos_count
-        pos_count = pos_count + len(pos1) - 1
-        # Updates the data in the matrices
-        dm[idx, pos2] = vec[pos1]
-        dm[pos2, idx] = vec[pos1]
-
-    return dm
-
-
 def _check_param(param, param_name, random=np.random.uniform, size=1):
     """Checks a parameter is sane"""
     if isinstance(param, list):
@@ -449,16 +402,3 @@ def _check_param(param, param_name, random=np.random.uniform, size=1):
         raise TypeError('%s must be a list or a float' % param_name)
     else:
         return param
-
-
-def _simulate_gauss_vec(mean, std, size):
-    """Makes a modified gaussian vector bounded between 0 and 1"""
-    vec = np.random.normal(loc=mean, scale=std, size=size)
-    vec[vec < 0] = np.absolute(vec[vec < 0])
-    vec[vec > 1] = 1
-    return vec
-
-
-def _vec_size(length):
-    """Defines a group size for a distance matrix"""
-    return int(((length) * (length - 1))/2)
