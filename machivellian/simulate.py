@@ -234,7 +234,7 @@ def simulate_uniform(range_lim, delta_lim, counts_lim):
 
 # def simulate_permanova(num_samples, wdist, wspread, bdist, bspread, counts_lim):
 def simulate_permanova(mu_lim, sigma_lim, count_lim=100, distance=None,
-                       simulate=None, simulate_kwds=None):
+                       num_features=100):
     """Makes a distance matrix with specified mean distance and spread
 
    Parameters
@@ -272,27 +272,28 @@ def simulate_permanova(mu_lim, sigma_lim, count_lim=100, distance=None,
 
     # Handles the distance
     if distance is None:
-        distance = scipy.spatial.distance.euclidean
-
-    if simulate is None:
-        simulate = simulate_ttest_ind
+        distance = scipy.spatial.distance.braycurtis
 
     # Simulates the samples
-    if simulate_kwds is None:
-        params, samples = simulate(mu_lim, sigma_lim, count_lim)
-    else:
-        params, samples = simulate(mu_lim, sigma_lim, count_lim,
-                                   **simulate_kwds)
+    params1, sample1 = simulate_anova(mu_lim, sigma_lim, count_lim,
+                                      num_pops=num_features)
+    params2, sample2 = simulate_anova(mu_lim, sigma_lim, count_lim,
+                                      num_pops=num_features)
+    sample1 = np.vstack(sample1)
+    sample2 = np.vstack(sample2)
 
-    labels = np.hstack([i * np.ones(len(s)) for i, s in enumerate(samples)])
+    samples = [sample1, sample2]
+
+    labels = np.hstack([i * np.ones(s.shape[1])
+                       for i, s in enumerate(samples)])
     names = ['s.%i' % (i + 1) for i in range(len(labels))]
 
-    dm = skbio.DistanceMatrix.from_iterable(np.hstack(samples),
+    dm = skbio.DistanceMatrix.from_iterable(np.hstack(samples).T,
                                             distance,
                                             keys=names)
     grouping = pd.Series(labels.astype(int), index=names, name='groups')
 
-    return params, [dm, grouping]
+    return [params1, params1], [dm, grouping]
 
 
 def simulate_correlation(slope_lim, intercept_lim, sigma_lim, count_lim,

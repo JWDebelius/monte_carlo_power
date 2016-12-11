@@ -163,31 +163,17 @@ class PowerSimulation(TestCase):
         npt.assert_almost_equal(known_v2, v2, 5)
 
     def test_simulate_permanova(self):
-        known_dm = np.array(
-            [[0.00000000,  5.36572663,  5.64232269,  2.69658014],
-             [5.36572663,  0.00000000,  0.27659606,  2.66914649],
-             [5.64232269,  0.27659606,  0.00000000,  2.94574255],
-             [2.69658014,  2.66914649,  2.94574255,  0.00000000]
-             ])
+        known_dm = np.array([
+            [0.00000000,  0.60327353,  0.79004278,  0.69953733],
+            [0.60327353,  0.00000000,  0.62467762,  0.74709651],
+            [0.79004278,  0.62467762,  0.00000000,  0.48679580],
+            [0.69953733,  0.74709651,  0.48679580,  0.00000000]
+            ])
 
         params, [dm, grouping] = simulate_permanova(self.mu_lim,
                                                     self.sigma_lim,
-                                                    2)
-
-        npt.assert_almost_equal(known_dm, dm.data, 5)
-        self.assertEqual(self.dm_ids, dm.ids)
-        pdt.assert_series_equal(self.grouping, grouping)
-
-    def test_simulate_permanova_simulate(self):
-        known_dm = np.array([
-            [000.00000000,   47.31958563,   40.62424136,  460.01218481],
-            [047.31958563,    0.00000000,    6.69534427,  507.33177045],
-            [040.62424136,    6.69534427,    0.00000000,  500.63642618],
-            [460.01218481,  507.33177045,  500.63642618,    0.00000000]
-            ])
-
-        params, [dm, grouping] = simulate_permanova(
-            self.mu_lim, self.sigma_lim, 2, simulate=simulate_lognormal)
+                                                    2,
+                                                    num_features=10)
 
         npt.assert_almost_equal(known_dm, dm.data, 5)
         self.assertEqual(self.dm_ids, dm.ids)
@@ -195,14 +181,16 @@ class PowerSimulation(TestCase):
 
     def test_simulate_permanova_distance(self):
         known_dm = np.array([
-            [0.00000000,  0.84401831,  0.92789730,  0.29874024],
-            [0.84401830,  0.00000000,  0.38682847,  0.72912002],
-            [0.92789730,  0.38682840,  0.00000000,  0.87044450],
-            [0.29874024,  0.72912002,  0.87044450,  0.00000000]])
+            [0.00000000,  5.62246682,  9.51155335,  5.06967897],
+            [5.62246682,  0.00000000,  8.11073235,  5.33689282],
+            [9.51155335,  8.11073235,  0.00000000,  6.51371383],
+            [5.06967897,  5.33689282,  6.51371383,  0.00000000]
+            ])
 
         params, [dm, grouping] = simulate_permanova(
             self.mu_lim, self.sigma_lim, 2,
-            distance=scipy.spatial.distance.canberra)
+            num_features=10,
+            distance=scipy.spatial.distance.euclidean)
 
         npt.assert_almost_equal(known_dm, dm.data, 5)
         self.assertEqual(self.dm_ids, dm.ids)
