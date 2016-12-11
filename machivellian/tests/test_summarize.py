@@ -1,6 +1,5 @@
 from unittest import TestCase, main
 
-import copy
 from functools import partial
 
 import numpy as np
@@ -8,11 +7,8 @@ import pandas as pd
 import pandas.util.testing as pdt
 
 from machivellian.summarize import (summarize_power,
-                                    calc_z_effect,
                                     calc_z_power,
                                     _build_summary_frame,
-                                    # _calculate_effect_size,
-                                    # modify_effect_size,
                                     )
 
 
@@ -87,16 +83,6 @@ class SummarizeTest(TestCase):
         self.assertEqual(test['colors'].unique(), 'k')
         self.assertEqual(test['statistic'].unique(), 12)
 
-    # def test_modify_effect_sizes(self):
-    #     drop_index = ['B']
-    #     mod = modify_effect_size(self.df, drop_index, ['z'])
-    #     self.assertTrue(pd.isnull(mod.loc['B', 'z_effect']))
-
-    def test_calc_z_effect(self):
-        known = pd.Series([0.18700873,  0.18797725], index=['A', 'B'])
-        test = self.df.apply(calc_z_effect, axis=1)
-        pdt.assert_series_equal(known, test)
-
     def test_calc_z_power(self):
         known = pd.Series([0.84087872,  0.91836203], index=['A', 'B'])
         test = self.df.apply(partial(calc_z_power, col2='z_effect'), axis=1)
@@ -111,17 +97,6 @@ class SummarizeTest(TestCase):
         known = pd.Series(np.ones(10,) * np.nan, name='traditional')
         test = _build_summary_frame(self.power_summary)
         pdt.assert_series_equal(known, test['traditional'])
-
-    # def test_calculate_effect_size(self):
-    #     known = copy.deepcopy(self.df)
-    #     known['z_effect'] = [0.18700873,  0.18797725]
-    #     _calculate_effect_size(self.df, ['z'])
-    #     pdt.assert_frame_equal(known, self.df)
-
-    # def test_calculate_power(self):
-    #     known = copy.deepcopy(self.df)
-    #     known['z_power'] = [0.84087872,  0.91836203]
-    #     known['z_mean'] = 0.5
 
 if __name__ == '__main__':
     main()
