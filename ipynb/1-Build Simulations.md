@@ -264,16 +264,36 @@ $\begin{align}
 \end{align}\tag{4}$
 
 ```python
->>> dm = sim.simulate_permanova(num_samples=100,
-...                             wdist=[0, 0.4],
-...                             wspread=[0.1, 0.4],
-...                             bdist=[0.25, 0.75],
-...                             bspread=[0.1, 0.6],
-...                            )[1][0]
->>> ax = plt.axes()
->>> sn.heatmap(dm.data, ax=ax)
->>> ax.set_yticks([])
->>> yt = ax.set_xticks([])
+>>> _, (dm, grouping) = sim.simulate_permanova(mu_lim=[0, 10],
+...                                            sigma_lim=[3, 25],
+...                                            count_lim=100)
+```
+
+```python
+>>> pc = skbio.stats.ordination.pcoa(dm)
+```
+
+```python
+>>> def color_scatter(x):
+...     """Colors the scatter plot"""
+...     if x == 0:
+...         return sn.color_palette()[0]
+...     else:
+...         return sn.color_palette()[2]
+...
+>>> ord_ = pc.samples[['PC1', 'PC2']]
+>>> ord_['color'] = grouping.apply(color_scatter)
+```
+
+```python
+>>> fig, [ax1, ax2] = plt.subplots(1, 2)
+>>> ax1.set_aspect('equal')
+>>> sn.heatmap(dm.data, ax=ax1)
+>>> ax1.set_yticks([])
+>>> yt = ax1.set_xticks([])
+...
+>>> ax2.scatter(ord_['PC1'], ord_['PC2'], color=ord_['color'], alpha=0.5)
+>>> ax2.set_aspect('equal')
 ```
 
 We need to wrap the scikit-bio permanova test, becuase the format does not automatically return a single p-value.
@@ -282,13 +302,9 @@ We'll build our simulations containing between 120 and 200 observations (60 to 1
 
 ```python
 >>> distributions['permanova'] = {'function': sim.simulate_permanova,
-...                               'kwargs': {'num_samples': np.random.randint(120, 200),
-...                                          'num0': None,
-...                                          'wdist': [0.3, 0.6],
-...                                          'wspread': [0.5, 0.8],
-...                                          'bdist': [0.45, 0.65],
-...                                          'bspread': [0.5, 0.8],
-...                                          }
+...                               'kwargs': {'mu_lim': [0, 25],
+...                                          'sigma_lim': [3, 50],
+...                                          'count_lim': [60, 100]}
 ...                               }
 ```
 
