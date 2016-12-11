@@ -75,7 +75,7 @@ We assume that all the data associated with this study will be in a sub director
 Power calculations are expensive, so users may prefer not to perform them if power has already been calculated. This can be specified with the `overwrite` parameter, which will prevent new power calculations if a power calculation has already been performed.
 
 ```python
->>> overwrite = False
+>>> overwrite = True
 ```
 
 This notebook is intended to be run in parallel, thus we'll set the number of threads. By default, we'll use 1. However, on a system with more threads, a larger number of processing steps can be performed to limit runtime.
@@ -101,6 +101,7 @@ We'll test using a critical value of 0.05, whcih is a commonly used value in bio
 
 ```python
 >>> alpha = 0.05
+>>> alpha_prime = 0.01
 ```
 
 We will evaluate five parameteric distributions and two distance-based calculations.
@@ -449,6 +450,8 @@ We use log-normal data as a model for highly skewed data.
 >>> distributions['lognormal'] = {
 ...     'extraction': extract_lognormal_samples,
 ...     'test': emp_rank_sum,
+...     'statistic': np.nan
+...     'alpha_adj': 1.0,
 ...     'traditional': None,
 ...     'power_kwargs': {},
 ...     'alpha_adj': lambda x: x,
@@ -502,6 +505,8 @@ Something about permutaiton tests
 >>> distributions['permanova'] = {
 ...     'extraction': extract_permanova_samples,
 ...     'test': emp_permanova,
+...     'statistic': np.nan,
+...     'alpha_adj': 1.0,
 ...     'traditional': None,
 ...     'power_kwargs': {},
 ...     'permutations': 99
@@ -528,6 +533,8 @@ Something about permutaiton tests
 >>> distributions['mantel'] = {
 ...     'extraction': extract_mantel_samples,
 ...     'test': emp_mantel,
+...     'statistic': np.nan
+...     'alpha_adj': 1.0,
 ...     'traditional': None,
 ...     'power_kwargs': {'draw_mode': 'matched'},
 ...     'permutations': 99
@@ -546,9 +553,13 @@ Something about permutaiton tests
 ...     counts = np.arange(5, max_count, 10)
 ...
 ...     if traditional is not None:
-...         trad_power = traditional(*samples, counts=counts)
+...         trad_power = traditional(*samples, counts=counts, alpha=alpha)
+...         stat = statistic(*samples, **test_kwargs)
+...         trad_prime = traditional(*samples, counts=np.arange(10, 151, 10), alpha=alpha_prime)
 ...     else:
 ...         trad_power = None
+...         trad_prime = None
+...         stat = None
 ...
 ...
 ...     emp_power = subsample_power(test=test,
@@ -562,10 +573,11 @@ Something about permutaiton tests
 ...                                 **power_kwargs
 ...                                 )
 ...
-...     power_summary = {'emperical': emp_power,
+...     power_summary = {'empirical': emp_power,
 ...                      'traditional': trad_power,
+...                      'traditional_prime': trad_prime,
 ...                      'original_p': test(samples, **test_kwargs),
-...                      'statistic': statistic(*samples, **test_kwargs),
+...                      'statistic': stat,
 ...                      'permutations': permutations,
 ...                      'alpha': alpha,
 ...                      'alpha_adj': alpha_adj,
@@ -588,6 +600,7 @@ Something about permutaiton tests
 ...         os.makedirs(power_dir)
 ...
 ...     for i in range(num_rounds):
+...         print(i)
 ...         sim_fp = os.path.join(sim_dir, 'simulation_%i.p' % i)
 ...         power_fp = os.path.join(power_dir,  'simulation_%i.p' % i)
 ...         if os.path.exists(power_fp) and not overwrite:
@@ -597,15 +610,14 @@ Something about permutaiton tests
 ...         test_summary['sim'] = sim
 ...         test_summary['save_fp'] = power_fp
 ...         calculate_power(**test_summary)
-ttest_1
-ttest_ind
-correlation
-anova_8
-anova_3
-CPU times: user 5min 46s, sys: 1.62 s, total: 5min 47s
-Wall time: 5min 49s
+permanova
+0
+1
+2
+3
+4
+CPU times: user 4min 38s, sys: 1.02 s, total: 4min 39s
+Wall time: 4min 39s
 ```
 
-```python
-
-```
+###
