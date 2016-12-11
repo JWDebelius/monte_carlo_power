@@ -21,24 +21,18 @@ class PowerSimulation(TestCase):
         self.effect = 0.5
 
     def test_z_effect(self):
-        known_effects = np.array([0.12754385,  0.17842640,  0.18489939,
-                                  0.18700873,  0.18797725,  0.18851606,
-                                  0.18885525,  0.18908777,  0.18925724,
-                                  0.18938648])
-        test_effects = z_effect(self.counts, self.power, self.alpha,
-                                lower_lim=0, upper_lim=1)
-        self.assertEqual(known_effects.shape, test_effects.shape)
-        npt.assert_almost_equal(known_effects, test_effects, 5)
+        known_d = 0.18868749
+        known_sd = 1.80722488e-07
+        d, sd = z_effect(self.counts, self.power, self.alpha)
+        npt.assert_almost_equal(known_d, d, 5)
+        npt.assert_almost_equal(np.log10(known_sd), np.log10(sd), 3)
 
     def test_z_effect_lims(self):
-        known_effects = np.array([np.nan,      0.17842640,  0.18489939,
-                                  0.18700873,  0.18797725,  0.18851606,
-                                  0.18885525,  0.18908777,  0.18925724,
-                                  0.18938648])
-        test_effects = z_effect(self.counts, self.power, self.alpha,
-                                size_lim=5)
-        self.assertEqual(known_effects.shape, test_effects.shape)
-        npt.assert_almost_equal(known_effects, test_effects, 5)
+        known_d = 0.18883863
+        known_sd = 3.41713978e-08
+        d, sd = z_effect(self.counts, self.power, self.alpha, size_lim=20)
+        npt.assert_almost_equal(known_d, d, 5)
+        npt.assert_almost_equal(np.log10(known_sd), np.log10(sd), 3)
 
     def test_z_power(self):
         known_power = np.array([0.19991357,  0.49063676,  0.70541390,

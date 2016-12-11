@@ -7,15 +7,17 @@
 #-----------------------------------------------------------------------------
 
 import numpy as np
+import functools
+import scipy
+
 from scipy.stats import norm as z
 
 
-def z_effect(counts, power, alpha=0.05, lower_lim=0.1, upper_lim=0.95,
-    size_lim=0):
-    """Estimates the effect size for power based on the z distribution
+def z_effect(counts, power, alpha=0.05, size_lim=0, upperbound=2):
+    """Estimates the z_effect based on power using nonlinear curve fitting
 
-    This is based on the equations in [1]_, the equation assumes a positive
-    magnitude to the effect size and a one-tailed test.
+    The equation assumes a positive magnitude to the effect size and a
+    one-tailed test.
 
     Parameters
     ----------
@@ -30,43 +32,35 @@ def z_effect(counts, power, alpha=0.05, lower_lim=0.1, upper_lim=0.95,
         the sampling depths in counts.
     alpha : float, optional
         The critial value used to calculate the power
-    lower_lim, upper_lim: float, optional
-        The smallest and largest power values to consider fitting.
-        This is selected to account for the aspmytotic behavior of cumualtive
-        distribution functions.
     size_lim : int, optional
         The minimum number of observations in the test required to estimate
         an effect size. By default, no limit is set.
+    upperbound: float
+        The maximum possible expected effect size
 
     Returns
     -------
-    1D-ndarray
+    float
         A standard measure of the difference between the underlying
         populations
+    float
+        The standard error for curve fitting parameter
 
-    Raises
-    ------
-    ValueError
-        If the dimensions in counts and the dimensions in power do not
-        line up
-
-    References
-    ----------
-    .. [1] Lui, X.S. (2014) *Statistical power analysis for the social and
-    behavioral sciences: basic and advanced techniques.* New York: Routledge.
-    378 pg.
     """
-    counts, power = _check_shapes(counts, power)
+    xdata, ydata = _check_shapes(counts, power)
 
-    z_diff = z.ppf(power) + z.ppf(1 - alpha)
-    eff = np.sqrt(np.square(z_diff) / counts)
+    size_mask = (xdata > size_lim)
 
-    eff[power < lower_lim] = np.nan
-    eff[power > upper_lim] = np.nan
-    eff[counts < size_lim] = np.nan
-    eff[np.isinf(eff)] = np.nan
+    ydata = ydata[size_mask]
+    xdata = xdata[size_mask]
 
-    return eff
+    func = functools.partial(z_power, alpha=alpha)
+    d, sd = scipy.optimize.curve_fit(func, xdata, ydata,
+                                     bounds=[0, upperbound])
+
+    sd = sd / np.sqrt(len(xdata))
+
+    return d[0], sd[0][0]
 
 
 def z_power(counts, effect, alpha=0.05):
@@ -128,4 +122,3 @@ def _check_shapes(counts, power):
     else:
         raise ValueError('there must be a power value for every resample '
                          'depth')
-
