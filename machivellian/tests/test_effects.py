@@ -23,16 +23,20 @@ class PowerSimulation(TestCase):
     def test_z_effect(self):
         known_d = 0.18868749
         known_sd = 1.80722488e-07
-        d, sd = z_effect(self.counts, self.power, self.alpha)
+        known_dn = 10
+        d, sd, dn = z_effect(self.counts, self.power, self.alpha)
         npt.assert_almost_equal(known_d, d, 5)
         npt.assert_almost_equal(np.log10(known_sd), np.log10(sd), 3)
+        self.assertEqual(known_dn, dn)
 
     def test_z_effect_lims(self):
         known_d = 0.18883863
         known_sd = 3.41713978e-08
-        d, sd = z_effect(self.counts, self.power, self.alpha, size_lim=20)
+        known_dn = 8
+        d, sd, dn = z_effect(self.counts, self.power, self.alpha, size_lim=20)
         npt.assert_almost_equal(known_d, d, 5)
         npt.assert_almost_equal(np.log10(known_sd), np.log10(sd), 3)
+        self.assertEqual(known_dn, dn)
 
     def test_z_power(self):
         known_power = np.array([0.19991357,  0.49063676,  0.70541390,

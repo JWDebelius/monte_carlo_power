@@ -54,13 +54,15 @@ def z_effect(counts, power, alpha=0.05, size_lim=0, upperbound=2):
     ydata = ydata[size_mask]
     xdata = xdata[size_mask]
 
+    sn = len(xdata)
+
     func = functools.partial(z_power, alpha=alpha)
     d, sd = scipy.optimize.curve_fit(func, xdata, ydata,
                                      bounds=[0, upperbound])
 
     sd = sd / np.sqrt(len(xdata))
 
-    return d[0], sd[0][0]
+    return d[0], sd[0][0], sn
 
 
 def z_power(counts, effect, alpha=0.05):
