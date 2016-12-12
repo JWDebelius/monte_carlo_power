@@ -450,7 +450,7 @@ We use log-normal data as a model for highly skewed data.
 >>> distributions['lognormal'] = {
 ...     'extraction': extract_lognormal_samples,
 ...     'test': emp_rank_sum,
-...     'statistic': np.nan
+...     'statistic': np.nan,
 ...     'alpha_adj': 1.0,
 ...     'traditional': None,
 ...     'power_kwargs': {},
@@ -533,7 +533,7 @@ Something about permutaiton tests
 >>> distributions['mantel'] = {
 ...     'extraction': extract_mantel_samples,
 ...     'test': emp_mantel,
-...     'statistic': np.nan
+...     'statistic': np.nan,
 ...     'alpha_adj': 1.0,
 ...     'traditional': None,
 ...     'power_kwargs': {'draw_mode': 'matched'},
@@ -600,7 +600,6 @@ Something about permutaiton tests
 ...         os.makedirs(power_dir)
 ...
 ...     for i in range(num_rounds):
-...         print(i)
 ...         sim_fp = os.path.join(sim_dir, 'simulation_%i.p' % i)
 ...         power_fp = os.path.join(power_dir,  'simulation_%i.p' % i)
 ...         if os.path.exists(power_fp) and not overwrite:
@@ -610,14 +609,4 @@ Something about permutaiton tests
 ...         test_summary['sim'] = sim
 ...         test_summary['save_fp'] = power_fp
 ...         calculate_power(**test_summary)
-permanova
-0
-1
-2
-3
-4
-CPU times: user 4min 38s, sys: 1.02 s, total: 4min 39s
-Wall time: 4min 39s
 ```
-
-###
