@@ -48,10 +48,11 @@ Power in previous notebooks was calculated with between 5 and no more htan 100 o
 We'll use the spectral colormap, scaled by the count depth.
 
 ```python
->>> colormap = 'Spectral'
+>>> # colormap = 'Spectral'
 ...
->>> colors = {count: list(sn.color_palette(colormap, n_colors=len(counts))[i])
-...           for (i, count) in enumerate(counts)}
+... # colors = {count: list(sn.color_palette(colormap, n_colors=len(counts))[i])
+... #           for (i, count) in enumerate(counts)}
+... colors = {count: sn.color_palette()[0] for count in counts}
 ```
 
 # 3. Loading Power Calculations

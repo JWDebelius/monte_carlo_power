@@ -303,7 +303,7 @@ We'll build our simulations containing between 120 and 200 observations (60 to 1
 ```python
 >>> distributions['permanova'] = {'function': sim.simulate_permanova,
 ...                               'kwargs': {'mu_lim': [0, 25],
-...                                          'sigma_lim': [3, 50],
+...                                          'sigma_lim': [3, 100],
 ...                                          'count_lim': [60, 100]}
 ...                               }
 ```

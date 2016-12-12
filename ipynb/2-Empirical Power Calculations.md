@@ -474,6 +474,8 @@ We also investigate uniform data.
 >>> distributions['uniform'] = {
 ...     'extraction': extract_unifrom_samples,
 ...     'test': emp_rank_sum,
+...     'alpha_adj': 1.0,
+...     'statistic': np.nan,
 ...     'traditional': None,
 ...     'power_kwargs': {},
 ...     'permutations': None,

@@ -229,12 +229,12 @@ def summarize_regression(summary, test_names, titles, x, y, gradient,
     num_plots = len(test_names)
 
     # Generates the figure
-    fig, (ax_r1, ax_r2) = plt.subplots(2, num_plots)
-    fig.set_size_inches(num_plots * 2, 4)
+    fig, (ax_r1) = plt.subplots(1, num_plots)
+    fig.set_size_inches(num_plots * 2, 2)
 
     # ...
-    for (test_name, title, ax_reg, ax_res) in \
-            zip(*(test_names, titles, ax_r1, ax_r2)):
+    for (test_name, title, ax_reg) in \
+            zip(*(test_names, titles, ax_r1,)):
         # Plots the regression
         gradient_regression(
             ax_reg,
@@ -245,23 +245,12 @@ def summarize_regression(summary, test_names, titles, x, y, gradient,
             )
         format_regression_axis(ax_reg)
         ax_reg.set_title(title)
-
-        # Plots the gradient
-        gradient_residuals(
-            ax_res,
-            x=x, y=y,
-            gradient=gradient,
-            data=summary.loc[summary['test'] == test_name].copy(),
-            alpha=alpha
-            )
-        ax_res.plot([0, 0], [-1, 2], 'k-')
-        format_residual_axis(ax_res, xlim=[0, 1], ylim=ylim, num_ticks=4)
+        ax_reg.set_xticklabels(ax_reg.get_xticks())
 
     # Adds axis labels
     ax_r1[0].set_yticklabels(ax_r1[0].get_yticks())
     ax_r1[0].set_ylabel('%s regression' % ylabel)
-    ax_r2[0].set_yticklabels(ax_r2[0].get_yticks())
-    ax_r2[0].set_ylabel('%s residuals' % ylabel)
+    ax_r1[0].set_yticklabels(ax_r1[0].get_yticks())
 
     return fig
 

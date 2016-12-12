@@ -78,7 +78,7 @@ def calc_z_power(x, col2, num_groups=2):
 def _build_summary_frame(sim):
     """Builds the intial dataframe summarizing the run"""
     counts = sim['counts']
-    empirical = sim['emperical']
+    empirical = sim['empirical']
 
     # Determines the number of samples handled in the summary
     (empr_r, empr_c) = empirical.shape

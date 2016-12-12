@@ -42,7 +42,7 @@ The colors were read in as strings, so we need to convert them to the lists whic
 
 ```python
 >>> def clean_up_colors(color_str):
-...     color_str = color_str.replace('[', '').replace(']', '')
+...     color_str = color_str.replace('(', '').replace(')', '')
 ...     colors = [float(c) for c in color_str.split(', ')]
 ...     return colors
 ```
