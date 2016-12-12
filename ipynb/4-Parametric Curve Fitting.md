@@ -17,7 +17,7 @@ Let's start by importing the packages we'll need for this analysis.
 ...
 >>> import machivellian.plot as plot
 >>> import machivellian.summarize as summarize
->>> from machivellian.effects import z_power
+>>> from machivellian.effects import z_power, z_effect
 ...
 >>> % matplotlib inline
 >>> sn.set_style('ticks')
@@ -51,47 +51,28 @@ The colors were read in as strings, so we need to convert them to the lists whic
 >>> all_powers['colors'] = all_powers['colors'].apply(clean_up_colors)
 ```
 
-Now, let's calculate the curve fitting parameter. The `summarize` module wraps the `effects.z_effect` function to make it easier to apply to the long form dataframe we're using with these simulations.
+Now, let's calculate the curve fitting parameter. We'll use a nonlinear curve fit ...
 
-```python
->>> all_powers['z_effect'] = all_powers.apply(summarize.calc_z_effect, axis=1)
-```
-
-We can also establish some boundary conditions. Power is based on a cumulative distribution function (CDF). For CDFs, as $x \rightarrow -\infty$, $\textrm{CDF}(x) \rightarrow 0$ and and $x \rightarrow \infty$, $\textrm{CDF}(x) \rightarrow 1$. This means that we cannot estimate effect sizes well as power approaches 0 or 1. We also find that it's hard to get an accurate effect size estimate when B($n, \alpha$) < 0.1 or B($n, \alpha$) > 0.95. We also saw a high degree of variance and poor performance of the empirical estimate for small resample sizes ($n$ = 5), so we'll add the boundary data $n \geq 10$.
-
-```python
->>> def clean_effect(x):
-...     """Cleans up the effect size calculation"""
-...     if ((10 < x['counts']) & (0.1 < x['empirical']) & (x['empirical'] < 0.95)):
-...         return x['z_effect']
-...     else:
-...         return np.nan
->>> all_powers['z_clean'] = all_powers.apply(clean_effect, axis='columns')
-```
+[curve fitting equation...]
 
 For each test, we'll take the average of the cleaned effect size, and calculate the mean, variance, and number of points which contribute to the result.
 
 ```python
->>> effects = pd.concat([
-...         all_powers.groupby('sim_id').first()[['test', 'statistic', 'alpha_adj', 'sim_num']],
-...         all_powers.groupby('sim_id').count()[['z_clean']].rename(columns={'z_clean': 'param_count'}),
-...         all_powers.groupby('sim_id').mean()[['z_clean']].rename(columns={'z_clean': 'param_mean'}),
-...         all_powers.groupby('sim_id').std()[['z_clean']].rename(columns={'z_clean': 'param_std'}),
-...     ], axis=1)
-```
-
-We'll remove any effect calculated from less than 3 datapoints, since the variability of these is expected to be very high.
-
-```python
->>> effects.loc[effects['param_count'] <= 3, ['param_mean', 'param_std']] = np.nan
->>> effects.loc[effects['param_mean'] < 0.1] = np.nan
-```
-
-```python
->>> effects['param_ci'] = (effects['param_std'] / np.sqrt(effects['param_count']) *
-...                         scipy.stats.t.ppf(1-0.025, df=effects['param_count'] - 1))
-/Users/jdebelius/miniconda2/envs/power_play3/lib/python3.5/site-packages/scipy/stats/_distn_infrastructure.py:868: RuntimeWarning: invalid value encountered in greater
-  cond = logical_and(cond, (asarray(arg) > 0))
+>>> effects = {}
+>>> for sim_id, sim in all_powers.groupby('sim_id'):
+...     d, sd, nd = z_effect(sim['counts'], sim['empirical'], sim['alpha'].mean(),
+...                          size_lim=10)
+...     effects[sim_id] = {'statistic': sim['statistic'].unique()[0],
+...                        'param': d,
+...                        'param_se': sd,
+...                        'params_n': nd,
+...                        'test': sim['test'].unique()[0],
+...                        'alpha_adj': sim['alpha_adj'].unique()[0],
+...                        'sim_num': sim['sim_num'].unique()[0],
+...                        'colors': sn.color_palette()[0]
+...                        }
+...
+>>> effects = pd.DataFrame.from_dict(effects, orient='index')
 ```
 
 We'll now use the average effect for a test to predict the new power.
@@ -99,36 +80,19 @@ We'll now use the average effect for a test to predict the new power.
 ```python
 >>> def predict_power_from_sim(x, effects):
 ...     """Predicts the statisical power based on the mean effect"""
-...     param = effects.loc[x['sim_id'], 'param_mean']
+...     param = effects.loc[x['sim_id'], 'param']
 ...     return z_power(x['counts'], param, x['alpha'])
 ```
 
 ```python
->>> all_powers['predicted'] = all_powers.apply(partial(predict_power_from_sim, effects=effects), axis=1)
-```
-
-Let's evaluate the over-all fit for each simulation by the test.
-
-```python
->>> pe_fig = plot.summarize_regression(all_powers.loc[all_powers['counts'] > 10],
-...                                    test_names=tests,
-...                                    titles=titles,
-...                                    x='empirical',
-...                                    y='predicted',
-...                                    gradient='colors',
-...                                    alpha=0.1,
-...                                    ylim=[-0.2, 0.2],
-...                                    ylabel='Predicted'
-...                                    )
->>> pe_fig.axes[7].set_xlabel('Empirical Power')
->>> plot.add_labels(pe_fig.axes)
+>>> all_powers['predicted'] = all_powers.apply(partial(predict_power_from_sim, effects=effects),
+...                                            axis=1)
 ```
 
 Let's also compare the predicted fit against the distribution-based power.
 
 ```python
->>> tp_fig = plot.summarize_regression(all_powers.loc[(all_powers['counts'] > 10) &
-...                                                   (all_powers['sim_position'] < 10)],
+>>> tp_fig = plot.summarize_regression(all_powers.loc[(all_powers['counts'] > 10)],
 ...                                    test_names=tests,
 ...                                    titles=titles,
 ...                                    x='traditional',
@@ -138,7 +102,7 @@ Let's also compare the predicted fit against the distribution-based power.
 ...                                    ylim=[-0.2, 0.2],
 ...                                    ylabel='Predicted'
 ...                                    )
->>> tp_fig.axes[7].set_xlabel('Distribution Power')
+>>> tp_fig.axes[2].set_xlabel('Distribution Power')
 >>> plot.add_labels(tp_fig.axes)
 ```
 
