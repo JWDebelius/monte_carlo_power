@@ -138,7 +138,7 @@ We're going to plot a comparison between the emperical and traditional power cal
 ...                                    ylim=[-0.2, 0.2],
 ...                                    ylabel='Empirical'
 ...                                    )
->>> te_fig.axes[7].set_xlabel('Distribution Power')
+>>> te_fig.axes[2].set_xlabel('Distribution Power')
 >>> plot.add_labels(te_fig.axes)
 ```
 
