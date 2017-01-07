@@ -214,7 +214,7 @@ class PowerSimulation(TestCase):
         feat_ids = np.array(['f.0', 'f.1', 'f.2', 'f.3', 'f.4'], dtype=object)
         known_grouping = pd.Series([0.0, 0.0, 1.0, 1.0], index=obs_ids)
 
-        ([_, __, ___, n, p1, p2, psi], table, grouping) = \
+        ([_, __, ___, n, p1, p2, psi], (table, grouping)) = \
             simulate_feature_table(n_lim=[1, 50],
                                    p_lim=[0.01, 0.6],
                                    psi_lim=[0.3, 0.98],

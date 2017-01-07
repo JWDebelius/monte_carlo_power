@@ -234,7 +234,7 @@ def simulate_uniform(range_lim, delta_lim, counts_lim):
 
 def simulate_feature_table(n_lim, p_lim, psi_lim, num_observations=100,
                            num_features=500, percent_different=0.05,
-                           threshhold=5000):
+                           threshhold=6000):
     """
     Simulates an feature  table using a zero inflated negative binomial model
 
@@ -285,8 +285,10 @@ def simulate_feature_table(n_lim, p_lim, psi_lim, num_observations=100,
     """
 
     # Checks the table size
-    num_obs = _check_param(num_observations, 'num_observations')
-    num_feat = _check_param(num_features, 'num_features')
+    num_obs = _check_param(num_observations, 'num_observations',
+                           random=np.random.randint)
+    num_feat = _check_param(num_features, 'num_features',
+                            random=np.random.randint)
     perc_diff = _check_param(percent_different, 'perc_diff')
 
     # Calculates the number of features which are different between
@@ -334,7 +336,7 @@ def simulate_feature_table(n_lim, p_lim, psi_lim, num_observations=100,
     table = table.loc[drop]
     grouping = grouping.loc[drop]
 
-    return summary, table, grouping
+    return summary, (table, grouping)
 
 
 # def simulate_permanova(num_samples, wdist, wspread, bdist, bspread, counts_lim):
@@ -547,7 +549,7 @@ def zero_inflated_nb(n, p, phi=0, size=None):
     return nb_
 
 
-def _check_param(param, param_name, random=np.random.uniform, size=1):
+def _check_param(param, param_name, random=np.random.uniform, size=None):
     """Checks a parameter is sane"""
     if isinstance(param, list):
         return random(*param, size=size)
