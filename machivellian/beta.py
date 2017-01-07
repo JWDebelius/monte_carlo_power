@@ -59,7 +59,7 @@ def collapse_otu_ids(id_list, order=None):
     return order, counts
 
 
-def subsample_ids(counts, depth, feature_ids=None, bootstrap=True):
+def subsample_features(counts, depth, feature_ids=None, bootstrap=True):
     """Generates a subsampled vector of values for each row in a table
 
     Parameters
@@ -93,7 +93,7 @@ def subsample_ids(counts, depth, feature_ids=None, bootstrap=True):
     return np.vstack(new_table)
 
 
-def bootstrap_permanova(obs_ids, obs, depth, grouping, column=None,
+def bootstrap_permanova(obs_ids, obs, depth, grouping,
                         bootstrap=True, metric=None, permutations=99,
                         metric_kws=None):
     """Calculates a bootstrapped permanova for samples within the OTU table
@@ -110,22 +110,8 @@ def bootstrap_permanova(obs_ids, obs, depth, grouping, column=None,
         transformed from a biom object, the object will need to be transposed.
     depth : int
         The number of observations to draw for each observation
-    grouping : 1D array-like, DataFrame
-        Vector indicating the assignment of objects to groups. For example,
-        these could be strings or integers denoting which group an object
-        belongs to. If `grouping` is `1-D array_like`, it must be the same
-        length and in the same order as the objects in `distance_matrix`.
-        If `grouping` is a `DataFrame`, the column specified by `column` will
-        be used as the grouping vector. The `DataFrame` must be indexed by the
-        IDs in `distance_matrix` (i.e., the row labels must be distance matrix
-        IDs), but the order of IDs between `distance_matrix` and the
-        `DataFrame` need not be the same. All IDs in the distance matrix must
-        be present in the `DataFrame`. Extra IDs in the `DataFrame` are
-        allowed (they are ignored in the calculations).
-    column, string, optional
-        Column name to use as the grouping vector if `grouping` is a
-        `DataFrame`. Must be provided if grouping is a `DataFrame`. Cannot
-        be provided if `grouping` is 1-D array_like.
+    grouping : Series
+        Vector indicating the assignment of objects to groups.
     bootstrap: bool, optional
         When `true`, feature counts can be drawn with replacement for each
         observation.
@@ -156,22 +142,22 @@ def bootstrap_permanova(obs_ids, obs, depth, grouping, column=None,
         metric = scipy.spatial.distance.braycurtis
     elif metric_kws is not None:
         metric = partial(metric, **metric_kws)
+    obs_ids = np.hstack(obs_ids)
     feature_ids = obs.columns
 
     # Gets the rarified table
-    rare = subsample_ids(obs.loc[obs_ids].values,
-                         depth=depth,
-                         feature_ids=feature_ids,
-                         bootstrap=bootstrap)
+    rare = subsample_features(obs.loc[obs_ids].values,
+                              depth=depth,
+                              feature_ids=feature_ids,
+                              bootstrap=bootstrap)
     grouping = grouping.loc[obs_ids]
 
     # Calculates the distance matrix from the bootstrapped feature x
     # observation table
-    dm = skbio.DistanceMatrix.from_iterable(rare, metric=metric,
-                                            keys=obs_ids)
+    dm = skbio.DistanceMatrix.from_iterable(rare, metric=metric)
 
     # Performs the permanova on the distance matrix.
-    permanova_res = skbio.stats.distance.permanova(dm, grouping,
+    permanova_res = skbio.stats.distance.permanova(dm, grouping.values,
                                                    permutations=permutations)
 
     return permanova_res, dm

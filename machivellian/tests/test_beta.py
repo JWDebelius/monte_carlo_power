@@ -6,7 +6,7 @@ import pandas as pd
 
 from machivellian.beta import (expand_otu_ids,
                                collapse_otu_ids,
-                               subsample_ids,
+                               subsample_features,
                                bootstrap_permanova,
                                )
 
@@ -38,16 +38,17 @@ class PowerBetaTest(TestCase):
         npt.assert_array_equal(ids, self.feat_ids)
         npt.assert_array_equal(counts, self.counts)
 
-    def test_subsample_ids_no_ids_no_replace(self):
+    def test_subsample_features_no_ids_no_replace(self):
         k_sub = np.array([[0, 0, 1, 2, 2],
                           [0, 1, 0, 3, 1]])
-        t_sub = subsample_ids(self.table, depth=5, bootstrap=False)
+        t_sub = subsample_features(self.table, depth=5, bootstrap=False)
         npt.assert_array_equal(k_sub, t_sub)
 
-    def test_subsample_ids(self):
+    def test_subsample_features(self):
         k_sub = np.array([[0, 1, 0, 1, 3],
                           [0, 0, 1, 2, 2]])
-        t_sub = subsample_ids(self.table, depth=5, feature_ids=self.feat_ids)
+        t_sub = subsample_features(self.table, depth=5,
+                                   feature_ids=self.feat_ids)
         npt.assert_array_equal(k_sub, t_sub)
 
     def test_boostrap_permanova_defaults(self):
@@ -57,13 +58,13 @@ class PowerBetaTest(TestCase):
                              [0.5,  0.8,  0.5,  0.0]])
         ids = np.array(['o.1', 'o.2', 'o.3', 'o.4'])
         known_res = {'method name': 'PERMANOVA',
-                               'test statistic name': 'pseudo-F',
-                               'sample size': 4,
-                               'number of groups': 2,
-                               'test statistic': 3.60976,
-                               'p-value': 0.6,
-                               'number of permutations': 9,
-                               }
+                     'test statistic name': 'pseudo-F',
+                     'sample size': 4,
+                     'number of groups': 2,
+                     'test statistic': 3.60976,
+                     'p-value': 0.6,
+                     'number of permutations': 9,
+                     }
 
         table = pd.DataFrame(np.array([[0, 1, 2, 3, 4],
                                        [1, 2, 3, 4, 0],
@@ -71,10 +72,10 @@ class PowerBetaTest(TestCase):
                                        [3, 4, 0, 1, 2]]),
                              index=ids)
         grouping = pd.Series([0, 0, 1, 1], index=ids)
-        test_res, test_dm = bootstrap_permanova(ids, table * 2, grouping,
+        test_res, test_dm = bootstrap_permanova(ids, table * 2,
+                                                grouping=grouping,
                                                 depth=10, permutations=9)
         npt.assert_array_equal(known_dm, test_dm.data)
-        self.assertEqual(tuple(ids), test_dm.ids)
         self.assertEqual(set(test_res.keys()), set(known_res.keys()))
         for k, v in known_res.items():
             if k in {'test statistic', 'p-value'}:
