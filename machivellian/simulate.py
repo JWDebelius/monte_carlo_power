@@ -232,68 +232,173 @@ def simulate_uniform(range_lim, delta_lim, counts_lim):
     return [r_, d_, n_], [v1, v2]
 
 
-# def simulate_permanova(num_samples, wdist, wspread, bdist, bspread, counts_lim):
-def simulate_permanova(mu_lim, sigma_lim, count_lim=100, distance=None,
-                       num_features=100):
-    """Makes a distance matrix with specified mean distance and spread
+def simulate_feature_table(n_lim, p_lim, psi_lim, num_observations=100,
+                           num_features=500, percent_different=0.05,
+                           threshhold=5000):
+    """
+    Simulates an feature  table using a zero inflated negative binomial model
 
-   Parameters
-   ----------
-    mu_lim : list, float
-        The limits for selecting a mean of the distributions being transformed
-        into a distance matrix
-    sigma_lim : list, float
-        The limits for selecting a standard deivation for the distributions
-        transformed into a distance matrix
-    count_lim : list, float
-        the number of observations which should be drawn for each sample
-    distance : function
-        A distance metric function. By default, Euclidean distance is used.
-    simulate : function
-        A function which accepts a mean, standard deviation, and sample size
-        argument and returns parameters and distributions
+    ... More about hte model...
+
+    Parameters
+    ----------
+    n_lim: list of ints
+        The limits for the number of trials in the negative binomial simulation
+    p_lim: list of floats
+        The limits for the p-values for hte negative binomial simulation
+        model
+    psi_lim: list of floats
+        Limits for the probability of a zero in a model
+    num_observations: int, list of ints
+        The number of observations (samples) in the feature table. Can be an
+        intger or a range.
+    num_features: int, list of ints
+        The number of features in the feature table
+    percent_different: float, list of floats
+        The percentage of the features where the probabilites are drawn from
+        different distributions.
+    threshhold: int, optional
+        The minimum number of counts for a sample to be included in the
+        final table
 
     Returns
     -------
-    list:
-        The means, variance and sample size used in the simulation of the
-        underlying data.
-    DistanceMatrix
-        The simulated distance matrix. Within-group distances are described by
-        a normal distribution * means and variances described by `wdist` and
-        `wspread`, respective. Between group distances are described by a
-        normal distribution with means and variances described by `bdist` and
-        `bspread`.
+    list
+        The number of observations, number of features, percent of features
+        different, negative binomial parameters, negative binomaial probabilies
+        for group 1, negative binomail probabilites for group 2, and
+        probability of a 0 for the table.
     DataFrame
-        A dataframe with a simulated mapping file corresponding to the groups
-        in the data.
+        An observation x feature table containing integer counts
+    Series
+        Identifies the group which samples belong to
+
+    Also See
+    --------
+
+    References
+    ----------
+    ..[1] Kutz, Z.D. et al. (2015) "Sparse and Compositionally Robust Inference
+    of Microbial Ecological Networks." PLoS Compuational Biology. 11: e10004226
+    http://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1004226
 
     """
 
-    # Handles the distance
-    if distance is None:
-        distance = scipy.spatial.distance.braycurtis
+    # Checks the table size
+    num_obs = _check_param(num_observations, 'num_observations')
+    num_feat = _check_param(num_features, 'num_features')
+    perc_diff = _check_param(percent_different, 'perc_diff')
 
-    # Simulates the samples
-    params1, sample1 = simulate_anova(mu_lim, sigma_lim, count_lim,
-                                      num_pops=num_features)
-    params2, sample2 = simulate_anova(mu_lim, sigma_lim, count_lim,
-                                      num_pops=num_features)
-    sample1 = np.vstack(sample1)
-    sample2 = np.vstack(sample2)
+    # Calculates the number of features which are different between
+    # the two conditions
+    num_same = int(num_feat * (1 - perc_diff))
+    num_diff = num_feat - num_same
 
-    samples = [sample1, sample2]
+    # Gets simulation parameters for features which are the same
+    n_same = _check_param(n_lim, 'n_lim', random=np.random.randint,
+                          size=num_same)
+    p_same = _check_param(p_lim, 'p_lim', size=num_same)
+    psi_same = _check_param(psi_lim, 'psi_lim', size=num_same)
 
-    labels = np.hstack([i * np.ones(s.shape[1])
-                       for i, s in enumerate(samples)])
-    names = ['s.%i' % (i + 1) for i in range(len(labels))]
+    # Gets simulation parameters for features which are different
+    n_diff = _check_param(n_lim, 'n_lim', random=np.random.randint,
+                          size=num_diff)
+    p_g1 = _check_param(p_lim, 'p_lim', size=num_diff)
+    p_g2 = _check_param(p_lim, 'p_lim', size=num_diff)
+    psi_diff = _check_param(psi_lim, 'psi_lim', size=num_diff)
 
-    dm = skbio.DistanceMatrix.from_iterable(np.hstack(samples).T,
-                                            distance,
-                                            keys=names)
-    grouping = pd.Series(labels.astype(int), index=names, name='groups')
+    # Generates the feature table
+    table = pd.DataFrame(
+        np.concatenate([
+            np.vstack([zero_inflated_nb(n, p, psi, size=(2 * num_obs))
+                       for (n, p, psi) in zip(*(n_same, p_same, psi_same))]),
+            np.vstack([np.hstack([zero_inflated_nb(n, p1, psi, size=num_obs),
+                                  zero_inflated_nb(n, p2, psi, size=num_obs)])
+                       for (n, p1, p2, psi)
+                       in zip(*(n_diff, p_g1, p_g2, psi_diff))])
+            ]),
+        index=['f.%i' % i for i in range(num_feat)],
+        columns=['o.%i' % i for i in range(2 * num_obs)]).T
 
-    return [params1, params1], [dm, grouping]
+    # Generates the grouping object
+    grouping = pd.Series(np.hstack([np.zeros(num_obs), np.ones(num_obs)]),
+                         index=['o.%i' % i for i in range(2 * num_obs)])
+
+    # Returns summary and objects
+    summary = [num_obs, num_feat, perc_diff, np.hstack([n_same, n_diff]),
+               np.hstack([p_same, p_g1]), np.hstack([p_same, p_g2]),
+               np.hstack([psi_same, psi_diff])]
+
+    # Drops missing samples
+    drop = (table.sum(1) > threshhold)
+    table = table.loc[drop]
+    grouping = grouping.loc[drop]
+
+    return summary, table, grouping
+
+
+# def simulate_permanova(num_samples, wdist, wspread, bdist, bspread, counts_lim):
+# def simulate_permanova(mu_lim, sigma_lim, count_lim=100, distance=None,
+#     num_features=100):
+#     """Makes a distance matrix with specified mean distance and spread
+
+#    Parameters
+#    ----------
+#     mu_lim : list, float
+#         The limits for selecting a mean of the distributions being transformed
+#         into a distance matrix
+#     sigma_lim : list, float
+#         The limits for selecting a standard deivation for the distributions
+#         transformed into a distance matrix
+#     count_lim : list, float
+#         the number of observations which should be drawn for each sample
+#     distance : function
+#         A distance metric function. By default, Euclidean distance is used.
+#     simulate : function
+#         A function which accepts a mean, standard deviation, and sample size
+#         argument and returns parameters and distributions
+
+#     Returns
+#     -------
+#     list:
+#         The means, variance and sample size used in the simulation of the
+#         underlying data.
+#     DistanceMatrix
+#         The simulated distance matrix. Within-group distances are described by
+#         a normal distribution * means and variances described by `wdist` and
+#         `wspread`, respective. Between group distances are described by a
+#         normal distribution with means and variances described by `bdist` and
+#         `bspread`.
+#     DataFrame
+#         A dataframe with a simulated mapping file corresponding to the groups
+#         in the data.
+
+#     """
+
+#     # Handles the distance
+#     if distance is None:
+#         distance = scipy.spatial.distance.braycurtis
+
+#     # Simulates the samples
+#     params1, sample1 = simulate_anova(mu_lim, sigma_lim, count_lim,
+#                                       num_pops=num_features)
+#     params2, sample2 = simulate_anova(mu_lim, sigma_lim, count_lim,
+#                                       num_pops=num_features)
+#     sample1 = np.vstack(sample1)
+#     sample2 = np.vstack(sample2)
+
+#     samples = [sample1, sample2]
+
+#     labels = np.hstack([i * np.ones(s.shape[1])
+#                        for i, s in enumerate(samples)])
+#     names = ['s.%i' % (i + 1) for i in range(len(labels))]
+
+#     dm = skbio.DistanceMatrix.from_iterable(np.hstack(samples).T,
+#                                             distance,
+#                                             keys=names)
+#     grouping = pd.Series(labels.astype(int), index=names, name='groups')
+
+#     return [params1, params1], [dm, grouping]
 
 
 def simulate_correlation(slope_lim, intercept_lim, sigma_lim, count_lim,
@@ -393,6 +498,53 @@ def simulate_mantel(slope_lim, intercept_lim, sigma_lim, count_lim, x_lim,
     y = skbio.DistanceMatrix.from_iterable(y_vec, distance, keys=names)
 
     return [sigma, n, m, b], [x, y]
+
+
+def zero_inflated_nb(n, p, phi=0, size=None):
+    """Models a zero-inflated negative binomial
+
+    Something about hte negative binomail model here...
+
+    This basically just wraps the numpy negative binomial generator,
+    where the probability of a zero is additionally inflated by
+    some probability, psi...
+
+    Parameters
+    ----------
+    n : int
+        Parameter, > 0.
+    p : float
+        Parameter, 0 <= p <= 1.
+    phi : float, optional
+        The probability of obtaining an excess zero in the model,
+        where 0 <= phi <= 1. When `phi = 0`, the distribution collapses
+        to a negative binomial model.
+    size : int or tuple of ints, optional
+        Output shape. If the given shape is, e.g., ``(m, n, k)``, then
+        ``m * n * k`` samples are drawn.  Default is None, in which case a
+        single value is returned.
+
+    Returns
+    -------
+    int or ndarray of ints
+        Drawn samples
+
+    Also See
+    --------
+    np.random.negative_binomial
+
+    References
+    ----------
+    ..[1] Kutz, Z.D. et al. (2015) "Sparse and Compositionally Robust Inference
+    of Microbial Ecological Networks." PLoS Compuational Biology. 11: e10004226
+    http://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1004226
+
+    """
+    zeros = (np.random.binomial(1, phi, size) == 1)
+    nb_ = np.random.negative_binomial(n, p, size=size)
+    nb_[zeros] = 0
+
+    return nb_
 
 
 def _check_param(param, param_name, random=np.random.uniform, size=1):

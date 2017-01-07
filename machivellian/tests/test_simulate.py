@@ -10,12 +10,14 @@ from machivellian.simulate import (simulate_ttest_1,
                                    simulate_ttest_ind,
                                    simulate_anova,
                                    simulate_correlation,
-                                   simulate_permanova,
+                                   simulate_feature_table,
+                                   # simulate_permanova,
                                    simulate_mantel,
                                    simulate_discrete,
                                    simulate_lognormal,
                                    simulate_uniform,
                                    _check_param,
+                                   zero_inflated_nb,
                                    )
 
 
@@ -162,39 +164,75 @@ class PowerSimulation(TestCase):
         npt.assert_almost_equal(known_v1, v1, 5)
         npt.assert_almost_equal(known_v2, v2, 5)
 
-    def test_simulate_permanova(self):
-        known_dm = np.array([
-            [0.00000000,  0.60327353,  0.79004278,  0.69953733],
-            [0.60327353,  0.00000000,  0.62467762,  0.74709651],
-            [0.79004278,  0.62467762,  0.00000000,  0.48679580],
-            [0.69953733,  0.74709651,  0.48679580,  0.00000000]
-            ])
+    # def test_simulate_permanova(self):
+    #     known_dm = np.array([
+    #         [0.00000000,  0.60327353,  0.79004278,  0.69953733],
+    #         [0.60327353,  0.00000000,  0.62467762,  0.74709651],
+    #         [0.79004278,  0.62467762,  0.00000000,  0.48679580],
+    #         [0.69953733,  0.74709651,  0.48679580,  0.00000000]
+    #         ])
 
-        params, [dm, grouping] = simulate_permanova(self.mu_lim,
-                                                    self.sigma_lim,
-                                                    2,
-                                                    num_features=10)
+    #     params, [dm, grouping] = simulate_permanova(self.mu_lim,
+    #                                                 self.sigma_lim,
+    #                                                 2,
+    #                                                 num_features=10)
 
-        npt.assert_almost_equal(known_dm, dm.data, 5)
-        self.assertEqual(self.dm_ids, dm.ids)
-        pdt.assert_series_equal(self.grouping, grouping)
+    #     npt.assert_almost_equal(known_dm, dm.data, 5)
+    #     self.assertEqual(self.dm_ids, dm.ids)
+    #     pdt.assert_series_equal(self.grouping, grouping)
 
-    def test_simulate_permanova_distance(self):
-        known_dm = np.array([
-            [0.00000000,  5.62246682,  9.51155335,  5.06967897],
-            [5.62246682,  0.00000000,  8.11073235,  5.33689282],
-            [9.51155335,  8.11073235,  0.00000000,  6.51371383],
-            [5.06967897,  5.33689282,  6.51371383,  0.00000000]
-            ])
+    # def test_simulate_permanova_distance(self):
+    #     known_dm = np.array([
+    #         [0.00000000,  5.62246682,  9.51155335,  5.06967897],
+    #         [5.62246682,  0.00000000,  8.11073235,  5.33689282],
+    #         [9.51155335,  8.11073235,  0.00000000,  6.51371383],
+    #         [5.06967897,  5.33689282,  6.51371383,  0.00000000]
+    #         ])
 
-        params, [dm, grouping] = simulate_permanova(
-            self.mu_lim, self.sigma_lim, 2,
-            num_features=10,
-            distance=scipy.spatial.distance.euclidean)
+    #     params, [dm, grouping] = simulate_permanova(
+    #         self.mu_lim, self.sigma_lim, 2,
+    #         num_features=10,
+    #         distance=scipy.spatial.distance.euclidean)
 
-        npt.assert_almost_equal(known_dm, dm.data, 5)
-        self.assertEqual(self.dm_ids, dm.ids)
-        pdt.assert_series_equal(self.grouping, grouping)
+    #     npt.assert_almost_equal(known_dm, dm.data, 5)
+    #     self.assertEqual(self.dm_ids, dm.ids)
+    #     pdt.assert_series_equal(self.grouping, grouping)
+
+    def test_simulate_feature_table(self):
+        known_n = np.array([36, 15, 48, 39, 40])
+        known_p1 = np.array([0.22460477,  0.58787255,  0.06299441,
+                             0.24407460,  0.44567977])
+        known_p2 = np.array([0.22460477,  0.58787255,  0.06299441,
+                             0.24407460,  0.27037244])
+        known_psi = np.array([0.54081387,  0.63091384,  0.97375823,
+                              0.84963154,  0.40765071])
+        known_counts = np.array([[140,  11,   0,  81,  60],
+                                 [000,   6,   0,   0,   0],
+                                 [000,   0,   0,   0, 126],
+                                 [000,   0,   0,  90,  79]])
+        obs_ids = np.array(['o.0', 'o.1', 'o.2', 'o.3'], dtype=object)
+        feat_ids = np.array(['f.0', 'f.1', 'f.2', 'f.3', 'f.4'], dtype=object)
+        known_grouping = pd.Series([0.0, 0.0, 1.0, 1.0], index=obs_ids)
+
+        ([_, __, ___, n, p1, p2, psi], table, grouping) = \
+            simulate_feature_table(n_lim=[1, 50],
+                                   p_lim=[0.01, 0.6],
+                                   psi_lim=[0.3, 0.98],
+                                   num_observations=2,
+                                   num_features=5,
+                                   percent_different=0.2,
+                                   threshhold=0)
+
+        npt.assert_array_equal(n, known_n)
+        npt.assert_almost_equal(known_p1, p1, 6)
+        npt.assert_almost_equal(known_p2, p2, 6)
+        npt.assert_almost_equal(known_psi, psi, 6)
+
+        npt.assert_array_equal(known_counts, table.values)
+        npt.assert_array_equal(feat_ids, table.columns)
+        npt.assert_array_equal(obs_ids, table.index)
+
+        pdt.assert_series_equal(known_grouping, grouping)
 
     def test_simulate_mantel(self):
         known_x = np.array([
@@ -238,6 +276,12 @@ class PowerSimulation(TestCase):
         self.assertEqual(tp_values, [p_lim] * 2)
         self.assertEqual(tsize, size_lim)
         self.assertEqual(tnum_groups, num_groups)
+
+    def test_zero_inflated_nb(self):
+        known = np.array([69, 0, 33, 0, 41])
+        test = zero_inflated_nb(5, 0.1, 0.2, 5)
+
+        npt.assert_array_equal(known, test)
 
     def test_check_param_list(self):
         param = [0, 1]
