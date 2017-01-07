@@ -8,6 +8,7 @@ Subsequent notebooks will then calculate power for the data sets using Monte Car
 >>> import warnings
 >>> warnings.filterwarnings('ignore')
 ...
+>>> import matplotlib.cm as cm
 >>> import matplotlib.pyplot as plt
 >>> import numpy as np
 >>> import pandas as pd
@@ -15,6 +16,7 @@ Subsequent notebooks will then calculate power for the data sets using Monte Car
 >>> import skbio
 >>> import seaborn as sn
 ...
+>>> import machivellian.beta as beta
 >>> import machivellian.simulate as sim
 ...
 >>> % matplotlib inline
@@ -263,10 +265,33 @@ $\begin{align}
 \textbf{H}_{1}\textrm{ }d_{i}\textrm{ }\neq d_{j}\textrm{ }\exists\textrm{ }i,\textrm{ }j;\textrm{ }i\textrm{ }\neq\textrm{ }j
 \end{align}\tag{4}$
 
+To do this, we'll simulate a feature x observation table using a zero-inflated negative binomial model [[4](#4)]. We'll then calculate the distance between the samples using that model and a common microbial distance metric.
+
 ```python
->>> _, (dm, grouping) = sim.simulate_permanova(mu_lim=[0, 10],
-...                                            sigma_lim=[3, 25],
-...                                            count_lim=100)
+>>> _, (feat_table, grouping) = sim.simulate_feature_table(n_lim=[1, 50],
+...                                                        p_lim=[0.01, 0.6],
+...                                                        psi_lim=[0.25, 0.75],
+...                                                        num_observations=[99, 101],
+...                                                        percent_different=[0.1, 0.2])
+```
+
+```python
+>>> blues = cm.Blues
+>>> blues.set_under([0.5, 0.5, 0.5])
+...
+>>> ax = sn.heatmap(feat_table.T, vmin=1, cmap=blues)
+>>> ax.set_xticks([-1])
+>>> ax.set_yticks([-1])
+[<matplotlib.axis.YTick at 0x10ce257b8>]
+```
+
+We'll rarify the feature table to 1000 counts, and then perform a distance matrix transformation, using the Bray-Curtis metric.
+
+```python
+>>> rare_table = beta.subsample_features(feat_table.values, 5000, bootstrap=False)
+>>> dm = skbio.DistanceMatrix.from_iterable(rare_table,
+...                                         metric=scipy.spatial.distance.braycurtis,
+...                                         keys=feat_table.index)
 ```
 
 ```python
@@ -296,15 +321,15 @@ $\begin{align}
 >>> ax2.set_aspect('equal')
 ```
 
-We need to wrap the scikit-bio permanova test, becuase the format does not automatically return a single p-value.
-
 We'll build our simulations containing between 120 and 200 observations (60 to 100 observations per group), with the size of the second group selected using a binomial distribution with probability 0.5. The number of groups in the second dataset is selected with a binomial distribution. THe within group distances will be between 0.3 and 0.6, the variance between 0.5 and 0.8, while the between distances will be between 0.45 and 0.65 with the variance in 0.5 and 0.8.
 
 ```python
->>> distributions['permanova'] = {'function': sim.simulate_permanova,
-...                               'kwargs': {'mu_lim': [0, 25],
-...                                          'sigma_lim': [3, 100],
-...                                          'count_lim': [60, 100]}
+>>> distributions['permanova'] = {'function': sim.simulate_feature_table,
+...                               'kwargs': {'n_lim': [1, 50],
+...                                          'p_lim': [0.01, 0.6],
+...                                          'psi_lim': [0.3, 0.98],
+...                                          'num_observations': [60, 100],
+...                                          'percent_different': [0.01, 0.20]}
 ...                               }
 ```
 
@@ -423,4 +448,9 @@ We've now simulated data following a variety of distributions. We'll follow the 
 <ol><li id="1">Anderson, M.A. (2001). A new method for non-parametric multivariate analysis of variance. <em>Austral Ecology</em>. <strong>26</strong>: 32 - 46.
 </li><li id="2">Mantel, M. (1967). The detection of disease clustering and a generalized regression approach. <em>Cancer Reserach</em>. <stromg>27</strong>: 209-220.
 </li><li id="3">Clarke, K.R. (1993). Non-parametric multivariate analyses of changes in community structure. <em>Austral Ecology</em>. <strong>18</strong>: 117-143.
+</li><li id="4">Kurtz, Z.D.; Muller, C.L.; Miraldi, E.R.; Littman, D.R.; Blaser, M.J.; Bonneau, R.A. (2015). "<a href="https://www.ncbi.nlm.nih.gov/pubmed/25950956">Sparse and compositional robust interference of microbial ecological networks.</a>" <em>PLoS Computational Biology</em>. **11**:1004226.
 </li></ol>
+
+```python
+
+```
