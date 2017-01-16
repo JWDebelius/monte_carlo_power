@@ -127,8 +127,12 @@ HMP
 ```
 
 ```python
+>>> study_eff
+(0.34826452263810492, 0.00011436907099306287, 6)
+```
+
+```python
 >>> summarie
-a
 ```
 
 ```python
@@ -141,9 +145,6 @@ a
 ```python
 >>> plt.plot(summaries['Yatsunenko_GG']['study_count'],
 ...          summaries['Yatsunenko_GG']['study_eff'].T, 'o')
-[<matplotlib.lines.Line2D at 0x10f1ffc50>,
- <matplotlib.lines.Line2D at 0x10f1ffc88>,
- <matplotlib.lines.Line2D at 0x10f1ffe80>]
 ```
 
 ```python

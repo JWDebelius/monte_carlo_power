@@ -64,7 +64,8 @@ We'll use the spectral colormap, scaled by the count depth.
 We'll compare the behavior of distribution-based power, emperical power and the power calculated from curve fitting on the parametric tests. We can compare the behavior of emperical power, and power fit to emperical values for all tests.
 
 ```python
->>> tests = ['lognormal', 'uniform', 'permanova', 'mantel']
+>>> # tests = ['lognormal', 'uniform', 'permanova', 'mantel']
+... tests = ['permanova']
 ```
 
 Finally, we'll create a set of parameters for each of the distributions being evaluated. This includes the clean name, which provides a prettier title in plots, the number of groups in the tested (2 for everything except the ANOVAs), and the location of both the input emperical power calculations and output summary tables.
@@ -79,7 +80,7 @@ Finally, we'll create a set of parameters for each of the distributions being ev
 ...                              'return_fp': './simulations/extrapolation/uniform.txt'
 ...                              },
 ...                  'permanova': {'clean_name': 'PERMANOVA',
-...                                'input_dir': './simulations/power/permanova/',
+...                                'input_dir': './simulations/power/permanova/power',
 ...                                'return_fp': './simulations/extrapolation/permanova.txt'
 ...                                },
 ...                  'mantel': {'clean_name': 'Mantel',
@@ -104,12 +105,13 @@ We'll start by loading the poewr data for all the tests we've preformed.
 ...
 ...     summaries = []
 ...
-...     for i in range(5):
+...     for i in np.arange(1, 5):
 ...         # Loads through the power simulation for the round
 ...         power_fp = os.path.join(power_dir, 'simulation_%i.p' % i)
 ...
 ...         with open(power_fp, 'rb') as f_:
-...             sim = pickle.load(f_)
+...             sim_p = pickle.load(f_)
+...         sim = {'counts': sim_p[0], 'empirical': sim_p[1], 'alpha': 0.05, 'original_p': None, 'alpha_adj': 1}
 ...         sim['alpha_adj'] = 1
 ...         sim['statistic'] = np.nan
 ...         summaries.append(
@@ -127,6 +129,207 @@ We'll start by loading the poewr data for all the tests we've preformed.
 ```
 
 Next, we'll estimate the effect size, and use that to predict the power as we did with the parametric data in notebook 4. We'll use the same boundary conditions that we imposed before.
+
+```python
+>>> sn.distplot(all_powers['empirical'], kde=False)
+```
+
+```python
+>>> all_powers
+                counts  empirical  sim_position  traditional       test  \
+index
+permanova.1.0      5.0       0.58             0          NaN  permanova
+permanova.1.1     15.0       1.00             1          NaN  permanova
+permanova.1.2     25.0       1.00             2          NaN  permanova
+permanova.1.3     35.0       1.00             3          NaN  permanova
+permanova.1.4     45.0       1.00             4          NaN  permanova
+permanova.1.5     55.0       1.00             5          NaN  permanova
+permanova.1.6     65.0       1.00             6          NaN  permanova
+permanova.1.7     75.0       1.00             7          NaN  permanova
+permanova.1.8     85.0       1.00             8          NaN  permanova
+permanova.1.10     5.0       0.55            10          NaN  permanova
+permanova.1.11    15.0       1.00            11          NaN  permanova
+permanova.1.12    25.0       1.00            12          NaN  permanova
+permanova.1.13    35.0       1.00            13          NaN  permanova
+permanova.1.14    45.0       1.00            14          NaN  permanova
+permanova.1.15    55.0       1.00            15          NaN  permanova
+permanova.1.16    65.0       1.00            16          NaN  permanova
+permanova.1.17    75.0       1.00            17          NaN  permanova
+permanova.1.18    85.0       1.00            18          NaN  permanova
+permanova.1.20     5.0       0.51            20          NaN  permanova
+permanova.1.21    15.0       1.00            21          NaN  permanova
+permanova.1.22    25.0       1.00            22          NaN  permanova
+permanova.1.23    35.0       1.00            23          NaN  permanova
+permanova.1.24    45.0       1.00            24          NaN  permanova
+permanova.1.25    55.0       1.00            25          NaN  permanova
+permanova.1.26    65.0       1.00            26          NaN  permanova
+permanova.1.27    75.0       1.00            27          NaN  permanova
+permanova.1.28    85.0       1.00            28          NaN  permanova
+permanova.2.0      5.0       0.13             0          NaN  permanova
+permanova.2.1     15.0       0.80             1          NaN  permanova
+permanova.2.2     25.0       0.99             2          NaN  permanova
+...                ...        ...           ...          ...        ...
+permanova.3.22    25.0       1.00            22          NaN  permanova
+permanova.3.23    35.0       1.00            23          NaN  permanova
+permanova.3.24    45.0       1.00            24          NaN  permanova
+permanova.3.25    55.0       1.00            25          NaN  permanova
+permanova.3.26    65.0       1.00            26          NaN  permanova
+permanova.3.27    75.0       1.00            27          NaN  permanova
+permanova.4.0      5.0       0.81             0          NaN  permanova
+permanova.4.1     15.0       1.00             1          NaN  permanova
+permanova.4.2     25.0       1.00             2          NaN  permanova
+permanova.4.3     35.0       1.00             3          NaN  permanova
+permanova.4.4     45.0       1.00             4          NaN  permanova
+permanova.4.5     55.0       1.00             5          NaN  permanova
+permanova.4.6     65.0       1.00             6          NaN  permanova
+permanova.4.7     75.0       1.00             7          NaN  permanova
+permanova.4.10     5.0       0.77            10          NaN  permanova
+permanova.4.11    15.0       1.00            11          NaN  permanova
+permanova.4.12    25.0       1.00            12          NaN  permanova
+permanova.4.13    35.0       1.00            13          NaN  permanova
+permanova.4.14    45.0       1.00            14          NaN  permanova
+permanova.4.15    55.0       1.00            15          NaN  permanova
+permanova.4.16    65.0       1.00            16          NaN  permanova
+permanova.4.17    75.0       1.00            17          NaN  permanova
+permanova.4.20     5.0       0.80            20          NaN  permanova
+permanova.4.21    15.0       1.00            21          NaN  permanova
+permanova.4.22    25.0       1.00            22          NaN  permanova
+permanova.4.23    35.0       1.00            23          NaN  permanova
+permanova.4.24    45.0       1.00            24          NaN  permanova
+permanova.4.25    55.0       1.00            25          NaN  permanova
+permanova.4.26    65.0       1.00            26          NaN  permanova
+permanova.4.27    75.0       1.00            27          NaN  permanova
+
+                ori_alpha  alpha  alpha_adj  sim_num p_all  statistic  \
+index
+permanova.1.0        0.05   0.05          1        1  None        NaN
+permanova.1.1        0.05   0.05          1        1  None        NaN
+permanova.1.2        0.05   0.05          1        1  None        NaN
+permanova.1.3        0.05   0.05          1        1  None        NaN
+permanova.1.4        0.05   0.05          1        1  None        NaN
+permanova.1.5        0.05   0.05          1        1  None        NaN
+permanova.1.6        0.05   0.05          1        1  None        NaN
+permanova.1.7        0.05   0.05          1        1  None        NaN
+permanova.1.8        0.05   0.05          1        1  None        NaN
+permanova.1.10       0.05   0.05          1        1  None        NaN
+permanova.1.11       0.05   0.05          1        1  None        NaN
+permanova.1.12       0.05   0.05          1        1  None        NaN
+permanova.1.13       0.05   0.05          1        1  None        NaN
+permanova.1.14       0.05   0.05          1        1  None        NaN
+permanova.1.15       0.05   0.05          1        1  None        NaN
+permanova.1.16       0.05   0.05          1        1  None        NaN
+permanova.1.17       0.05   0.05          1        1  None        NaN
+permanova.1.18       0.05   0.05          1        1  None        NaN
+permanova.1.20       0.05   0.05          1        1  None        NaN
+permanova.1.21       0.05   0.05          1        1  None        NaN
+permanova.1.22       0.05   0.05          1        1  None        NaN
+permanova.1.23       0.05   0.05          1        1  None        NaN
+permanova.1.24       0.05   0.05          1        1  None        NaN
+permanova.1.25       0.05   0.05          1        1  None        NaN
+permanova.1.26       0.05   0.05          1        1  None        NaN
+permanova.1.27       0.05   0.05          1        1  None        NaN
+permanova.1.28       0.05   0.05          1        1  None        NaN
+permanova.2.0        0.05   0.05          1        2  None        NaN
+permanova.2.1        0.05   0.05          1        2  None        NaN
+permanova.2.2        0.05   0.05          1        2  None        NaN
+...                   ...    ...        ...      ...   ...        ...
+permanova.3.22       0.05   0.05          1        3  None        NaN
+permanova.3.23       0.05   0.05          1        3  None        NaN
+permanova.3.24       0.05   0.05          1        3  None        NaN
+permanova.3.25       0.05   0.05          1        3  None        NaN
+permanova.3.26       0.05   0.05          1        3  None        NaN
+permanova.3.27       0.05   0.05          1        3  None        NaN
+permanova.4.0        0.05   0.05          1        4  None        NaN
+permanova.4.1        0.05   0.05          1        4  None        NaN
+permanova.4.2        0.05   0.05          1        4  None        NaN
+permanova.4.3        0.05   0.05          1        4  None        NaN
+permanova.4.4        0.05   0.05          1        4  None        NaN
+permanova.4.5        0.05   0.05          1        4  None        NaN
+permanova.4.6        0.05   0.05          1        4  None        NaN
+permanova.4.7        0.05   0.05          1        4  None        NaN
+permanova.4.10       0.05   0.05          1        4  None        NaN
+permanova.4.11       0.05   0.05          1        4  None        NaN
+permanova.4.12       0.05   0.05          1        4  None        NaN
+permanova.4.13       0.05   0.05          1        4  None        NaN
+permanova.4.14       0.05   0.05          1        4  None        NaN
+permanova.4.15       0.05   0.05          1        4  None        NaN
+permanova.4.16       0.05   0.05          1        4  None        NaN
+permanova.4.17       0.05   0.05          1        4  None        NaN
+permanova.4.20       0.05   0.05          1        4  None        NaN
+permanova.4.21       0.05   0.05          1        4  None        NaN
+permanova.4.22       0.05   0.05          1        4  None        NaN
+permanova.4.23       0.05   0.05          1        4  None        NaN
+permanova.4.24       0.05   0.05          1        4  None        NaN
+permanova.4.25       0.05   0.05          1        4  None        NaN
+permanova.4.26       0.05   0.05          1        4  None        NaN
+permanova.4.27       0.05   0.05          1        4  None        NaN
+
+                                                          colors       sim_id
+index
+permanova.1.0   [0.814148415537, 0.219684737031, 0.304805855541]  permanova.1
+permanova.1.1   [0.933025763315, 0.391311037774, 0.271972331931]  permanova.1
+permanova.1.2    [0.981776240994, 0.607381790876, 0.34579008993]  permanova.1
+permanova.1.3   [0.994694348644, 0.809227231671, 0.486966571387]  permanova.1
+permanova.1.4   [0.998231449548, 0.945174935986, 0.657054999295]  permanova.1
+permanova.1.5   [0.955786238698, 0.982314495479, 0.680046155172]  permanova.1
+permanova.1.6   [0.820299895371, 0.927566324963, 0.612687450998]  permanova.1
+permanova.1.7    [0.59100347582, 0.835524807958, 0.644290678641]  permanova.1
+permanova.1.8   [0.360015384122, 0.716186099193, 0.665513284066]  permanova.1
+permanova.1.10  [0.814148415537, 0.219684737031, 0.304805855541]  permanova.1
+permanova.1.11  [0.933025763315, 0.391311037774, 0.271972331931]  permanova.1
+permanova.1.12   [0.981776240994, 0.607381790876, 0.34579008993]  permanova.1
+permanova.1.13  [0.994694348644, 0.809227231671, 0.486966571387]  permanova.1
+permanova.1.14  [0.998231449548, 0.945174935986, 0.657054999295]  permanova.1
+permanova.1.15  [0.955786238698, 0.982314495479, 0.680046155172]  permanova.1
+permanova.1.16  [0.820299895371, 0.927566324963, 0.612687450998]  permanova.1
+permanova.1.17   [0.59100347582, 0.835524807958, 0.644290678641]  permanova.1
+permanova.1.18  [0.360015384122, 0.716186099193, 0.665513284066]  permanova.1
+permanova.1.20  [0.814148415537, 0.219684737031, 0.304805855541]  permanova.1
+permanova.1.21  [0.933025763315, 0.391311037774, 0.271972331931]  permanova.1
+permanova.1.22   [0.981776240994, 0.607381790876, 0.34579008993]  permanova.1
+permanova.1.23  [0.994694348644, 0.809227231671, 0.486966571387]  permanova.1
+permanova.1.24  [0.998231449548, 0.945174935986, 0.657054999295]  permanova.1
+permanova.1.25  [0.955786238698, 0.982314495479, 0.680046155172]  permanova.1
+permanova.1.26  [0.820299895371, 0.927566324963, 0.612687450998]  permanova.1
+permanova.1.27   [0.59100347582, 0.835524807958, 0.644290678641]  permanova.1
+permanova.1.28  [0.360015384122, 0.716186099193, 0.665513284066]  permanova.1
+permanova.2.0   [0.814148415537, 0.219684737031, 0.304805855541]  permanova.2
+permanova.2.1   [0.933025763315, 0.391311037774, 0.271972331931]  permanova.2
+permanova.2.2    [0.981776240994, 0.607381790876, 0.34579008993]  permanova.2
+...                                                          ...          ...
+permanova.3.22   [0.981776240994, 0.607381790876, 0.34579008993]  permanova.3
+permanova.3.23  [0.994694348644, 0.809227231671, 0.486966571387]  permanova.3
+permanova.3.24  [0.998231449548, 0.945174935986, 0.657054999295]  permanova.3
+permanova.3.25  [0.955786238698, 0.982314495479, 0.680046155172]  permanova.3
+permanova.3.26  [0.820299895371, 0.927566324963, 0.612687450998]  permanova.3
+permanova.3.27   [0.59100347582, 0.835524807958, 0.644290678641]  permanova.3
+permanova.4.0   [0.814148415537, 0.219684737031, 0.304805855541]  permanova.4
+permanova.4.1   [0.933025763315, 0.391311037774, 0.271972331931]  permanova.4
+permanova.4.2    [0.981776240994, 0.607381790876, 0.34579008993]  permanova.4
+permanova.4.3   [0.994694348644, 0.809227231671, 0.486966571387]  permanova.4
+permanova.4.4   [0.998231449548, 0.945174935986, 0.657054999295]  permanova.4
+permanova.4.5   [0.955786238698, 0.982314495479, 0.680046155172]  permanova.4
+permanova.4.6   [0.820299895371, 0.927566324963, 0.612687450998]  permanova.4
+permanova.4.7    [0.59100347582, 0.835524807958, 0.644290678641]  permanova.4
+permanova.4.10  [0.814148415537, 0.219684737031, 0.304805855541]  permanova.4
+permanova.4.11  [0.933025763315, 0.391311037774, 0.271972331931]  permanova.4
+permanova.4.12   [0.981776240994, 0.607381790876, 0.34579008993]  permanova.4
+permanova.4.13  [0.994694348644, 0.809227231671, 0.486966571387]  permanova.4
+permanova.4.14  [0.998231449548, 0.945174935986, 0.657054999295]  permanova.4
+permanova.4.15  [0.955786238698, 0.982314495479, 0.680046155172]  permanova.4
+permanova.4.16  [0.820299895371, 0.927566324963, 0.612687450998]  permanova.4
+permanova.4.17   [0.59100347582, 0.835524807958, 0.644290678641]  permanova.4
+permanova.4.20  [0.814148415537, 0.219684737031, 0.304805855541]  permanova.4
+permanova.4.21  [0.933025763315, 0.391311037774, 0.271972331931]  permanova.4
+permanova.4.22   [0.981776240994, 0.607381790876, 0.34579008993]  permanova.4
+permanova.4.23  [0.994694348644, 0.809227231671, 0.486966571387]  permanova.4
+permanova.4.24  [0.998231449548, 0.945174935986, 0.657054999295]  permanova.4
+permanova.4.25  [0.955786238698, 0.982314495479, 0.680046155172]  permanova.4
+permanova.4.26  [0.820299895371, 0.927566324963, 0.612687450998]  permanova.4
+permanova.4.27   [0.59100347582, 0.835524807958, 0.644290678641]  permanova.4
+
+[102 rows x 13 columns]
+```
 
 ```python
 >>> all_powers['z_effect'] = all_powers.apply(summarize.calc_z_effect, axis=1)

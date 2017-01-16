@@ -103,7 +103,12 @@ Let's also compare the predicted fit against the distribution-based power.
 ...                                    ylabel='Predicted'
 ...                                    )
 >>> tp_fig.axes[2].set_xlabel('Distribution Power')
->>> plot.add_labels(tp_fig.axes)
+>>> plot.add_labels(tp_fig.axes, start='F')
+```
+
+```python
+>>> tp_fig.savefig('./fit_dist.png', dpi=300)
+>>> tp_fig.savefig('./fit_dist.pdf')
 ```
 
 Let's save the calibration parameter calculated for each experiment.

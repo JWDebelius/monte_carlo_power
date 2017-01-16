@@ -112,7 +112,7 @@ Finally, we'll create a set of parameters for each of the distributions being ev
 ```
 
 ```python
->>> i = 6
+>>> i = 3
 ```
 
 ```python
@@ -129,14 +129,14 @@ Finally, we'll create a set of parameters for each of the distributions being ev
 >>> sim
 {'alpha': 0.05,
  'alpha_adj': 1.0,
- 'counts': array([ 5, 15, 25, 35, 45, 55, 65, 75]),
- 'empirical': array([[ 0.25,  0.89,  0.99,  1.  ,  1.  ,  1.  ,  1.  ,  1.  ],
-        [ 0.23,  0.97,  1.  ,  1.  ,  1.  ,  1.  ,  1.  ,  1.  ],
-        [ 0.22,  0.95,  1.  ,  1.  ,  1.  ,  1.  ,  1.  ,  1.  ],
-        [ 0.2 ,  0.86,  1.  ,  1.  ,  1.  ,  1.  ,  1.  ,  1.  ],
-        [ 0.26,  0.94,  1.  ,  1.  ,  1.  ,  1.  ,  1.  ,  1.  ]]),
+ 'counts': array([ 5, 15, 25, 35, 45, 55, 65]),
+ 'empirical': array([[ 0.54,  1.  ,  1.  ,  1.  ,  1.  ,  1.  ,  1.  ],
+        [ 0.58,  1.  ,  1.  ,  1.  ,  1.  ,  1.  ,  1.  ],
+        [ 0.57,  1.  ,  1.  ,  1.  ,  1.  ,  1.  ,  1.  ],
+        [ 0.59,  1.  ,  1.  ,  1.  ,  1.  ,  1.  ,  1.  ],
+        [ 0.57,  1.  ,  1.  ,  1.  ,  1.  ,  1.  ,  1.  ]]),
  'original_p': 0.01,
- 'original_size': 98,
+ 'original_size': 78,
  'permutations': 99,
  'statistic': None,
  'traditional': None,
@@ -156,7 +156,7 @@ Finally, we'll create a set of parameters for each of the distributions being ev
 >>> plt.plot(sim['counts'], sim['empirical'].T, 'o')
 >>> plt.plot(np.linspace(0, 60, 100),
 ...          z_power(np.linspace(0, 60, 100), eff))
-[<matplotlib.lines.Line2D at 0x11158c0b8>]
+[<matplotlib.lines.Line2D at 0x1114defd0>]
 ```
 
 ```python

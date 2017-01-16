@@ -141,6 +141,13 @@ We're going to plot a comparison between the emperical and traditional power cal
 ...                                    )
 >>> te_fig.axes[2].set_xlabel('Distribution Power')
 >>> plot.add_labels(te_fig.axes)
+...
+>>> te_fig.set_size_inches([10, 3])
+...
+>>> te_fig.savefig('/Users/jdebelius/Desktop/empr_dist.pdf')
+>>> te_fig.savefig('/Users/jdebelius/Desktop/empr_dist.png', dpi=300)
+/Users/jdebelius/Repositories/monte_carlo_power/machivellian/plot.py:28: VisibleDeprecationWarning: using a boolean instead of an integer will result in an error in the future
+  start_pos = np.arange(0, 26)[letters == start]
 ```
 
 We see a high degree of correlation between the distribution-based power and the empirical power, although there is poor performance in the correlation with 5 observations per group.

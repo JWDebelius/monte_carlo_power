@@ -611,4 +611,12 @@ Something about permutaiton tests
 ...         test_summary['sim'] = sim
 ...         test_summary['save_fp'] = power_fp
 ...         calculate_power(**test_summary)
+correlation
+uniform
+anova_8
+lognormal
+```
+
+```python
+
 ```

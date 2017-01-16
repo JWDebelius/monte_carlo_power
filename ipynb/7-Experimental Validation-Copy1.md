@@ -20,7 +20,7 @@ All studies were processed through Qiita ([www.qiita.ucsd.edu](www.qiita.ucsd.ed
 ...
 >>> import machivellian.plot as plot
 >>> import machivellian.summarize as summarize
->>> from machivellian.bootstrap import bootstrap_permanova
+>>> from machivellian.beta import bootstrap_permanova
 >>> from machivellian.power import subsample_power, confidence_bound
 >>> from machivellian.effects import z_power, z_effect
 ...
@@ -113,8 +113,6 @@ Name: IBD_TYPE, dtype: int64
 ...                              'alpha': 0.01,
 ...                              }
 1070
-1458
-1629
 ```
 
 ```python
@@ -123,7 +121,6 @@ Name: IBD_TYPE, dtype: int64
 ...          summaries['1070']['power'].T, 'o')
 >>> plt.plot(np.linspace(5, 50, 100),
 ...          z_power(np.linspace(5, 50, 100), 0.30358342298881896))
-[<matplotlib.lines.Line2D at 0x10cf7e0b8>]
 ```
 
 ```python

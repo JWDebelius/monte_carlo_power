@@ -272,29 +272,16 @@ To do this, we'll simulate a feature x observation table using a zero-inflated n
 ...                                                        p_lim=[0.01, 0.6],
 ...                                                        psi_lim=[0.25, 0.75],
 ...                                                        num_observations=[99, 101],
-...                                                        percent_different=[0.1, 0.2])
+...                                                        percent_different=0.05)
 ```
 
-```python
->>> blues = cm.Blues
->>> blues.set_under([0.5, 0.5, 0.5])
-...
->>> ax = sn.heatmap(feat_table.T, vmin=1, cmap=blues)
->>> ax.set_xticks([-1])
->>> ax.set_yticks([-1])
-[<matplotlib.axis.YTick at 0x10ce257b8>]
-```
-
-We'll rarify the feature table to 1000 counts, and then perform a distance matrix transformation, using the Bray-Curtis metric.
+We can visualize the simulations by rarifying the feature table to 5000 counts, calculating the bray-curtis distance between the samples, and then performing a principle coordinates analysis.
 
 ```python
 >>> rare_table = beta.subsample_features(feat_table.values, 5000, bootstrap=False)
 >>> dm = skbio.DistanceMatrix.from_iterable(rare_table,
 ...                                         metric=scipy.spatial.distance.braycurtis,
 ...                                         keys=feat_table.index)
-```
-
-```python
 >>> pc = skbio.stats.ordination.pcoa(dm)
 ```
 
@@ -308,6 +295,39 @@ We'll rarify the feature table to 1000 counts, and then perform a distance matri
 ...
 >>> ord_ = pc.samples[['PC1', 'PC2']]
 >>> ord_['color'] = grouping.apply(color_scatter)
+...
+...
+>>> blues = cm.Blues_r
+>>> blues.set_under('k')
+```
+
+```python
+>>> fig = plt.figure()
+>>> ax1 = fig.add_subplot(1, 3, 1)
+>>> # ax1.set_aspect()
+... ax2 = fig.add_subplot(1, 3, 2)
+>>> # ax2.set_aspect('equal')
+... ax3 = fig.add_subplot(1, 3, 3)
+>>> # ax1_p = fig.add_subplot(6, 3, 1)
+...
+... sn.heatmap(rare_table.T, vmin=1, cmap=blues, ax=ax1)
+>>> ax1.set_yticks([-1])
+>>> ax1.set_xticks([-1])
+...
+>>> sn.heatmap(dm.data, ax=ax2)
+...
+>>> ax3.scatter(ord_['PC1'], ord_['PC2'], color=ord_['color'], alpha=0.5)
+>>> ax3.set_aspect('equal')
+```
+
+```python
+>>> blues = cm.Blues
+>>> blues.set_under([0.5, 0.5, 0.5])
+...
+>>> ax = sn.heatmap(feat_table.T, vmin=1, cmap=blues)
+>>> ax.set_xticks([-1])
+>>> ax.set_yticks([-1])
+[<matplotlib.axis.YTick at 0x10c874b38>]
 ```
 
 ```python
@@ -321,6 +341,18 @@ We'll rarify the feature table to 1000 counts, and then perform a distance matri
 >>> ax2.set_aspect('equal')
 ```
 
+```python
+>>> skbio.stats.distance.permanova(dm, grouping, permutations=99)
+method name               PERMANOVA
+test statistic name        pseudo-F
+sample size                     198
+number of groups                  2
+test statistic              6.69025
+p-value                        0.01
+number of permutations           99
+Name: PERMANOVA results, dtype: object
+```
+
 We'll build our simulations containing between 120 and 200 observations (60 to 100 observations per group), with the size of the second group selected using a binomial distribution with probability 0.5. The number of groups in the second dataset is selected with a binomial distribution. THe within group distances will be between 0.3 and 0.6, the variance between 0.5 and 0.8, while the between distances will be between 0.45 and 0.65 with the variance in 0.5 and 0.8.
 
 ```python
@@ -329,7 +361,7 @@ We'll build our simulations containing between 120 and 200 observations (60 to 1
 ...                                          'p_lim': [0.01, 0.6],
 ...                                          'psi_lim': [0.3, 0.98],
 ...                                          'num_observations': [60, 100],
-...                                          'percent_different': [0.01, 0.20]}
+...                                          'percent_different': [0.0005, 0.0125]}
 ...                               }
 ```
 
@@ -440,7 +472,9 @@ We'll next simulate the data, which will be used in subsequent notebooks.
 ...             pickle.dump({'samples': samples, 'params': params}, f_)
 ```
 
-We've now simulated data following a variety of distributions. We'll follow the parametric distributions through notebooks [2-], [3-], and [4-], while we'll pick up the nonparameteric distributions in notebook [5-].
+We've now simulated data following a variety of distributions. We'll perform power calculations using all the simulations in the next notebook: [2-Empirical Power Calculations](2-Empirical%20Power%20Calculations.md).
+
+We'll then evaluate the parametric data starting in [](), and the nonparametric in []().
 
 # Works Cited
 
@@ -450,7 +484,3 @@ We've now simulated data following a variety of distributions. We'll follow the 
 </li><li id="3">Clarke, K.R. (1993). Non-parametric multivariate analyses of changes in community structure. <em>Austral Ecology</em>. <strong>18</strong>: 117-143.
 </li><li id="4">Kurtz, Z.D.; Muller, C.L.; Miraldi, E.R.; Littman, D.R.; Blaser, M.J.; Bonneau, R.A. (2015). "<a href="https://www.ncbi.nlm.nih.gov/pubmed/25950956">Sparse and compositional robust interference of microbial ecological networks.</a>" <em>PLoS Computational Biology</em>. **11**:1004226.
 </li></ol>
-
-```python
-
-```

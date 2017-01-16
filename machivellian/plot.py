@@ -24,7 +24,10 @@ def add_labels(axes, style='(%s)', format_=None, size=12, start='A'):
         def format_(x):
             return x
 
-    for ax, l in zip(*(axes, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')):
+    letters = list('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+    start_pos = letters.index(start)
+
+    for ax, l in zip(*(axes, letters[start_pos:])):
         x_lo, x_hi = ax.get_xlim()
         y_lo, y_hi = ax.get_ylim()
 
@@ -247,9 +250,11 @@ def summarize_regression(summary, test_names, titles, x, y, gradient,
         ax_reg.set_title(title)
         ax_reg.set_xticklabels(ax_reg.get_xticks())
 
+        ax_reg.set_aspect('equal')
+
     # Adds axis labels
     ax_r1[0].set_yticklabels(ax_r1[0].get_yticks())
-    ax_r1[0].set_ylabel('%s regression' % ylabel)
+    ax_r1[0].set_ylabel('%s Power' % ylabel)
     ax_r1[0].set_yticklabels(ax_r1[0].get_yticks())
 
     return fig

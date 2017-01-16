@@ -85,8 +85,8 @@ We'll also go back to the test simulations, and load the values we simulated usi
 ...                                     ylabel='Predicted'
 ...                                    )
 >>> tpp_fig.axes[2].set_xlabel('Distribution Power')
->>> # plot.add_labels(pe_fig.axes)
-... tpp_fig.savefig('/Users/jdebelius/Desktop/alt_p.pdf')
+>>> plot.add_labels(tpp_fig.axes, start='A')
+>>> tpp_fig.savefig('/Users/jdebelius/Desktop/alt_p.pdf')
 ```
 
 Although the performance here is somewhat worse than with the orginal critical value and prediction slightly underestimates the distribution-based power, especially for larger sample sizes, we still find a strong relationship between the distribution-based power and the predicted power.
