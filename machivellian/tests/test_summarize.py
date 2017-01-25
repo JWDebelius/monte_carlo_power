@@ -17,7 +17,7 @@ class SummarizeTest(TestCase):
     def setUp(self):
         self.power_summary = {
             'counts': np.array([5, 15, 25, 35, 45, 55, 65, 75, 85, 95]),
-            'emperical': np.array([[0.04698995, 0.10223453, 0.15022543,
+            'empirical': np.array([[0.04698995, 0.10223453, 0.15022543,
                                     0.19666182, 0.24228406, 0.28709498,
                                     0.33092360, 0.37356885, 0.41484527,
                                     0.45459791]]),
