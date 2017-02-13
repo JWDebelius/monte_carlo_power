@@ -10,7 +10,7 @@ from machivellian.simulate import (simulate_ttest_1,
                                    simulate_ttest_ind,
                                    simulate_anova,
                                    simulate_correlation,
-                                   simulate_feature_table,
+                                   # simulate_feature_table,
                                    # simulate_permanova,
                                    simulate_mantel,
                                    simulate_discrete,
@@ -198,41 +198,41 @@ class PowerSimulation(TestCase):
     #     self.assertEqual(self.dm_ids, dm.ids)
     #     pdt.assert_series_equal(self.grouping, grouping)
 
-    def test_simulate_feature_table(self):
-        known_n = np.array([36, 15, 48, 39, 40])
-        known_p1 = np.array([0.22460477,  0.58787255,  0.06299441,
-                             0.24407460,  0.44567977])
-        known_p2 = np.array([0.22460477,  0.58787255,  0.06299441,
-                             0.24407460,  0.27037244])
-        known_psi = np.array([0.54081387,  0.63091384,  0.97375823,
-                              0.84963154,  0.40765071])
-        known_counts = np.array([[140,  11,   0,  81,  60],
-                                 [000,   6,   0,   0,   0],
-                                 [000,   0,   0,   0, 126],
-                                 [000,   0,   0,  90,  79]])
-        obs_ids = np.array(['o.0', 'o.1', 'o.2', 'o.3'], dtype=object)
-        feat_ids = np.array(['f.0', 'f.1', 'f.2', 'f.3', 'f.4'], dtype=object)
-        known_grouping = pd.Series([0.0, 0.0, 1.0, 1.0], index=obs_ids)
+    # def test_simulate_feature_table(self):
+    #     known_n = np.array([36, 15, 48, 39, 40])
+    #     known_p1 = np.array([0.22460477,  0.58787255,  0.06299441,
+    #                          0.24407460,  0.44567977])
+    #     known_p2 = np.array([0.22460477,  0.58787255,  0.06299441,
+    #                          0.24407460,  0.27037244])
+    #     known_psi = np.array([0.54081387,  0.63091384,  0.97375823,
+    #                           0.84963154,  0.40765071])
+    #     known_counts = np.array([[140,  11,   0,  81,  60],
+    #                              [000,   6,   0,   0,   0],
+    #                              [000,   0,   0,   0, 126],
+    #                              [000,   0,   0,  90,  79]])
+    #     obs_ids = np.array(['o.0', 'o.1', 'o.2', 'o.3'], dtype=object)
+    #     feat_ids = np.array(['f.0', 'f.1', 'f.2', 'f.3', 'f.4'], dtype=object)
+    #     known_grouping = pd.Series([0.0, 0.0, 1.0, 1.0], index=obs_ids)
 
-        ([_, __, ___, n, p1, p2, psi], (table, grouping)) = \
-            simulate_feature_table(n_lim=[1, 50],
-                                   p_lim=[0.01, 0.6],
-                                   psi_lim=[0.3, 0.98],
-                                   num_observations=2,
-                                   num_features=5,
-                                   percent_different=0.2,
-                                   threshhold=0)
+    #     ([_, __, ___, n, p1, p2, psi], (table, grouping)) = \
+    #         simulate_feature_table(n_lim=[1, 50],
+    #                                p_lim=[0.01, 0.6],
+    #                                psi_lim=[0.3, 0.98],
+    #                                num_observations=2,
+    #                                num_features=5,
+    #                                percent_different=0.2,
+    #                                threshhold=0)
 
-        npt.assert_array_equal(n, known_n)
-        npt.assert_almost_equal(known_p1, p1, 6)
-        npt.assert_almost_equal(known_p2, p2, 6)
-        npt.assert_almost_equal(known_psi, psi, 6)
+    #     npt.assert_array_equal(n, known_n)
+    #     npt.assert_almost_equal(known_p1, p1, 6)
+    #     npt.assert_almost_equal(known_p2, p2, 6)
+    #     npt.assert_almost_equal(known_psi, psi, 6)
 
-        npt.assert_array_equal(known_counts, table.values)
-        npt.assert_array_equal(feat_ids, table.columns)
-        npt.assert_array_equal(obs_ids, table.index)
+    #     npt.assert_array_equal(known_counts, table.values)
+    #     npt.assert_array_equal(feat_ids, table.columns)
+    #     npt.assert_array_equal(obs_ids, table.index)
 
-        pdt.assert_series_equal(known_grouping, grouping)
+    #     pdt.assert_series_equal(known_grouping, grouping)
 
     def test_simulate_mantel(self):
         known_x = np.array([
