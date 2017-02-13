@@ -286,7 +286,7 @@ class PowerSimulation(TestCase):
     def test_check_param_list(self):
         param = [0, 1]
         new_param = _check_param(param, 'param')
-        self.assertTrue(isinstance(new_param, np.ndarray))
+        self.assertTrue(isinstance(new_param, float))
         self.assertTrue(0 < new_param < 1)
 
     def test_check_param_float(self):
