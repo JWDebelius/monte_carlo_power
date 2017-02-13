@@ -327,7 +327,7 @@ We can visualize the simulations by rarifying the feature table to 5000 counts, 
 >>> ax = sn.heatmap(feat_table.T, vmin=1, cmap=blues)
 >>> ax.set_xticks([-1])
 >>> ax.set_yticks([-1])
-[<matplotlib.axis.YTick at 0x10c874b38>]
+[<matplotlib.axis.YTick at 0x111165978>]
 ```
 
 ```python
