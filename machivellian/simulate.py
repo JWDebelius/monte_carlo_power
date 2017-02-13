@@ -232,111 +232,111 @@ def simulate_uniform(range_lim, delta_lim, counts_lim):
     return [r_, d_, n_], [v1, v2]
 
 
-def simulate_feature_table(n_lim, p_lim, psi_lim, num_observations=100,
-                           num_features=500, percent_different=0.05,
-                           threshhold=6000):
-    """
-    Simulates an feature  table using a zero inflated negative binomial model
+# def simulate_feature_table(n_lim, p_lim, psi_lim, num_observations=100,
+#                            num_features=500, percent_different=0.05,
+#                            threshhold=6000):
+#     """
+#     Simulates an feature  table using a zero inflated negative binomial model
 
-    ... More about hte model...
+#     ... More about hte model...
 
-    Parameters
-    ----------
-    n_lim: list of ints
-        The limits for the number of trials in the negative binomial simulation
-    p_lim: list of floats
-        The limits for the p-values for hte negative binomial simulation
-        model
-    psi_lim: list of floats
-        Limits for the probability of a zero in a model
-    num_observations: int, list of ints
-        The number of observations (samples) in the feature table. Can be an
-        intger or a range.
-    num_features: int, list of ints
-        The number of features in the feature table
-    percent_different: float, list of floats
-        The percentage of the features where the probabilites are drawn from
-        different distributions.
-    threshhold: int, optional
-        The minimum number of counts for a sample to be included in the
-        final table
+#     Parameters
+#     ----------
+#     n_lim: list of ints
+#         The limits for the number of trials in the negative binomial simulation
+#     p_lim: list of floats
+#         The limits for the p-values for hte negative binomial simulation
+#         model
+#     psi_lim: list of floats
+#         Limits for the probability of a zero in a model
+#     num_observations: int, list of ints
+#         The number of observations (samples) in the feature table. Can be an
+#         intger or a range.
+#     num_features: int, list of ints
+#         The number of features in the feature table
+#     percent_different: float, list of floats
+#         The percentage of the features where the probabilites are drawn from
+#         different distributions.
+#     threshhold: int, optional
+#         The minimum number of counts for a sample to be included in the
+#         final table
 
-    Returns
-    -------
-    list
-        The number of observations, number of features, percent of features
-        different, negative binomial parameters, negative binomaial probabilies
-        for group 1, negative binomail probabilites for group 2, and
-        probability of a 0 for the table.
-    DataFrame
-        An observation x feature table containing integer counts
-    Series
-        Identifies the group which samples belong to
+#     Returns
+#     -------
+#     list
+#         The number of observations, number of features, percent of features
+#         different, negative binomial parameters, negative binomaial probabilies
+#         for group 1, negative binomail probabilites for group 2, and
+#         probability of a 0 for the table.
+#     DataFrame
+#         An observation x feature table containing integer counts
+#     Series
+#         Identifies the group which samples belong to
 
-    Also See
-    --------
+#     Also See
+#     --------
 
-    References
-    ----------
-    ..[1] Kutz, Z.D. et al. (2015) "Sparse and Compositionally Robust Inference
-    of Microbial Ecological Networks." PLoS Compuational Biology. 11: e10004226
-    http://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1004226
+#     References
+#     ----------
+#     ..[1] Kutz, Z.D. et al. (2015) "Sparse and Compositionally Robust Inference
+#     of Microbial Ecological Networks." PLoS Compuational Biology. 11: e10004226
+#     http://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1004226
 
-    """
+#     """
 
-    # Checks the table size
-    num_obs = _check_param(num_observations, 'num_observations',
-                           random=np.random.randint)
-    num_feat = _check_param(num_features, 'num_features',
-                            random=np.random.randint)
-    perc_diff = _check_param(percent_different, 'perc_diff')
+#     # Checks the table size
+#     num_obs = _check_param(num_observations, 'num_observations',
+#                            random=np.random.randint)
+#     num_feat = _check_param(num_features, 'num_features',
+#                             random=np.random.randint)
+#     perc_diff = _check_param(percent_different, 'perc_diff')
 
-    # Calculates the number of features which are different between
-    # the two conditions
-    num_same = int(num_feat * (1 - perc_diff))
-    num_diff = num_feat - num_same
+#     # Calculates the number of features which are different between
+#     # the two conditions
+#     num_same = int(num_feat * (1 - perc_diff))
+#     num_diff = num_feat - num_same
 
-    # Gets simulation parameters for features which are the same
-    n_same = _check_param(n_lim, 'n_lim', random=np.random.randint,
-                          size=num_same)
-    p_same = _check_param(p_lim, 'p_lim', size=num_same)
-    psi_same = _check_param(psi_lim, 'psi_lim', size=num_same)
+#     # Gets simulation parameters for features which are the same
+#     n_same = _check_param(n_lim, 'n_lim', random=np.random.randint,
+#                           size=num_same)
+#     p_same = _check_param(p_lim, 'p_lim', size=num_same)
+#     psi_same = _check_param(psi_lim, 'psi_lim', size=num_same)
 
-    # Gets simulation parameters for features which are different
-    n_diff = _check_param(n_lim, 'n_lim', random=np.random.randint,
-                          size=num_diff)
-    p_g1 = _check_param(p_lim, 'p_lim', size=num_diff)
-    p_g2 = _check_param(p_lim, 'p_lim', size=num_diff)
-    psi_diff = _check_param(psi_lim, 'psi_lim', size=num_diff)
+#     # Gets simulation parameters for features which are different
+#     n_diff = _check_param(n_lim, 'n_lim', random=np.random.randint,
+#                           size=num_diff)
+#     p_g1 = _check_param(p_lim, 'p_lim', size=num_diff)
+#     p_g2 = _check_param(p_lim, 'p_lim', size=num_diff)
+#     psi_diff = _check_param(psi_lim, 'psi_lim', size=num_diff)
 
-    # Generates the feature table
-    table = pd.DataFrame(
-        np.concatenate([
-            np.vstack([zero_inflated_nb(n, p, psi, size=(2 * num_obs))
-                       for (n, p, psi) in zip(*(n_same, p_same, psi_same))]),
-            np.vstack([np.hstack([zero_inflated_nb(n, p1, psi, size=num_obs),
-                                  zero_inflated_nb(n, p2, psi, size=num_obs)])
-                       for (n, p1, p2, psi)
-                       in zip(*(n_diff, p_g1, p_g2, psi_diff))])
-            ]),
-        index=['f.%i' % i for i in range(num_feat)],
-        columns=['o.%i' % i for i in range(2 * num_obs)]).T
+#     # Generates the feature table
+#     table = pd.DataFrame(
+#         np.concatenate([
+#             np.vstack([zero_inflated_nb(n, p, psi, size=(2 * num_obs))
+#                        for (n, p, psi) in zip(*(n_same, p_same, psi_same))]),
+#             np.vstack([np.hstack([zero_inflated_nb(n, p1, psi, size=num_obs),
+#                                   zero_inflated_nb(n, p2, psi, size=num_obs)])
+#                        for (n, p1, p2, psi)
+#                        in zip(*(n_diff, p_g1, p_g2, psi_diff))])
+#             ]),
+#         index=['f.%i' % i for i in range(num_feat)],
+#         columns=['o.%i' % i for i in range(2 * num_obs)]).T
 
-    # Generates the grouping object
-    grouping = pd.Series(np.hstack([np.zeros(num_obs), np.ones(num_obs)]),
-                         index=['o.%i' % i for i in range(2 * num_obs)])
+#     # Generates the grouping object
+#     grouping = pd.Series(np.hstack([np.zeros(num_obs), np.ones(num_obs)]),
+#                          index=['o.%i' % i for i in range(2 * num_obs)])
 
-    # Returns summary and objects
-    summary = [num_obs, num_feat, perc_diff, np.hstack([n_same, n_diff]),
-               np.hstack([p_same, p_g1]), np.hstack([p_same, p_g2]),
-               np.hstack([psi_same, psi_diff])]
+#     # Returns summary and objects
+#     summary = [num_obs, num_feat, perc_diff, np.hstack([n_same, n_diff]),
+#                np.hstack([p_same, p_g1]), np.hstack([p_same, p_g2]),
+#                np.hstack([psi_same, psi_diff])]
 
-    # Drops missing samples
-    drop = (table.sum(1) > threshhold)
-    table = table.loc[drop]
-    grouping = grouping.loc[drop]
+#     # Drops missing samples
+#     drop = (table.sum(1) > threshhold)
+#     table = table.loc[drop]
+#     grouping = grouping.loc[drop]
 
-    return summary, (table, grouping)
+#     return summary, (table, grouping)
 
 
 # def simulate_permanova(num_samples, wdist, wspread, bdist, bspread, counts_lim):
